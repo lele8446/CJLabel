@@ -10,199 +10,113 @@
 #import <CoreText/CoreText.h>
 
 @interface CJLabel ()<UIGestureRecognizerDelegate>
-@property (nonatomic) CTFrameRef theFrame;
-@property (nonatomic) NSRange linkRange;
-@property (nonatomic, strong) UIFont *font;
-@property (nonatomic, assign) CGFloat width;
+@property (nonatomic, strong) NSMutableArray *linkArray;
 @property (nonatomic, strong) UITapGestureRecognizer *labelTapGestureRecognizer;
 @end
 
 @implementation CJLabel
-@synthesize theFrame = _theFrame;
-@synthesize font = _font;
 
-- (void)dealloc {
-    
-    // The property is marked 'assign', but retain count for this CFType is managed here and via
-    // the setter.
-    if (NULL != _theFrame) {
-        CFRelease(_theFrame);
+- (NSMutableArray *)linkArray {
+    if (!_linkArray) {
+        _linkArray = [[NSMutableArray alloc]initWithCapacity:4];
     }
-    self.labelTapGestureRecognizer.delegate = nil;
+    return _linkArray;
 }
 
-+ (CGFloat)getAttributedStringHeightWithString:(NSAttributedString *)string  width:(CGFloat)width
-{
-    CGFloat total_value = 0;
-    //string 为要计算高的NSAttributedString
-    CTFramesetterRef framesetter = CTFramesetterCreateWithAttributedString((__bridge CFAttributedStringRef)string);
-    //这里的高要设置足够大
-    CGRect drawingRect = CGRectMake(0, 0, width, 1000);
+- (void)dealloc {
+    self.labelTapGestureRecognizer.delegate = nil;
+    if (self.labelTapGestureRecognizer) {
+        [self removeGestureRecognizer:self.labelTapGestureRecognizer];
+    }
+}
+
+- (CTFrameRef )returnCTFrame {
+    
+    CFAttributedStringRef attributedString = (__bridge CFAttributedStringRef)self.attributedText;
+    CTFramesetterRef framesetter = CTFramesetterCreateWithAttributedString(attributedString);
+    if (NULL == framesetter) {
+        return NULL;
+    }
+    
     CGMutablePathRef path = CGPathCreateMutable();
-    CGPathAddRect(path, NULL, drawingRect);
-    CTFrameRef textFrame = CTFramesetterCreateFrame(framesetter,CFRangeMake(0,0), path, NULL);
+    if (NULL == path) {
+        CFRelease(framesetter);
+        return NULL;
+    }
+    
+    [self sizeToFit];
+    CGRect bounds = self.bounds;
+    bounds.size = CGSizeMake(ceilf(bounds.size.width), ceilf(bounds.size.height));
+    CGPathAddRect(path, NULL, bounds);
+    CTFrameRef linkFrame = CTFramesetterCreateFrame(framesetter, CFRangeMake(0, 0), path, NULL);
+    CTFrameRef theLinkFrame = linkFrame;
+    CFRetain(theLinkFrame);
+    if (linkFrame) {
+        CFRelease(linkFrame);
+    }
     CGPathRelease(path);
     CFRelease(framesetter);
     
-    NSArray *linesArray = (NSArray *) CTFrameGetLines(textFrame);
-    
-    CGPoint origins[[linesArray count]];
-    CTFrameGetLineOrigins(textFrame, CFRangeMake(0, 0), origins);
-    
-    CGFloat line_y = (CGFloat) origins[[linesArray count] -1].y;  //最后一行line的原点y坐标
-    
-    CGFloat ascent = 0;
-    CGFloat descent = 0;
-    CGFloat leading = 0;
-    
-    CTLineRef line = (__bridge CTLineRef) [linesArray objectAtIndex:[linesArray count]-1];
-    CTLineGetTypographicBounds(line, &ascent, &descent, &leading);
-    
-    total_value = 1000 - line_y + (CGFloat) descent + 1;    //+1为了纠正descent转换成int小数点后舍去的值
-    
-    CFRelease(textFrame);
-    return total_value;
+    return theLinkFrame;
 }
 
-- (CGSize)getStringRect:(NSAttributedString *)aString width:(CGFloat)width height:(CGFloat)height labelFont:(UIFont *)font
-{
-    CGSize size = CGSizeZero;
-    
-    NSMutableAttributedString *atrString = [[NSMutableAttributedString alloc] initWithAttributedString:aString];
-    
-    NSRange range = NSMakeRange(0, atrString.length);
-    
-    //获取指定位置上的属性信息，并返回与指定位置属性相同并且连续的字符串的范围信息。
-    NSDictionary* dic = [atrString attributesAtIndex:0 effectiveRange:&range];
-    
-    NSMutableParagraphStyle *paragraphStyle = [[NSMutableParagraphStyle alloc]init];
-    paragraphStyle.lineBreakMode = NSLineBreakByWordWrapping;
-    NSMutableDictionary *attributes = [NSMutableDictionary dictionaryWithDictionary:dic];
-    [attributes setObject:paragraphStyle.copy forKey:NSParagraphStyleAttributeName];
-    
-    _font = font;
-    self.width = width;
-    [attributes setObject:font forKey:NSFontAttributeName];
-    
-    CGSize strSize = [[aString string] boundingRectWithSize:CGSizeMake(width, height)
-                                                    options:NSStringDrawingUsesLineFragmentOrigin | NSStringDrawingUsesFontLeading
-                                                 attributes:dic
-                                                    context:nil].size;
-    
-    size = CGSizeMake(ceilf(strSize.width), ceilf(strSize.height));
-    
-    return  size;
-}
-
-+ (NSMutableAttributedString *)getLabelNSAttributedString:(NSString *)labelStr labelDict:(NSDictionary *)labelDic
-{
-    
-    NSMutableAttributedString *atrString = [[NSMutableAttributedString alloc] initWithString:labelStr];
-    NSRange range = NSMakeRange(0, atrString.length);
-    if (labelDic && labelDic.count > 0) {
-        NSEnumerator *enumerator = [labelDic keyEnumerator];
-        id key;
-        while ((key = [enumerator nextObject])) {
-            [atrString addAttribute:key value:labelDic[key] range:range];
+- (void)removeLinkString:(NSAttributedString *)linkString {
+    __block NSUInteger index = 0;
+    __block BOOL needRemove = NO;
+    [self.linkArray enumerateObjectsUsingBlock:^(id num, NSUInteger idx, BOOL *stop){
+        CJLinkLabelModel *linkModel = (CJLinkLabelModel *)num;
+        if ([linkModel.linkString isEqualToAttributedString:linkString]) {
+            index = idx;
+            needRemove = YES;
+            *stop = YES;
         }
-    }
-    
-    return atrString;
+    }];
+    [self.linkArray removeObjectAtIndex:index];
 }
 
-+ (NSAttributedString *)handleLinkString:(NSAttributedString *)linkString
-{
-    if (linkString.length <= 2) {
-        return linkString;
+- (void)addLinkString:(NSAttributedString *)linkString block:(CJLinkLabelModelBlock)linkBlock {
+    CJLinkLabelModel *linkModel = [[CJLinkLabelModel alloc]initLinkLabelModelWithString:linkString range:[self getRangeWithLinkString:linkString] block:linkBlock];
+    if (nil != linkModel) {
+        [self.linkArray addObject:linkModel];
     }
-    NSAttributedString *handleLinkString = [linkString attributedSubstringFromRange:NSMakeRange(1,linkString.length-2)];
-    return handleLinkString;
+    [self initializeLabelTapGestureRecognizer];
 }
 
-- (void)setTouchUpInsideLinkString:(NSAttributedString *)linkString withString:(NSAttributedString *)string block:(CJLabelBlock)labelBlock
-{
-    self.userInteractionEnabled = YES;
-    self.labelTapGestureRecognizer = [[UITapGestureRecognizer alloc]initWithTarget:self action:@selector(labelTouchUpInside:)];
-    self.labelTapGestureRecognizer.delegate = self;
-    [self addGestureRecognizer:self.labelTapGestureRecognizer];
-    
-    self.labelBlock = labelBlock;
-    self.linkString = linkString;
-    self.string = string;
-    
+- (NSRange)getRangeWithLinkString:(NSAttributedString *)linkString {
     //点击链接的NSRange
-    self.linkRange = [[string string] rangeOfString:[linkString string]];
+    NSRange linkRange = [[self.attributedText string] rangeOfString:[linkString string]];
+    return linkRange;
+}
+
+- (void)initializeLabelTapGestureRecognizer {
+    if (!_labelTapGestureRecognizer) {
+        self.userInteractionEnabled = YES;
+        _labelTapGestureRecognizer = [[UITapGestureRecognizer alloc]initWithTarget:self action:@selector(labelTouchUpInside:)];
+        _labelTapGestureRecognizer.delegate = self;
+        [self addGestureRecognizer:_labelTapGestureRecognizer];
+    }
 }
 
 - (void)labelTouchUpInside:(UITapGestureRecognizer *)sender
 {
     //获取触摸点击当前view的坐标位置
     CGPoint location = [sender locationInView:self];
-    //获取CTFrameRef
-    [self setFrameValue:self.string];
-    //获取每一行
-    CFArrayRef lines = CTFrameGetLines(self.theFrame);
-    CGPoint origins[CFArrayGetCount(lines)];
-    //获取每行的原点坐标
-    CTFrameGetLineOrigins(self.theFrame, CFRangeMake(0, 0), origins);
-    CTLineRef line = NULL;
-    CGPoint lineOrigin = CGPointZero;
+//    NSLog(@"location %@",NSStringFromCGPoint(location));
     
-    //linkString最后一行字符
-    NSAttributedString *linkLastString = nil;
-    BOOL isLastLine = NO;
-    NSRange lastLineRunRange;
-    //最后一行文字的宽度
-    CGFloat lastLineWidth = 0;
+    NSUInteger index = (NSUInteger)[self characterIndexAtPoint:location];
+    if (!NSLocationInRange(index, NSMakeRange(0, self.attributedText.length))) {
+        return;
+    }
     
-    CFIndex count = CFArrayGetCount(lines);
-    for (int i= 0; i < count; i++)
-    {
-        CGPoint origin = origins[i];
-        CGPathRef path = CTFrameGetPath(self.theFrame);
-        //获取整个CTFrame的大小
-        CGRect rect = CGPathGetBoundingBox(path);
-        //坐标转换，把每行的原点坐标转换为UIView的坐标体系
-        CGFloat y = rect.origin.y + rect.size.height - origin.y;
-        
-        //判断点击的位置处于那一行范围内
-        if ((location.y <= y) && (location.x >= origin.x))
-        {
-            line = CFArrayGetValueAtIndex(lines, i);
-            lineOrigin = origin;
-            
-            //如果是最后一行
-            if (i == CFArrayGetCount(lines)-1 && CFArrayGetCount(lines)>1) {
-                isLastLine = YES;
-                CFRange lastRange = CTLineGetStringRange(line);
-                lastLineRunRange = NSMakeRange(lastRange.location, lastRange.length);
-                linkLastString = [self.string attributedSubstringFromRange:lastLineRunRange];
-                lastLineWidth = [[CJLabel new] getStringRect:linkLastString width:MAXFLOAT height:(rect.size.height/CFArrayGetCount(lines)) labelFont:_font].width;
-                
-//                NSLog(@"linkLastString :%@",[linkLastString string]);
-//                NSLog(@"lastLinkLineWidth :%@",@(lastLineWidth));
+    [self.linkArray enumerateObjectsUsingBlock:^(id num, NSUInteger idx, BOOL *stop){
+        CJLinkLabelModel *linkModel = (CJLinkLabelModel *)num;
+        if (NSLocationInRange(index, linkModel.range)) {
+            if (linkModel.linkBlock) {
+                linkModel.linkBlock(linkModel);
             }
-            break;
+            *stop = YES;
         }
-        
-    }
-
-//    NSLog(@"location:%@ %@",@(location.x),@(location.y));
-    
-    location.x -= lineOrigin.x;
-    //获取点击位置所处的字符位置，就是相当于点击了第几个字符
-    CFIndex index = CTLineGetStringIndexForPosition(line, location);
-//    NSLog(@"index:%ld",index);
-    
-    if (index >= self.linkRange.location && index <= self.linkRange.length + self.linkRange.location) {
-        if (isLastLine && (location.x > lastLineWidth)) {
-//            NSLog(@"点击的是最后一行的空白区域");
-            return;
-        }
-        if (self.labelBlock) {
-            self.labelBlock();
-        }
-    }
+    }];
     
 }
 
@@ -212,46 +126,120 @@
     return YES;
 }
 
-- (CTFrameRef)setFrameValue:(NSAttributedString *)aString {
-    CFAttributedStringRef attributedString = (__bridge CFAttributedStringRef)aString;
-    CTFramesetterRef framesetter = CTFramesetterCreateWithAttributedString(attributedString);
-    
-    if (NULL == framesetter) {
-        return NULL;
+static inline CGFLOAT_TYPE CGFloat_ceil(CGFLOAT_TYPE cgfloat) {
+#if CGFLOAT_IS_DOUBLE
+    return ceil(cgfloat);
+#else
+    return ceilf(cgfloat);
+#endif
+}
+- (CFIndex)characterIndexAtPoint:(CGPoint)p {
+    [self sizeToFit];
+    CGRect bounds = self.bounds;
+    if (!CGRectContainsPoint(bounds, p)) {
+        return NSNotFound;
     }
+
+    CGRect textRect = [self textRectForBounds:bounds limitedToNumberOfLines:self.numberOfLines];
+    textRect.size = CGSizeMake(CGFloat_ceil(textRect.size.width), CGFloat_ceil(textRect.size.height));
+    if (!CGRectContainsPoint(textRect, p)) {
+        return NSNotFound;
+    }
+    
+    // Offset tap coordinates by textRect origin to make them relative to the origin of frame
+    p = CGPointMake(p.x - textRect.origin.x, p.y - textRect.origin.y);
+    // Convert tap coordinates (start at top left) to CT coordinates (start at bottom left)
+    p = CGPointMake(p.x, textRect.size.height - p.y);
     
     CGMutablePathRef path = CGPathCreateMutable();
+    CGPathAddRect(path, NULL, textRect);
     
-    if (NULL == path) {
-        CFRelease(framesetter);
-        return NULL;
+    CTFramesetterRef framesetter = CTFramesetterCreateWithAttributedString((__bridge CFAttributedStringRef)self.attributedText);
+    CTFrameRef frame = CTFramesetterCreateFrame(framesetter, CFRangeMake(0, (CFIndex)[self.attributedText length]), path, NULL);
+    
+    if (frame == NULL) {
+        CGPathRelease(path);
+        return NSNotFound;
     }
-//    NSLog(@"%@", NSStringFromCGRect(self.bounds));
-    CGRect bounds = self.bounds;
-    bounds.size = [[CJLabel new] getStringRect:aString width:_width height:MAXFLOAT labelFont:_font];
-    CGPathAddRect(path, NULL, bounds);
-    CTFrameRef linkFrame = CTFramesetterCreateFrame(framesetter, CFRangeMake(0, 0), path, NULL);
-    self.theFrame = linkFrame;
-    if (linkFrame) {
-        CFRelease(linkFrame);
+    
+    CFArrayRef lines = CTFrameGetLines(frame);
+    NSInteger numberOfLines = self.numberOfLines > 0 ? MIN(self.numberOfLines, CFArrayGetCount(lines)) : CFArrayGetCount(lines);
+    if (numberOfLines == 0) {
+        CFRelease(frame);
+        CGPathRelease(path);
+        return NSNotFound;
     }
+    
+    CFIndex idx = NSNotFound;
+    
+    CGPoint lineOrigins[numberOfLines];
+    CTFrameGetLineOrigins(frame, CFRangeMake(0, numberOfLines), lineOrigins);
+    
+    for (CFIndex lineIndex = 0; lineIndex < numberOfLines; lineIndex++) {
+        CGPoint lineOrigin = lineOrigins[lineIndex];
+        CTLineRef line = CFArrayGetValueAtIndex(lines, lineIndex);
+        
+        // Get bounding information of line
+        CGFloat ascent = 0.0f, descent = 0.0f, leading = 0.0f;
+        CGFloat width = (CGFloat)CTLineGetTypographicBounds(line, &ascent, &descent, &leading);
+        CGFloat yMin = (CGFloat)floor(lineOrigin.y - descent);
+        CGFloat yMax = (CGFloat)ceil(lineOrigin.y + ascent);
+        
+        // Apply penOffset using flushFactor for horizontal alignment to set lineOrigin since this is the horizontal offset from drawFramesetter
+        CGFloat flushFactor = CJFlushFactorForTextAlignment(self.textAlignment);
+        CGFloat penOffset = (CGFloat)CTLineGetPenOffsetForFlush(line, flushFactor, textRect.size.width);
+        lineOrigin.x = penOffset;
+        
+        // Check if we've already passed the line
+        if (p.y > yMax) {
+            break;
+        }
+        // Check if the point is within this line vertically
+        if (p.y >= yMin) {
+            // Check if the point is within this line horizontally
+            if (p.x >= lineOrigin.x && p.x <= lineOrigin.x + width) {
+                // Convert CT coordinates to line-relative coordinates
+                CGPoint relativePoint = CGPointMake(p.x - lineOrigin.x, p.y - lineOrigin.y);
+                idx = CTLineGetStringIndexForPosition(line, relativePoint);
+                break;
+            }
+        }
+    }
+    
+    CFRelease(frame);
     CGPathRelease(path);
-    CFRelease(framesetter);
-    return self.theFrame;
+    NSLog(@"点击第%ld个字符",idx);
+    return idx;
 }
 
-- (void)setTheFrame:(CTFrameRef)textFrame {
-    // The property is marked 'assign', but retain count for this CFType is managed via this setter
-    // and -dealloc.
-    if (textFrame != _theFrame) {
-        if (NULL != _theFrame) {
-            CFRelease(_theFrame);
-        }
-        if (NULL != textFrame) {
-            CFRetain(textFrame);
-        }
-        _theFrame = textFrame;
+static inline CGFloat CJFlushFactorForTextAlignment(NSTextAlignment textAlignment) {
+    switch (textAlignment) {
+        case NSTextAlignmentCenter:
+            return 0.5f;
+        case NSTextAlignmentRight:
+            return 1.0f;
+        case NSTextAlignmentLeft:
+        default:
+            return 0.0f;
     }
 }
 
 @end
+
+@interface CJLinkLabelModel()
+
+@end
+
+@implementation CJLinkLabelModel
+
+- (instancetype)initLinkLabelModelWithString:(NSAttributedString *)linkString range:(NSRange)range block:(CJLinkLabelModelBlock)linkBlock {
+    if ((self = [super init])) {
+        _linkBlock = linkBlock;
+        _linkString = [linkString copy];
+        _range = range;
+    }
+    return self;
+}
+
+@end
+

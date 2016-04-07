@@ -7,60 +7,34 @@
 //
 
 #import <UIKit/UIKit.h>
-typedef void (^CJLabelBlock)(void);
+@class CJLinkLabelModel;
+typedef void (^CJLinkLabelModelBlock)(CJLinkLabelModel *linkModel);
 
 @interface CJLabel : UILabel
-@property (nonatomic, copy)CJLabelBlock labelBlock;
-@property (nonatomic, copy)NSAttributedString *linkString;
-@property (nonatomic, copy)NSAttributedString *string;
 
 /**
- *  return NSAttributedString height
+ *  增加点击链点
  *
- *  @param string <#string description#>
- *  @param width  <#width description#>
- *
- *  @return height
+ *  @param linkString 响应点击的字符串
+ *  @param linkBlock  点击回调
  */
-+ (CGFloat)getAttributedStringHeightWithString:(NSAttributedString *)string  width:(CGFloat)width;
+- (void)addLinkString:(NSAttributedString *)linkString block:(CJLinkLabelModelBlock)linkBlock;
 
 /**
- *  return NSAttributedString Size
+ *  取消点击链点
  *
- *  @param aString <#aString description#>
- *  @param width   <#width description#>
- *  @param height  <#height description#>
- *  @param font
- *
- *  @return <#return value description#>
+ *  @param linkString 取消点击的字符串
  */
-- (CGSize)getStringRect:(NSAttributedString *)aString width:(CGFloat)width height:(CGFloat)height labelFont:(UIFont *)font;
+- (void)removeLinkString:(NSAttributedString *)linkString;
+@end
 
 /**
- *  return NSMutableAttributedString
- *
- *  @param labelStr  label NSString
- *  @param labelDic  Attributes NSDictionary
- *
- *  @return NSMutableAttributedString
+ *  点击链点model
  */
-+ (NSMutableAttributedString *)getLabelNSAttributedString:(NSString *)labelStr labelDict:(NSDictionary *)labelDic;
+@interface CJLinkLabelModel : NSObject
+@property (nonatomic, copy) CJLinkLabelModelBlock linkBlock;
+@property (nonatomic, copy) NSAttributedString *linkString;
+@property (nonatomic, assign) NSRange range;
 
-/**
- *  点击链接做处理（去除首字符）
- *
- *  @param linkString <#linkString description#>
- *
- *  @return <#return value description#>
- */
-+ (NSAttributedString *)handleLinkString:(NSAttributedString *)linkString;
-
-/**
- *  点击事件
- *
- *  @param linkString 点击链接对应字符
- *  @param string     文本
- *  @param labelBlock 点击回调block
- */
-- (void)setTouchUpInsideLinkString:(NSAttributedString *)linkString withString:(NSAttributedString *)string block:(CJLabelBlock)labelBlock;
+- (instancetype)initLinkLabelModelWithString:(NSAttributedString *)linkString range:(NSRange)range block:(CJLinkLabelModelBlock)linkBlock;
 @end

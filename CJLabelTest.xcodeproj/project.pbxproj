@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		430AAE631CB34856007B4474 /* NSString+CJString.m in Sources */ = {isa = PBXBuildFile; fileRef = 430AAE621CB34856007B4474 /* NSString+CJString.m */; };
 		438257861C1A6F5F00A3DA24 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 438257851C1A6F5F00A3DA24 /* main.m */; };
 		438257891C1A6F5F00A3DA24 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 438257881C1A6F5F00A3DA24 /* AppDelegate.m */; };
 		4382578C1C1A6F5F00A3DA24 /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 4382578B1C1A6F5F00A3DA24 /* ViewController.m */; };
@@ -15,9 +16,9 @@
 		438257941C1A6F5F00A3DA24 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 438257921C1A6F5F00A3DA24 /* LaunchScreen.storyboard */; };
 		4382579F1C1A6F5F00A3DA24 /* CJLabelTestTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4382579E1C1A6F5F00A3DA24 /* CJLabelTestTests.m */; };
 		438257AA1C1A6F5F00A3DA24 /* CJLabelTestUITests.m in Sources */ = {isa = PBXBuildFile; fileRef = 438257A91C1A6F5F00A3DA24 /* CJLabelTestUITests.m */; };
-		438257B91C1A6FD700A3DA24 /* CJLabel.m in Sources */ = {isa = PBXBuildFile; fileRef = 438257B81C1A6FD700A3DA24 /* CJLabel.m */; settings = {ASSET_TAGS = (); }; };
-		43E5AD251C2945F800DF8366 /* testView.m in Sources */ = {isa = PBXBuildFile; fileRef = 43E5AD241C2945F800DF8366 /* testView.m */; settings = {ASSET_TAGS = (); }; };
-		43E5AD271C29460B00DF8366 /* testView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 43E5AD261C29460B00DF8366 /* testView.xib */; settings = {ASSET_TAGS = (); }; };
+		438257B91C1A6FD700A3DA24 /* CJLabel.m in Sources */ = {isa = PBXBuildFile; fileRef = 438257B81C1A6FD700A3DA24 /* CJLabel.m */; };
+		43E5AD251C2945F800DF8366 /* testView.m in Sources */ = {isa = PBXBuildFile; fileRef = 43E5AD241C2945F800DF8366 /* testView.m */; };
+		43E5AD271C29460B00DF8366 /* testView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 43E5AD261C29460B00DF8366 /* testView.xib */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -38,6 +39,8 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		430AAE611CB34856007B4474 /* NSString+CJString.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSString+CJString.h"; sourceTree = "<group>"; };
+		430AAE621CB34856007B4474 /* NSString+CJString.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSString+CJString.m"; sourceTree = "<group>"; };
 		438257811C1A6F5F00A3DA24 /* CJLabelTest.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CJLabelTest.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		438257851C1A6F5F00A3DA24 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		438257871C1A6F5F00A3DA24 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
@@ -123,6 +126,8 @@
 				438257841C1A6F5F00A3DA24 /* Supporting Files */,
 				438257B71C1A6FD700A3DA24 /* CJLabel.h */,
 				438257B81C1A6FD700A3DA24 /* CJLabel.m */,
+				430AAE611CB34856007B4474 /* NSString+CJString.h */,
+				430AAE621CB34856007B4474 /* NSString+CJString.m */,
 			);
 			path = CJLabelTest;
 			sourceTree = "<group>";
@@ -289,6 +294,7 @@
 				438257B91C1A6FD700A3DA24 /* CJLabel.m in Sources */,
 				43E5AD251C2945F800DF8366 /* testView.m in Sources */,
 				438257861C1A6F5F00A3DA24 /* main.m in Sources */,
+				430AAE631CB34856007B4474 /* NSString+CJString.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
