@@ -17,8 +17,6 @@
 		4382579F1C1A6F5F00A3DA24 /* CJLabelTestTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4382579E1C1A6F5F00A3DA24 /* CJLabelTestTests.m */; };
 		438257AA1C1A6F5F00A3DA24 /* CJLabelTestUITests.m in Sources */ = {isa = PBXBuildFile; fileRef = 438257A91C1A6F5F00A3DA24 /* CJLabelTestUITests.m */; };
 		438257B91C1A6FD700A3DA24 /* CJLabel.m in Sources */ = {isa = PBXBuildFile; fileRef = 438257B81C1A6FD700A3DA24 /* CJLabel.m */; };
-		43E5AD251C2945F800DF8366 /* testView.m in Sources */ = {isa = PBXBuildFile; fileRef = 43E5AD241C2945F800DF8366 /* testView.m */; };
-		43E5AD271C29460B00DF8366 /* testView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 43E5AD261C29460B00DF8366 /* testView.xib */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -59,9 +57,6 @@
 		438257AB1C1A6F5F00A3DA24 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		438257B71C1A6FD700A3DA24 /* CJLabel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CJLabel.h; sourceTree = "<group>"; };
 		438257B81C1A6FD700A3DA24 /* CJLabel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CJLabel.m; sourceTree = "<group>"; };
-		43E5AD231C2945F800DF8366 /* testView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = testView.h; sourceTree = "<group>"; };
-		43E5AD241C2945F800DF8366 /* testView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = testView.m; sourceTree = "<group>"; };
-		43E5AD261C29460B00DF8366 /* testView.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = testView.xib; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -117,9 +112,6 @@
 				4382578A1C1A6F5F00A3DA24 /* ViewController.h */,
 				4382578B1C1A6F5F00A3DA24 /* ViewController.m */,
 				4382578D1C1A6F5F00A3DA24 /* Main.storyboard */,
-				43E5AD231C2945F800DF8366 /* testView.h */,
-				43E5AD241C2945F800DF8366 /* testView.m */,
-				43E5AD261C29460B00DF8366 /* testView.xib */,
 				438257901C1A6F5F00A3DA24 /* Assets.xcassets */,
 				438257921C1A6F5F00A3DA24 /* LaunchScreen.storyboard */,
 				438257951C1A6F5F00A3DA24 /* Info.plist */,
@@ -261,7 +253,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				43E5AD271C29460B00DF8366 /* testView.xib in Resources */,
 				438257941C1A6F5F00A3DA24 /* LaunchScreen.storyboard in Resources */,
 				438257911C1A6F5F00A3DA24 /* Assets.xcassets in Resources */,
 				4382578F1C1A6F5F00A3DA24 /* Main.storyboard in Resources */,
@@ -292,7 +283,6 @@
 				4382578C1C1A6F5F00A3DA24 /* ViewController.m in Sources */,
 				438257891C1A6F5F00A3DA24 /* AppDelegate.m in Sources */,
 				438257B91C1A6FD700A3DA24 /* CJLabel.m in Sources */,
-				43E5AD251C2945F800DF8366 /* testView.m in Sources */,
 				438257861C1A6F5F00A3DA24 /* main.m in Sources */,
 				430AAE631CB34856007B4474 /* NSString+CJString.m in Sources */,
 			);
