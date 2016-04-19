@@ -109,6 +109,19 @@ static inline CGFloat CJFlushFactorForTextAlignment(NSTextAlignment textAlignmen
     }
 }
 
+#pragma mark - UIGestureRecognizerDelegate
+- (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldReceiveTouch:(UITouch *)touch {
+    if (!self.linkArray || self.linkArray.count == 0) {
+        return NO;
+    }
+    return YES;
+}
+
+- (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldRecognizeSimultaneouslyWithGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer
+{
+    return YES;
+}
+
 - (void)labelTouchUpInside:(UITapGestureRecognizer *)sender
 {
     //获取触摸点击当前view的坐标位置
@@ -123,8 +136,8 @@ static inline CGFloat CJFlushFactorForTextAlignment(NSTextAlignment textAlignmen
         [linkIndexAry addObjectsFromArray:[self linkAtRadius:2.5f aroundPoint:location]];
         [linkIndexAry addObjectsFromArray:[self linkAtRadius:5.0f aroundPoint:location]];
         [linkIndexAry addObjectsFromArray:[self linkAtRadius:7.5f aroundPoint:location]];
-//        [linkIndexAry addObjectsFromArray:[self linkAtRadius:12.5f aroundPoint:location]];
-//        [linkIndexAry addObjectsFromArray:[self linkAtRadius:15.0f aroundPoint:location]];
+        //        [linkIndexAry addObjectsFromArray:[self linkAtRadius:12.5f aroundPoint:location]];
+        //        [linkIndexAry addObjectsFromArray:[self linkAtRadius:15.0f aroundPoint:location]];
         
         __block BOOL stopFor = NO;
         for (NSNumber *number in linkIndexAry) {
@@ -175,15 +188,7 @@ static inline CGFloat CJFlushFactorForTextAlignment(NSTextAlignment textAlignmen
     return linkIndexAry;
 }
 
-
-#pragma mark - UIGestureRecognizerDelegate
-- (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldRecognizeSimultaneouslyWithGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer
-{
-    return YES;
-}
-
 - (CFIndex)characterIndexAtPoint:(CGPoint)p {
-    [self sizeToFit];
     CGRect bounds = self.bounds;
     if (!CGRectContainsPoint(bounds, p)) {
         return NSNotFound;
@@ -259,7 +264,7 @@ static inline CGFloat CJFlushFactorForTextAlignment(NSTextAlignment textAlignmen
     
     CFRelease(frame);
     CGPathRelease(path);
-//    NSLog(@"点击第%ld个字符",idx);
+    //    NSLog(@"点击第%ld个字符",idx);
     return idx;
 }
 @end
@@ -280,4 +285,3 @@ static inline CGFloat CJFlushFactorForTextAlignment(NSTextAlignment textAlignmen
 }
 
 @end
-

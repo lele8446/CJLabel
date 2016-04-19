@@ -9,6 +9,8 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 
+static CGFloat const CJFLOAT_MAX = 100000;
+
 @interface NSString (CJString)
 
 /**
@@ -38,10 +40,23 @@
  *
  *  @param labelStr  NSString
  *  @param labelDic  属性字典
+ @{
+ NSFontAttributeName://(字体)
+ NSBackgroundColorAttributeName://(字体背景色)
+ NSForegroundColorAttributeName://(字体颜色)
+ NSParagraphStyleAttributeName://(段落)
+ NSLigatureAttributeName://(连字符)
+ NSKernAttributeName://(字间距)
+ NSStrikethroughStyleAttributeName://NSUnderlinePatternSolid(实线) | NSUnderlineStyleSingle(删除线)
+ NSUnderlineStyleAttributeName://(下划线)
+ NSStrokeColorAttributeName://(边线颜色)
+ NSStrokeWidthAttributeName://(边线宽度)
+ NSShadowAttributeName://(阴影)
+ NSVerticalGlyphFormAttributeName://(横竖排版)
+ };
  *
  *  @return NSMutableAttributedString
  */
 + (NSMutableAttributedString *)getNSAttributedString:(NSString *)labelStr labelDict:(NSDictionary *)labelDic;
 
-+ (CGFloat)getAttributedStringHeightWithString:(NSAttributedString *)string width:(CGFloat)width;
 @end

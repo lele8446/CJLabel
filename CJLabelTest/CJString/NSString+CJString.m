@@ -11,7 +11,6 @@
 
 @implementation NSString (CJString)
 
-static CGFloat const CJFLOAT_MAX = 100000;
 static inline CGFLOAT_TYPE CGFloat_ceil(CGFLOAT_TYPE cgfloat) {
 #if CGFLOAT_IS_DOUBLE
     return ceil(cgfloat);
@@ -43,7 +42,7 @@ static inline CGFLOAT_TYPE CGFloat_ceil(CGFLOAT_TYPE cgfloat) {
     NSMutableParagraphStyle *paragraphStyle = dic[NSParagraphStyleAttributeName];
     if (!paragraphStyle || nil == paragraphStyle) {
         paragraphStyle = [[NSParagraphStyle defaultParagraphStyle] mutableCopy];
-        paragraphStyle.lineSpacing = 0.1;//增加行高
+        paragraphStyle.lineSpacing = 0.0;//增加行高
         paragraphStyle.headIndent = 0;//头部缩进，相当于左padding
         paragraphStyle.tailIndent = 0;//相当于右padding
         paragraphStyle.lineHeightMultiple = 0;//行间距是多少倍
@@ -91,7 +90,7 @@ static inline CGFLOAT_TYPE CGFloat_ceil(CGFLOAT_TYPE cgfloat) {
     NSMutableParagraphStyle *paragraphStyle = labelDic[NSParagraphStyleAttributeName];
     if (!paragraphStyle || nil == paragraphStyle) {
         paragraphStyle = [[NSParagraphStyle defaultParagraphStyle] mutableCopy];
-        paragraphStyle.lineSpacing = 0.1;//增加行高
+        paragraphStyle.lineSpacing = 0.0;//增加行高
         paragraphStyle.headIndent = 0;//头部缩进，相当于左padding
         paragraphStyle.tailIndent = 0;//相当于右padding
         paragraphStyle.lineHeightMultiple = 0;//行间距是多少倍
@@ -99,9 +98,9 @@ static inline CGFLOAT_TYPE CGFloat_ceil(CGFLOAT_TYPE cgfloat) {
         paragraphStyle.firstLineHeadIndent = 0;//首行头缩进
         paragraphStyle.paragraphSpacing = 0;//段落后面的间距
         paragraphStyle.paragraphSpacingBefore = 0;//段落之前的间距
-        [atrString addAttribute:NSParagraphStyleAttributeName value:paragraphStyle range:range];   
+        [atrString addAttribute:NSParagraphStyleAttributeName value:paragraphStyle range:range];
     }
-        
+    
     //字体
     UIFont *font = labelDic[NSFontAttributeName];
     if (!font || nil == font) {
