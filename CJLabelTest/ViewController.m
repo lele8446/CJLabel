@@ -41,13 +41,13 @@
 //                          NSVerticalGlyphFormAttributeName:[NSNumber numberWithInt:0],/*(横竖排版)*/
                           };
     //设置label text
-    NSMutableAttributedString *labelTitle = [NSString getNSAttributedString:@"点击了手术室的大大的链接#http://www.lcj.com#属性文本键2啊啊生生世世很过分的a" labelDict:dic];
+    NSMutableAttributedString *labelTitle = [NSString getNSAttributedString:@"点击了链接#http://www.lcj.com#属性文本键2啊啊生生世世生生世世很过分的a" labelDict:dic];
     
     //设置点击link属性
     NSAttributedString *link1 = [NSString getNSAttributedString:@"http://www.lcj.com" labelDict:dic];
     
     //设置点击link属性
-    NSAttributedString *link2 = [NSString getNSAttributedString:@"生生世世很过分" labelDict:dic];
+    NSAttributedString *link2 = [NSString getNSAttributedString:@"生生世世生生世世很过分" labelDict:dic];
     
     [labelTitle addAttribute:NSForegroundColorAttributeName value:[UIColor colorWithRed:0.9873 green:0.1617 blue:0.1402 alpha:1.0] range:[[labelTitle string] rangeOfString:[link1 string]]];
     [labelTitle addAttribute:NSUnderlineStyleAttributeName value:@(NSUnderlineStyleSingle) range:[[labelTitle string] rangeOfString:[link1 string]]];
@@ -56,6 +56,7 @@
     [labelTitle addAttribute:NSUnderlineStyleAttributeName value:@(NSUnderlineStyleSingle) range:[[labelTitle string] rangeOfString:[link2 string]]];
     
     self.label.attributedText = labelTitle;
+//    self.label.extendsLinkTouchArea = YES;
     [self.label addLinkString:link1 block:^(CJLinkLabelModel *linkModel) {
         NSLog(@"点击了链接: %@",linkModel.linkString.string);
     }];
@@ -69,9 +70,8 @@
     labelFrame.size = [NSString getStringRect:labelTitle width:width height:MAXFLOAT];
     self.label.frame = labelFrame;
     self.label.backgroundColor = [UIColor colorWithRed:0.8291 green:0.9203 blue:1.0 alpha:1.0];
-//    self.label.textAlignment = NSTextAlignmentRight;
+    self.label.textAlignment = NSTextAlignmentCenter;
     
-//
 }
 
 - (void)didReceiveMemoryWarning {

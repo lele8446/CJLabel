@@ -9,6 +9,34 @@
 #import "CJLabel.h"
 #import <CoreText/CoreText.h>
 
+static inline CGFLOAT_TYPE CGFloat_sqrt(CGFLOAT_TYPE cgfloat) {
+#if CGFLOAT_IS_DOUBLE
+    return sqrt(cgfloat);
+#else
+    return sqrtf(cgfloat);
+#endif
+}
+
+static inline CGFLOAT_TYPE CGFloat_ceil(CGFLOAT_TYPE cgfloat) {
+#if CGFLOAT_IS_DOUBLE
+    return ceil(cgfloat);
+#else
+    return ceilf(cgfloat);
+#endif
+}
+
+static inline CGFloat CJFlushFactorForTextAlignment(NSTextAlignment textAlignment) {
+    switch (textAlignment) {
+        case NSTextAlignmentCenter:
+            return 0.5f;
+        case NSTextAlignmentRight:
+            return 1.0f;
+        case NSTextAlignmentLeft:
+        default:
+            return 0.0f;
+    }
+}
+
 @interface CJLabel ()<UIGestureRecognizerDelegate>
 @property (nonatomic, strong) NSMutableArray *linkArray;
 @property (nonatomic, strong) UITapGestureRecognizer *labelTapGestureRecognizer;
@@ -23,41 +51,26 @@
     return _linkArray;
 }
 
+- (instancetype)initWithFrame:(CGRect)frame {
+    self = [super initWithFrame:frame];
+    if (self) {
+        _extendsLinkTouchArea = NO;
+        [self initializeLabelTapGestureRecognizer];
+    }
+    return self;
+}
+
+- (void)awakeFromNib {
+    [super awakeFromNib];
+    _extendsLinkTouchArea = NO;
+    [self initializeLabelTapGestureRecognizer];
+}
+
 - (void)dealloc {
     self.labelTapGestureRecognizer.delegate = nil;
     if (self.labelTapGestureRecognizer) {
         [self removeGestureRecognizer:self.labelTapGestureRecognizer];
     }
-}
-
-- (CTFrameRef )returnCTFrame {
-    
-    CFAttributedStringRef attributedString = (__bridge CFAttributedStringRef)self.attributedText;
-    CTFramesetterRef framesetter = CTFramesetterCreateWithAttributedString(attributedString);
-    if (NULL == framesetter) {
-        return NULL;
-    }
-    
-    CGMutablePathRef path = CGPathCreateMutable();
-    if (NULL == path) {
-        CFRelease(framesetter);
-        return NULL;
-    }
-    
-    [self sizeToFit];
-    CGRect bounds = self.bounds;
-    bounds.size = CGSizeMake(ceilf(bounds.size.width), ceilf(bounds.size.height));
-    CGPathAddRect(path, NULL, bounds);
-    CTFrameRef linkFrame = CTFramesetterCreateFrame(framesetter, CFRangeMake(0, 0), path, NULL);
-    CTFrameRef theLinkFrame = linkFrame;
-    CFRetain(theLinkFrame);
-    if (linkFrame) {
-        CFRelease(linkFrame);
-    }
-    CGPathRelease(path);
-    CFRelease(framesetter);
-    
-    return theLinkFrame;
 }
 
 - (void)removeLinkString:(NSAttributedString *)linkString {
@@ -79,7 +92,6 @@
     if (nil != linkModel) {
         [self.linkArray addObject:linkModel];
     }
-    [self initializeLabelTapGestureRecognizer];
 }
 
 - (NSRange)getRangeWithLinkString:(NSAttributedString *)linkString {
@@ -101,24 +113,68 @@
 {
     //获取触摸点击当前view的坐标位置
     CGPoint location = [sender locationInView:self];
-//    NSLog(@"location %@",NSStringFromCGPoint(location));
-    
-    NSUInteger index = (NSUInteger)[self characterIndexAtPoint:location];
-    if (!NSLocationInRange(index, NSMakeRange(0, self.attributedText.length))) {
+    NSUInteger curIndex = (NSUInteger)[self characterIndexAtPoint:location];
+    if (!NSLocationInRange(curIndex, NSMakeRange(0, self.attributedText.length))) {
         return;
     }
     
-    [self.linkArray enumerateObjectsUsingBlock:^(id num, NSUInteger idx, BOOL *stop){
-        CJLinkLabelModel *linkModel = (CJLinkLabelModel *)num;
-        if (NSLocationInRange(index, linkModel.range)) {
-            if (linkModel.linkBlock) {
-                linkModel.linkBlock(linkModel);
+    if (self.extendsLinkTouchArea) {
+        NSMutableArray *linkIndexAry = [[NSMutableArray alloc]initWithCapacity:4];
+        [linkIndexAry addObjectsFromArray:[self linkAtRadius:2.5f aroundPoint:location]];
+        [linkIndexAry addObjectsFromArray:[self linkAtRadius:5.0f aroundPoint:location]];
+        [linkIndexAry addObjectsFromArray:[self linkAtRadius:7.5f aroundPoint:location]];
+//        [linkIndexAry addObjectsFromArray:[self linkAtRadius:12.5f aroundPoint:location]];
+//        [linkIndexAry addObjectsFromArray:[self linkAtRadius:15.0f aroundPoint:location]];
+        
+        __block BOOL stopFor = NO;
+        for (NSNumber *number in linkIndexAry) {
+            if (stopFor) {
+                return;
             }
-            *stop = YES;
+            [self.linkArray enumerateObjectsUsingBlock:^(id num, NSUInteger idx, BOOL *stop){
+                CJLinkLabelModel *linkModel = (CJLinkLabelModel *)num;
+                if (NSLocationInRange([number unsignedIntegerValue], linkModel.range)) {
+                    if (linkModel.linkBlock) {
+                        linkModel.linkBlock(linkModel);
+                    }
+                    stopFor = YES;
+                    *stop = YES;
+                }
+            }];
         }
-    }];
-    
+    }else{
+        [self.linkArray enumerateObjectsUsingBlock:^(id num, NSUInteger idx, BOOL *stop){
+            CJLinkLabelModel *linkModel = (CJLinkLabelModel *)num;
+            if (NSLocationInRange(curIndex, linkModel.range)) {
+                if (linkModel.linkBlock) {
+                    linkModel.linkBlock(linkModel);
+                }
+                *stop = YES;
+            }
+        }];
+    }
 }
+
+- (NSArray *)linkAtRadius:(const CGFloat)radius aroundPoint:(CGPoint)point {
+    NSMutableArray *linkIndexAry = [[NSMutableArray alloc]initWithCapacity:4];
+    const CGFloat diagonal = CGFloat_sqrt(2 * radius * radius);
+    const CGPoint deltas[] = {
+        CGPointMake(0, -radius), CGPointMake(0, radius), // Above and below
+        CGPointMake(-radius, 0), CGPointMake(radius, 0), // Beside
+        CGPointMake(-diagonal, -diagonal), CGPointMake(-diagonal, diagonal),
+        CGPointMake(diagonal, diagonal), CGPointMake(diagonal, -diagonal) // Diagonal
+    };
+    const size_t count = sizeof(deltas) / sizeof(CGPoint);
+    
+    for (NSInteger i = 0; i < count; i ++) {
+        CGPoint currentPoint = CGPointMake(point.x + deltas[i].x, point.y + deltas[i].y);
+        NSUInteger index = (NSUInteger)[self characterIndexAtPoint:currentPoint];
+        [linkIndexAry addObject:[NSNumber numberWithUnsignedInteger:index]];
+    }
+    
+    return linkIndexAry;
+}
+
 
 #pragma mark - UIGestureRecognizerDelegate
 - (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldRecognizeSimultaneouslyWithGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer
@@ -126,22 +182,17 @@
     return YES;
 }
 
-static inline CGFLOAT_TYPE CGFloat_ceil(CGFLOAT_TYPE cgfloat) {
-#if CGFLOAT_IS_DOUBLE
-    return ceil(cgfloat);
-#else
-    return ceilf(cgfloat);
-#endif
-}
 - (CFIndex)characterIndexAtPoint:(CGPoint)p {
     [self sizeToFit];
     CGRect bounds = self.bounds;
     if (!CGRectContainsPoint(bounds, p)) {
         return NSNotFound;
     }
-
+    
     CGRect textRect = [self textRectForBounds:bounds limitedToNumberOfLines:self.numberOfLines];
     textRect.size = CGSizeMake(CGFloat_ceil(textRect.size.width), CGFloat_ceil(textRect.size.height));
+    //textRect的height值存在误差，值需设大一点，不然不会包含最后一行lines
+    CGRect pathRect = CGRectMake(textRect.origin.x, textRect.origin.y, textRect.size.width, textRect.size.height+8);
     if (!CGRectContainsPoint(textRect, p)) {
         return NSNotFound;
     }
@@ -149,10 +200,10 @@ static inline CGFLOAT_TYPE CGFloat_ceil(CGFLOAT_TYPE cgfloat) {
     // Offset tap coordinates by textRect origin to make them relative to the origin of frame
     p = CGPointMake(p.x - textRect.origin.x, p.y - textRect.origin.y);
     // Convert tap coordinates (start at top left) to CT coordinates (start at bottom left)
-    p = CGPointMake(p.x, textRect.size.height - p.y);
+    p = CGPointMake(p.x-4, pathRect.size.height - p.y);
     
     CGMutablePathRef path = CGPathCreateMutable();
-    CGPathAddRect(path, NULL, textRect);
+    CGPathAddRect(path, NULL, pathRect);
     
     CTFramesetterRef framesetter = CTFramesetterCreateWithAttributedString((__bridge CFAttributedStringRef)self.attributedText);
     CTFrameRef frame = CTFramesetterCreateFrame(framesetter, CFRangeMake(0, (CFIndex)[self.attributedText length]), path, NULL);
@@ -208,22 +259,9 @@ static inline CGFLOAT_TYPE CGFloat_ceil(CGFLOAT_TYPE cgfloat) {
     
     CFRelease(frame);
     CGPathRelease(path);
-    NSLog(@"点击第%ld个字符",idx);
+//    NSLog(@"点击第%ld个字符",idx);
     return idx;
 }
-
-static inline CGFloat CJFlushFactorForTextAlignment(NSTextAlignment textAlignment) {
-    switch (textAlignment) {
-        case NSTextAlignmentCenter:
-            return 0.5f;
-        case NSTextAlignmentRight:
-            return 1.0f;
-        case NSTextAlignmentLeft:
-        default:
-            return 0.0f;
-    }
-}
-
 @end
 
 @interface CJLinkLabelModel()
