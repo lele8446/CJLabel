@@ -20,6 +20,7 @@
     
     NSMutableParagraphStyle *paragraph = [[NSMutableParagraphStyle alloc] init];
     paragraph.alignment = NSTextAlignmentLeft;
+    paragraph.lineSpacing = 2;
     
     NSShadow *shadow = [[NSShadow alloc] init];
     shadow.shadowColor = [UIColor colorWithRed:0.0 green:0.0 blue:0.0 alpha:0.8];
@@ -41,7 +42,7 @@
 //                          NSVerticalGlyphFormAttributeName:[NSNumber numberWithInt:0],/*(横竖排版)*/
                           };
     //设置label text
-    NSMutableAttributedString *labelTitle = [NSString getNSAttributedString:@"点击了链接#http://www.lcj.com#属性文本键2啊啊生生世世生生世世很过分的a" labelDict:dic];
+    NSMutableAttributedString *labelTitle = [NSString getNSAttributedString:@"Mac中有些View为了其实现的便捷将原点变换到左上角，像NSTableView的坐标系坐标原点就在左上角。iOS UIKit的UIView的坐标系原点在左上角。往底层看，Core Graphics的context使用的坐标系的原点是在左下角。而在iOS中的底层界面绘制就是通过Core Graphics进行的，那么坐标系列是如何变换的呢？ 在UIView的drawRect方法中我们可以通过UIGraphicsGetCurrentContext()来获得当前的Graphics Context。drawRect方法在被调用前，这个Graphics Context被创建和配置好，你只管使用便是。如果你细心，通过CGContextGetCTM(CGContextRef c)可以看到其返回的值并不是CGAffineTransformIdentity，通过打印出来看到值为点击了链接#http://www.lcj.com#属性文的context使用的坐标系的原点是在左下角。而在iOS中的底层界面绘制就是通过Core Graphics进行的，那么坐标系列是如何变换的呢本键2啊啊生生世世生生世世很过分的a" labelDict:dic];
     
     //设置点击link属性
     NSAttributedString *link1 = [NSString getNSAttributedString:@"http://www.lcj.com" labelDict:dic];
@@ -56,7 +57,7 @@
     [labelTitle addAttribute:NSUnderlineStyleAttributeName value:@(NSUnderlineStyleSingle) range:[[labelTitle string] rangeOfString:[link2 string]]];
     
     self.label.attributedText = labelTitle;
-//    self.label.extendsLinkTouchArea = YES;
+    self.label.extendsLinkTouchArea = YES;
     [self.label addLinkString:link1 block:^(CJLinkLabelModel *linkModel) {
         NSLog(@"点击了链接: %@",linkModel.linkString.string);
     }];

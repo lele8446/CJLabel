@@ -264,7 +264,7 @@ static inline CGFloat CJFlushFactorForTextAlignment(NSTextAlignment textAlignmen
     
     CFRelease(frame);
     CGPathRelease(path);
-    //    NSLog(@"点击第%ld个字符",idx);
+//    NSLog(@"点击第%ld个字符",idx);
     return idx;
 }
 @end

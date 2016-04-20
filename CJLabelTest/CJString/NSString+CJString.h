@@ -58,5 +58,4 @@ static CGFloat const CJFLOAT_MAX = 100000;
  *  @return NSMutableAttributedString
  */
 + (NSMutableAttributedString *)getNSAttributedString:(NSString *)labelStr labelDict:(NSDictionary *)labelDic;
-
 @end

@@ -153,8 +153,6 @@ static inline CGFLOAT_TYPE CGFloat_ceil(CGFLOAT_TYPE cgfloat) {
         //获取每行的高度
         CTLineGetTypographicBounds(line, &lineAscent, &lineDescent, &lineLeading);
         lineHeight = lineAscent +  fabs(lineDescent) + lineLeading;
-        //        NSLog(@"第%@行 ，ascent = %f,descent = %f,leading = %f",@(i),lineAscent,lineDescent,lineLeading);
-        //        NSLog(@"第%@行 ，lineHeight = %f",@(i),lineHeight);
         heightValue = heightValue + lineHeight;
     }
     heightValue = CGFloat_ceil(heightValue);
@@ -171,8 +169,8 @@ static inline CGFLOAT_TYPE CGFloat_ceil(CGFLOAT_TYPE cgfloat) {
     CGFloat lastLeading = 0;//行距
     CTLineRef lastLine = CFArrayGetValueAtIndex(lines, CFArrayGetCount(lines)-1);
     CTLineGetTypographicBounds(lastLine, &lastAscent, &lastDescent, &lastLeading);
-    //height - line_y为除去最后一行的字符高度，ascent + descent + leading为最后一行的字符高度
-    heightValue = height - line_y + (CGFloat)(lastAscent + fabs(lastDescent) + lastLeading);
+    //height - line_y为除去最后一行的字符原点以下的高度，descent + leading为最后一行不包括上行行高的字符高度
+    heightValue = height - line_y + (CGFloat)(fabs(lastDescent) + lastLeading);
     heightValue = CGFloat_ceil(heightValue);
     NSLog(@"3、最后一行原点y坐标加最后一行高度");
     NSLog(@"heightValue %@",@(heightValue));
