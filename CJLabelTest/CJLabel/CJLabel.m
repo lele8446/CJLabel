@@ -37,9 +37,8 @@ static inline CGFloat CJFlushFactorForTextAlignment(NSTextAlignment textAlignmen
     }
 }
 
-@interface CJLabel ()<UIGestureRecognizerDelegate>
+@interface CJLabel ()
 @property (nonatomic, strong) NSMutableArray *linkArray;
-@property (nonatomic, strong) UITapGestureRecognizer *labelTapGestureRecognizer;
 @end
 
 @implementation CJLabel
@@ -55,7 +54,7 @@ static inline CGFloat CJFlushFactorForTextAlignment(NSTextAlignment textAlignmen
     self = [super initWithFrame:frame];
     if (self) {
         _extendsLinkTouchArea = NO;
-        [self initializeLabelTapGestureRecognizer];
+        self.userInteractionEnabled = YES;
     }
     return self;
 }
@@ -63,14 +62,11 @@ static inline CGFloat CJFlushFactorForTextAlignment(NSTextAlignment textAlignmen
 - (void)awakeFromNib {
     [super awakeFromNib];
     _extendsLinkTouchArea = NO;
-    [self initializeLabelTapGestureRecognizer];
+    self.userInteractionEnabled = YES;
 }
 
 - (void)dealloc {
-    self.labelTapGestureRecognizer.delegate = nil;
-    if (self.labelTapGestureRecognizer) {
-        [self removeGestureRecognizer:self.labelTapGestureRecognizer];
-    }
+    
 }
 
 - (void)removeLinkString:(NSAttributedString *)linkString {
@@ -100,35 +96,31 @@ static inline CGFloat CJFlushFactorForTextAlignment(NSTextAlignment textAlignmen
     return linkRange;
 }
 
-- (void)initializeLabelTapGestureRecognizer {
-    if (!_labelTapGestureRecognizer) {
-        self.userInteractionEnabled = YES;
-        _labelTapGestureRecognizer = [[UITapGestureRecognizer alloc]initWithTarget:self action:@selector(labelTouchUpInside:)];
-        _labelTapGestureRecognizer.delegate = self;
-        [self addGestureRecognizer:_labelTapGestureRecognizer];
-    }
-}
-
-#pragma mark - UIGestureRecognizerDelegate
-- (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldReceiveTouch:(UITouch *)touch {
-    if (!self.linkArray || self.linkArray.count == 0) {
-        return NO;
-    }
-    return YES;
-}
-
-- (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldRecognizeSimultaneouslyWithGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer
-{
-    return YES;
-}
-
-- (void)labelTouchUpInside:(UITapGestureRecognizer *)sender
-{
+- (void)touchesBegan:(NSSet<UITouch *> *)touches withEvent:(nullable UIEvent *)event {
+    UITouch * touch = touches.anyObject;
     //获取触摸点击当前view的坐标位置
-    CGPoint location = [sender locationInView:self];
+    CGPoint location = [touch locationInView:self];
+    if(![self needResponseTouchLabel:location]) {
+        [self.nextResponder touchesBegan:touches withEvent:event];
+    }
+}
+
+- (void)touchesMoved:(NSSet<UITouch *> *)touches withEvent:(nullable UIEvent *)event {
+    [self.nextResponder touchesMoved:touches withEvent:event];
+}
+
+- (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event {
+    [self.nextResponder touchesEnded:touches withEvent:event];
+}
+
+- (void)touchesCancelled:(nullable NSSet<UITouch *> *)touches withEvent:(nullable UIEvent *)event {
+    [self.nextResponder touchesCancelled:touches withEvent:event];
+}
+
+- (BOOL)needResponseTouchLabel:(CGPoint)location {
     NSUInteger curIndex = (NSUInteger)[self characterIndexAtPoint:location];
     if (!NSLocationInRange(curIndex, NSMakeRange(0, self.attributedText.length))) {
-        return;
+        return NO;
     }
     
     if (self.extendsLinkTouchArea) {
@@ -136,13 +128,13 @@ static inline CGFloat CJFlushFactorForTextAlignment(NSTextAlignment textAlignmen
         [linkIndexAry addObjectsFromArray:[self linkAtRadius:2.5f aroundPoint:location]];
         [linkIndexAry addObjectsFromArray:[self linkAtRadius:5.0f aroundPoint:location]];
         [linkIndexAry addObjectsFromArray:[self linkAtRadius:7.5f aroundPoint:location]];
-        //        [linkIndexAry addObjectsFromArray:[self linkAtRadius:12.5f aroundPoint:location]];
-        //        [linkIndexAry addObjectsFromArray:[self linkAtRadius:15.0f aroundPoint:location]];
+        [linkIndexAry addObjectsFromArray:[self linkAtRadius:12.5f aroundPoint:location]];
+        [linkIndexAry addObjectsFromArray:[self linkAtRadius:15.0f aroundPoint:location]];
         
         __block BOOL stopFor = NO;
         for (NSNumber *number in linkIndexAry) {
             if (stopFor) {
-                return;
+                return YES;
             }
             [self.linkArray enumerateObjectsUsingBlock:^(id num, NSUInteger idx, BOOL *stop){
                 CJLinkLabelModel *linkModel = (CJLinkLabelModel *)num;
@@ -155,16 +147,24 @@ static inline CGFloat CJFlushFactorForTextAlignment(NSTextAlignment textAlignmen
                 }
             }];
         }
+        return NO;
     }else{
+        __block BOOL needResponse = NO;
         [self.linkArray enumerateObjectsUsingBlock:^(id num, NSUInteger idx, BOOL *stop){
             CJLinkLabelModel *linkModel = (CJLinkLabelModel *)num;
             if (NSLocationInRange(curIndex, linkModel.range)) {
                 if (linkModel.linkBlock) {
                     linkModel.linkBlock(linkModel);
                 }
+                needResponse = YES;
                 *stop = YES;
             }
         }];
+        if (needResponse) {
+            return YES;
+        }else{
+            return NO;
+        }
     }
 }
 

@@ -233,6 +233,7 @@
 				TargetAttributes = {
 					438257801C1A6F5F00A3DA24 = {
 						CreatedOnToolsVersion = 7.0;
+						DevelopmentTeam = 2G9KQAD4K5;
 					};
 					438257991C1A6F5F00A3DA24 = {
 						CreatedOnToolsVersion = 7.0;
@@ -441,6 +442,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
 				INFOPLIST_FILE = CJLabelTest/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = cj.CJLabelTest;
@@ -452,6 +454,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
 				INFOPLIST_FILE = CJLabelTest/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = cj.CJLabelTest;

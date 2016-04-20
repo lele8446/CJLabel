@@ -29,7 +29,7 @@
                           NSFontAttributeName:[UIFont systemFontOfSize:20],/*(字体)*/
 //                          NSFontAttributeName:[UIFont fontWithName:@"Arial-BoldItalicMT" size:30.0],/*(字体)*/
 //                          NSBackgroundColorAttributeName:[UIColor grayColor],/*(字体背景色)*/
-                          NSForegroundColorAttributeName:[UIColor blackColor],/*(字体颜色)*/
+//                          NSForegroundColorAttributeName:[UIColor blackColor],/*(字体颜色)*/
 //                          NSParagraphStyleAttributeName:paragraph,/*(段落)*/
 //                          NSLigatureAttributeName:[NSNumber numberWithInt:1],/*(连字符)*/
 //                          NSKernAttributeName:[NSNumber numberWithInt:0],/*(字间距)*/
@@ -70,7 +70,6 @@
     labelFrame.size = [NSString getStringRect:labelTitle width:width height:MAXFLOAT];
     self.label.frame = labelFrame;
     self.label.backgroundColor = [UIColor colorWithRed:0.8291 green:0.9203 blue:1.0 alpha:1.0];
-    self.label.textAlignment = NSTextAlignmentCenter;
     
 }
 
