@@ -48,7 +48,7 @@
     NSAttributedString *link1 = [NSString getNSAttributedString:@"http://www.lcj.com" labelDict:dic];
     
     //设置点击link属性
-    NSAttributedString *link2 = [NSString getNSAttributedString:@"生生世世生生世世很过分" labelDict:dic];
+    NSAttributedString *link2 = [NSString getNSAttributedString:@"往底层看" labelDict:dic];
     
     [labelTitle addAttribute:NSForegroundColorAttributeName value:[UIColor colorWithRed:0.9873 green:0.1617 blue:0.1402 alpha:1.0] range:[[labelTitle string] rangeOfString:[link1 string]]];
     [labelTitle addAttribute:NSUnderlineStyleAttributeName value:@(NSUnderlineStyleSingle) range:[[labelTitle string] rangeOfString:[link1 string]]];
@@ -57,7 +57,7 @@
     [labelTitle addAttribute:NSUnderlineStyleAttributeName value:@(NSUnderlineStyleSingle) range:[[labelTitle string] rangeOfString:[link2 string]]];
     
     self.label.attributedText = labelTitle;
-    self.label.extendsLinkTouchArea = YES;
+//    self.label.extendsLinkTouchArea = YES;
     [self.label addLinkString:link1 block:^(CJLinkLabelModel *linkModel) {
         NSLog(@"点击了链接: %@",linkModel.linkString.string);
     }];
@@ -68,7 +68,22 @@
 
     CGFloat width = [[UIScreen mainScreen] bounds].size.width-20;
     CGRect labelFrame = self.label.frame;
+    
+    // TODO: 方法一
     labelFrame.size = [NSString getStringRect:labelTitle width:width height:MAXFLOAT];
+    [NSString sizeLabelToFit:labelTitle width:width height:MAXFLOAT];
+    [NSString getAttributedStringHeightWithString:labelTitle width:width];
+    
+    // TODO: 方法二
+//    [NSString getStringRect:labelTitle width:width height:MAXFLOAT];
+//    labelFrame.size = [NSString sizeLabelToFit:labelTitle width:width height:MAXFLOAT];
+//    [NSString getAttributedStringHeightWithString:labelTitle width:width];
+//    
+//    // TODO: 方法三
+//    [NSString sizeLabelToFit:labelTitle width:width height:MAXFLOAT];
+//    [NSString sizeLabelToFit:labelTitle width:width height:MAXFLOAT];
+//    labelFrame.size = CGSizeMake(width, [NSString getAttributedStringHeightWithString:labelTitle width:width]);
+    
     self.label.frame = labelFrame;
     self.label.backgroundColor = [UIColor colorWithRed:0.8291 green:0.9203 blue:1.0 alpha:1.0];
     

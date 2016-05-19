@@ -35,6 +35,8 @@ static CGFloat const CJFLOAT_MAX = 100000;
  */
 + (CGSize)getStringRect:(NSAttributedString *)aString width:(CGFloat)width height:(CGFloat)height;
 
++ (CGFloat)getAttributedStringHeightWithString:(NSAttributedString *)string width:(CGFloat)width;
+
 /**
  *  return 返回封装后的NSMutableAttributedString,添加了默认NSParagraphStyleAttributeName与NSFontAttributeName属性
  *

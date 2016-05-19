@@ -8,6 +8,7 @@
 
 #import "CJLabel.h"
 #import <CoreText/CoreText.h>
+#import <objc/runtime.h>
 
 static inline CGFLOAT_TYPE CGFloat_sqrt(CGFLOAT_TYPE cgfloat) {
 #if CGFLOAT_IS_DOUBLE
@@ -39,6 +40,7 @@ static inline CGFloat CJFlushFactorForTextAlignment(NSTextAlignment textAlignmen
 
 @interface CJLabel ()
 @property (nonatomic, strong) NSMutableArray *linkArray;
+@property (nonatomic, assign) IBInspectable UIEdgeInsets textInsets;
 @end
 
 @implementation CJLabel
@@ -55,6 +57,7 @@ static inline CGFloat CJFlushFactorForTextAlignment(NSTextAlignment textAlignmen
     if (self) {
         _extendsLinkTouchArea = NO;
         self.userInteractionEnabled = YES;
+        self.textInsets = UIEdgeInsetsZero;
     }
     return self;
 }
@@ -63,10 +66,15 @@ static inline CGFloat CJFlushFactorForTextAlignment(NSTextAlignment textAlignmen
     [super awakeFromNib];
     _extendsLinkTouchArea = NO;
     self.userInteractionEnabled = YES;
+    self.textInsets = UIEdgeInsetsZero;
 }
 
 - (void)dealloc {
     
+}
+
+- (void)drawTextInRect:(CGRect)rect {
+    return [super drawTextInRect:UIEdgeInsetsInsetRect(rect, self.textInsets)];
 }
 
 - (void)removeLinkString:(NSAttributedString *)linkString {
@@ -100,6 +108,8 @@ static inline CGFloat CJFlushFactorForTextAlignment(NSTextAlignment textAlignmen
     UITouch * touch = touches.anyObject;
     //获取触摸点击当前view的坐标位置
     CGPoint location = [touch locationInView:self];
+//    NSLog(@"location %@",NSStringFromCGPoint(location));
+    
     if(![self needResponseTouchLabel:location]) {
         [self.nextResponder touchesBegan:touches withEvent:event];
     }
@@ -205,7 +215,8 @@ static inline CGFloat CJFlushFactorForTextAlignment(NSTextAlignment textAlignmen
     // Offset tap coordinates by textRect origin to make them relative to the origin of frame
     p = CGPointMake(p.x - textRect.origin.x, p.y - textRect.origin.y);
     // Convert tap coordinates (start at top left) to CT coordinates (start at bottom left)
-    p = CGPointMake(p.x-4, pathRect.size.height - p.y);
+    // p.x-5 是测试发现x轴坐标又偏移
+    p = CGPointMake(p.x-5, pathRect.size.height - p.y);
     
     CGMutablePathRef path = CGPathCreateMutable();
     CGPathAddRect(path, NULL, pathRect);

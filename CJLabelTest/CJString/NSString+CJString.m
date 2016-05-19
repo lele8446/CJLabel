@@ -26,6 +26,7 @@ static inline CGFLOAT_TYPE CGFloat_ceil(CGFLOAT_TYPE cgfloat) {
     [tempLabel sizeToFit];
     CGSize size = tempLabel.frame.size;
     size = CGSizeMake(CGFloat_ceil(size.width), CGFloat_ceil(size.height));
+    NSLog(@"###### 方法二 ########");
     NSLog(@"sizeLabelToFitSize %@",NSStringFromCGSize(size));
     return size;
 }
@@ -70,6 +71,7 @@ static inline CGFLOAT_TYPE CGFloat_ceil(CGFLOAT_TYPE cgfloat) {
                                                     context:nil].size;
     
     size = CGSizeMake(CGFloat_ceil(strSize.width), CGFloat_ceil(strSize.height));
+    NSLog(@"###### 方法一 ########");
     NSLog(@"boundingRectWithSize %@",NSStringFromCGSize(size));
     return size;
 }
@@ -124,6 +126,7 @@ static inline CGFLOAT_TYPE CGFloat_ceil(CGFLOAT_TYPE cgfloat) {
     CGSize size = CGSizeMake(width, CJFLOAT_MAX);
     CGSize suggestedSize= CTFramesetterSuggestFrameSizeForAttributedStringWithConstraints(framesetter,string,size,CJFLOAT_MAX);
     heightValue = suggestedSize.height;
+    NSLog(@"###### 方法三 ########");
     NSLog(@"1、使用CTFramesetterSuggestFrameSizeWithConstraints计算");
     NSLog(@"suggestedSize %@",NSStringFromCGSize(suggestedSize));
     
