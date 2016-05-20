@@ -40,7 +40,8 @@ static inline CGFloat CJFlushFactorForTextAlignment(NSTextAlignment textAlignmen
 
 @interface CJLabel ()
 @property (nonatomic, strong) NSMutableArray *linkArray;
-@property (nonatomic, assign) IBInspectable UIEdgeInsets textInsets;
+@property (nonatomic, assign) UIEdgeInsets textInsets;//内边距
+
 @end
 
 @implementation CJLabel
@@ -215,7 +216,7 @@ static inline CGFloat CJFlushFactorForTextAlignment(NSTextAlignment textAlignmen
     // Offset tap coordinates by textRect origin to make them relative to the origin of frame
     p = CGPointMake(p.x - textRect.origin.x, p.y - textRect.origin.y);
     // Convert tap coordinates (start at top left) to CT coordinates (start at bottom left)
-    // p.x-5 是测试发现x轴坐标又偏移
+    // p.x-5 是因为测试发现x轴坐标有偏移误差
     p = CGPointMake(p.x-5, pathRect.size.height - p.y);
     
     CGMutablePathRef path = CGPathCreateMutable();

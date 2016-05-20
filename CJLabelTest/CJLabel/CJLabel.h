@@ -14,7 +14,7 @@ typedef void (^CJLinkLabelModelBlock)(CJLinkLabelModel *linkModel);
 /**
  *  是否加大点击响应范围，类似于UIWebView的链点点击效果，默认NO
  */
-@property (nonatomic, assign) BOOL extendsLinkTouchArea;
+@property (nonatomic, assign) IBInspectable BOOL extendsLinkTouchArea;
 
 /**
  *  增加点击链点

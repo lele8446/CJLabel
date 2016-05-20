@@ -20,7 +20,7 @@
     
     NSMutableParagraphStyle *paragraph = [[NSMutableParagraphStyle alloc] init];
     paragraph.alignment = NSTextAlignmentLeft;
-    paragraph.lineSpacing = 2;
+    paragraph.lineSpacing = 0;
     
     NSShadow *shadow = [[NSShadow alloc] init];
     shadow.shadowColor = [UIColor colorWithRed:0.0 green:0.0 blue:0.0 alpha:0.8];
@@ -48,7 +48,7 @@
     NSAttributedString *link1 = [NSString getNSAttributedString:@"http://www.lcj.com" labelDict:dic];
     
     //设置点击link属性
-    NSAttributedString *link2 = [NSString getNSAttributedString:@"往底层看" labelDict:dic];
+    NSAttributedString *link2 = [NSString getNSAttributedString:@"的" labelDict:dic];
     
     [labelTitle addAttribute:NSForegroundColorAttributeName value:[UIColor colorWithRed:0.9873 green:0.1617 blue:0.1402 alpha:1.0] range:[[labelTitle string] rangeOfString:[link1 string]]];
     [labelTitle addAttribute:NSUnderlineStyleAttributeName value:@(NSUnderlineStyleSingle) range:[[labelTitle string] rangeOfString:[link1 string]]];
@@ -69,7 +69,7 @@
     CGFloat width = [[UIScreen mainScreen] bounds].size.width-20;
     CGRect labelFrame = self.label.frame;
     
-    // TODO: 方法一
+//    // TODO: 方法一
     labelFrame.size = [NSString getStringRect:labelTitle width:width height:MAXFLOAT];
     [NSString sizeLabelToFit:labelTitle width:width height:MAXFLOAT];
     [NSString getAttributedStringHeightWithString:labelTitle width:width];
