@@ -9,7 +9,6 @@
 #import "CJLabel.h"
 #import <CoreText/CoreText.h>
 #import <objc/runtime.h>
-#import "NSString+CJString.h"
 
 static inline CGFLOAT_TYPE CGFloat_sqrt(CGFLOAT_TYPE cgfloat) {
 #if CGFLOAT_IS_DOUBLE
@@ -100,8 +99,8 @@ static inline CGFloat CJFlushFactorForTextAlignment(NSTextAlignment textAlignmen
 
 - (void)addLinkString:(NSString *)linkString linkAddAttribute:(NSDictionary *)linkDic block:(CJLinkLabelModelBlock)linkBlock {
     
-    NSArray *rangeAry = [NSString getRangeArrayWithLinkString:linkString inTextString:[self.attributedText string] lastRange:NSMakeRange(0, 0) rangeArray:[NSMutableArray array]];
-    NSRange linkRange = [NSString getFirstRangeWithLinkString:linkString inTextString:[self.attributedText string]];
+    NSArray *rangeAry = [self getRangeArrayWithLinkString:linkString inTextString:[self.attributedText string] lastRange:NSMakeRange(0, 0) rangeArray:[NSMutableArray array]];
+    NSRange linkRange = [self getFirstRangeWithLinkString:linkString inTextString:[self.attributedText string]];
     NSMutableAttributedString *atrString = [[NSMutableAttributedString alloc] initWithAttributedString:self.attributedText];
     
     if (linkDic && linkDic.count > 0 && atrString.length > 0) {
@@ -132,6 +131,46 @@ static inline CGFloat CJFlushFactorForTextAlignment(NSTextAlignment textAlignmen
         if (nil != linkModel) {
             [self.linkArray addObject:linkModel];
         }
+    }
+}
+
+/**
+ *  获取linkString在string中首次出现的NSRange值
+ *
+ *  @param linkString
+ *  @param string
+ *
+ *  @return
+ */
+- (NSRange)getFirstRangeWithLinkString:(NSString *)linkString inTextString:(NSString *)string {
+    NSRange linkRange = [string rangeOfString:linkString];
+    return linkRange;
+}
+
+/**
+ *  遍历string，获取linkString在string中的所有NSRange数组
+ *
+ *  @param linkString
+ *  @param string
+ *  @param lastRange  linkString上一次出现的NSRange值，初始为NSMakeRange(0, 0)
+ *  @param array
+ *
+ *  @return
+ */
+- (NSArray *)getRangeArrayWithLinkString:(NSString *)linkString
+                            inTextString:(NSString *)string
+                               lastRange:(NSRange)lastRange
+                              rangeArray:(NSMutableArray *)array
+{
+    NSRange range = [string rangeOfString:linkString];
+    if (range.location == NSNotFound){
+        return array;
+    }else{
+        NSRange curRange = NSMakeRange(lastRange.location+lastRange.length+range.location, range.length);
+        [array addObject:NSStringFromRange(curRange)];
+        NSString *tempString = [string substringFromIndex:(range.location+range.length)];
+        [self getRangeArrayWithLinkString:linkString inTextString:tempString lastRange:curRange rangeArray:array];
+        return array;
     }
 }
 

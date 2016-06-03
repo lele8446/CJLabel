@@ -12,32 +12,6 @@
 static CGFloat const CJFLOAT_MAX = 100000;
 
 @interface NSString (CJString)
-
-/**
- *  获取linkString在string中首次出现的NSRange值
- *
- *  @param linkString
- *  @param string
- *
- *  @return
- */
-+ (NSRange)getFirstRangeWithLinkString:(NSString *)linkString inTextString:(NSString *)string;
-
-/**
- *  遍历string，获取linkString在string中的所有NSRange数组
- *
- *  @param linkString
- *  @param string
- *  @param lastRange  linkString上一次出现的NSRange值，初始为NSMakeRange(0, 0)
- *  @param array
- *
- *  @return 
- */
-+ (NSArray *)getRangeArrayWithLinkString:(NSString *)linkString
-                            inTextString:(NSString *)string
-                               lastRange:(NSRange)lastRange
-                              rangeArray:(NSMutableArray *)array;
-
 /**
  *  返回UILabel自适应后的size
  *
