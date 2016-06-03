@@ -1,9 +1,9 @@
 # CJLabelTest 
 
 ## 功能简介
-* NSString+CJString 
+* NSString+CJString <br/>
 类扩展提供了NSMutableAttributedString属性封装、动态计算NSString的CGSize方法
-* CJLabel
+* CJLabel<br/>
 可响应任意字符的点击<br/>
 增加链点点击方法 addLinkString:linkAddAttribute:block:<br/>
 取消点击链点 removeLinkString:<br/>
