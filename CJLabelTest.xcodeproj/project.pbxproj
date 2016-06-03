@@ -16,7 +16,7 @@
 		4382579F1C1A6F5F00A3DA24 /* CJLabelTestTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4382579E1C1A6F5F00A3DA24 /* CJLabelTestTests.m */; };
 		438257AA1C1A6F5F00A3DA24 /* CJLabelTestUITests.m in Sources */ = {isa = PBXBuildFile; fileRef = 438257A91C1A6F5F00A3DA24 /* CJLabelTestUITests.m */; };
 		B4D0BA2F1D015FBD00AFA3D2 /* CJLabel.m in Sources */ = {isa = PBXBuildFile; fileRef = B4D0BA2B1D015FBD00AFA3D2 /* CJLabel.m */; };
-		B4D0BA301D015FBD00AFA3D2 /* NSString+CJString.m in Sources */ = {isa = PBXBuildFile; fileRef = B4D0BA2E1D015FBD00AFA3D2 /* NSString+CJString.m */; };
+		B4D0BA341D016C3C00AFA3D2 /* NSString+CJString.m in Sources */ = {isa = PBXBuildFile; fileRef = B4D0BA331D016C3C00AFA3D2 /* NSString+CJString.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -55,8 +55,8 @@
 		438257AB1C1A6F5F00A3DA24 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		B4D0BA2A1D015FBD00AFA3D2 /* CJLabel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CJLabel.h; sourceTree = "<group>"; };
 		B4D0BA2B1D015FBD00AFA3D2 /* CJLabel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CJLabel.m; sourceTree = "<group>"; };
-		B4D0BA2D1D015FBD00AFA3D2 /* NSString+CJString.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSString+CJString.h"; sourceTree = "<group>"; };
-		B4D0BA2E1D015FBD00AFA3D2 /* NSString+CJString.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSString+CJString.m"; sourceTree = "<group>"; };
+		B4D0BA321D016C3C00AFA3D2 /* NSString+CJString.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSString+CJString.h"; sourceTree = "<group>"; };
+		B4D0BA331D016C3C00AFA3D2 /* NSString+CJString.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSString+CJString.m"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -108,7 +108,6 @@
 			isa = PBXGroup;
 			children = (
 				B4D0BA291D015FBD00AFA3D2 /* CJLabel */,
-				B4D0BA2C1D015FBD00AFA3D2 /* CJString */,
 				438257871C1A6F5F00A3DA24 /* AppDelegate.h */,
 				438257881C1A6F5F00A3DA24 /* AppDelegate.m */,
 				4382578A1C1A6F5F00A3DA24 /* ViewController.h */,
@@ -151,20 +150,21 @@
 		B4D0BA291D015FBD00AFA3D2 /* CJLabel */ = {
 			isa = PBXGroup;
 			children = (
+				B4D0BA311D016C3C00AFA3D2 /* CJString */,
 				B4D0BA2A1D015FBD00AFA3D2 /* CJLabel.h */,
 				B4D0BA2B1D015FBD00AFA3D2 /* CJLabel.m */,
 			);
 			path = CJLabel;
 			sourceTree = SOURCE_ROOT;
 		};
-		B4D0BA2C1D015FBD00AFA3D2 /* CJString */ = {
+		B4D0BA311D016C3C00AFA3D2 /* CJString */ = {
 			isa = PBXGroup;
 			children = (
-				B4D0BA2D1D015FBD00AFA3D2 /* NSString+CJString.h */,
-				B4D0BA2E1D015FBD00AFA3D2 /* NSString+CJString.m */,
+				B4D0BA321D016C3C00AFA3D2 /* NSString+CJString.h */,
+				B4D0BA331D016C3C00AFA3D2 /* NSString+CJString.m */,
 			);
 			path = CJString;
-			sourceTree = SOURCE_ROOT;
+			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
 
@@ -301,7 +301,7 @@
 				B4D0BA2F1D015FBD00AFA3D2 /* CJLabel.m in Sources */,
 				438257891C1A6F5F00A3DA24 /* AppDelegate.m in Sources */,
 				438257861C1A6F5F00A3DA24 /* main.m in Sources */,
-				B4D0BA301D015FBD00AFA3D2 /* NSString+CJString.m in Sources */,
+				B4D0BA341D016C3C00AFA3D2 /* NSString+CJString.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
