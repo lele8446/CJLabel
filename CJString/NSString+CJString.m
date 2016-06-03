@@ -19,6 +19,28 @@ static inline CGFLOAT_TYPE CGFloat_ceil(CGFLOAT_TYPE cgfloat) {
 #endif
 }
 
++ (NSRange)getFirstRangeWithLinkString:(NSString *)linkString inTextString:(NSString *)string {
+    NSRange linkRange = [string rangeOfString:linkString];
+    return linkRange;
+}
+
++ (NSArray *)getRangeArrayWithLinkString:(NSString *)linkString
+                            inTextString:(NSString *)string
+                               lastRange:(NSRange)lastRange
+                              rangeArray:(NSMutableArray *)array
+{
+    NSRange range = [string rangeOfString:linkString];
+    if (range.location == NSNotFound){
+        return array;
+    }else{
+        NSRange curRange = NSMakeRange(lastRange.location+lastRange.length+range.location, range.length);
+        [array addObject:NSStringFromRange(curRange)];
+        NSString *tempString = [string substringFromIndex:(range.location+range.length)];
+        [self getRangeArrayWithLinkString:linkString inTextString:tempString lastRange:curRange rangeArray:array];
+        return array;
+    }
+}
+
 + (CGSize)sizeLabelToFit:(NSAttributedString *)aString width:(CGFloat)width height:(CGFloat)height {
     UILabel *tempLabel = [[UILabel alloc]initWithFrame:CGRectMake(0, 0, width, height)];
     tempLabel.attributedText = aString;
@@ -26,8 +48,8 @@ static inline CGFLOAT_TYPE CGFloat_ceil(CGFLOAT_TYPE cgfloat) {
     [tempLabel sizeToFit];
     CGSize size = tempLabel.frame.size;
     size = CGSizeMake(CGFloat_ceil(size.width), CGFloat_ceil(size.height));
-    NSLog(@"###### 方法二 ########");
-    NSLog(@"sizeLabelToFitSize %@",NSStringFromCGSize(size));
+//    NSLog(@"###### 方法二 ########");
+//    NSLog(@"sizeLabelToFitSize %@",NSStringFromCGSize(size));
     return size;
 }
 
@@ -71,8 +93,8 @@ static inline CGFLOAT_TYPE CGFloat_ceil(CGFLOAT_TYPE cgfloat) {
                                                     context:nil].size;
     
     size = CGSizeMake(CGFloat_ceil(strSize.width), CGFloat_ceil(strSize.height));
-    NSLog(@"###### 方法一 ########");
-    NSLog(@"boundingRectWithSize %@",NSStringFromCGSize(size));
+//    NSLog(@"###### 方法一 ########");
+//    NSLog(@"boundingRectWithSize %@",NSStringFromCGSize(size));
     return size;
 }
 
@@ -126,9 +148,9 @@ static inline CGFLOAT_TYPE CGFloat_ceil(CGFLOAT_TYPE cgfloat) {
     CGSize size = CGSizeMake(width, CJFLOAT_MAX);
     CGSize suggestedSize= CTFramesetterSuggestFrameSizeForAttributedStringWithConstraints(framesetter,string,size,CJFLOAT_MAX);
     heightValue = suggestedSize.height;
-    NSLog(@"###### 方法三 ########");
-    NSLog(@"1、使用CTFramesetterSuggestFrameSizeWithConstraints计算");
-    NSLog(@"suggestedSize %@",NSStringFromCGSize(suggestedSize));
+//    NSLog(@"###### 方法三 ########");
+//    NSLog(@"1、使用CTFramesetterSuggestFrameSizeWithConstraints计算");
+//    NSLog(@"suggestedSize %@",NSStringFromCGSize(suggestedSize));
     
     
     //这里的高要设置足够大
@@ -159,8 +181,8 @@ static inline CGFLOAT_TYPE CGFloat_ceil(CGFLOAT_TYPE cgfloat) {
         heightValue = heightValue + lineHeight;
     }
     heightValue = CGFloat_ceil(heightValue);
-    NSLog(@"2、逐行lineHeight累加");
-    NSLog(@"heightValue %@",@(heightValue));
+//    NSLog(@"2、逐行lineHeight累加");
+//    NSLog(@"heightValue %@",@(heightValue));
     
     /******************
      * 3、最后一行原点y坐标加最后一行高度
@@ -175,8 +197,8 @@ static inline CGFLOAT_TYPE CGFloat_ceil(CGFLOAT_TYPE cgfloat) {
     //height - line_y为除去最后一行的字符原点以下的高度，descent + leading为最后一行不包括上行行高的字符高度
     heightValue = height - line_y + (CGFloat)(fabs(lastDescent) + lastLeading);
     heightValue = CGFloat_ceil(heightValue);
-    NSLog(@"3、最后一行原点y坐标加最后一行高度");
-    NSLog(@"heightValue %@",@(heightValue));
+//    NSLog(@"3、最后一行原点y坐标加最后一行高度");
+//    NSLog(@"heightValue %@",@(heightValue));
     
     CFRelease(textFrame);
     return heightValue;

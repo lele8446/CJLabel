@@ -9,6 +9,7 @@
 #import "CJLabel.h"
 #import <CoreText/CoreText.h>
 #import <objc/runtime.h>
+#import "NSString+CJString.h"
 
 static inline CGFLOAT_TYPE CGFloat_sqrt(CGFLOAT_TYPE cgfloat) {
 #if CGFLOAT_IS_DOUBLE
@@ -57,6 +58,7 @@ static inline CGFloat CJFlushFactorForTextAlignment(NSTextAlignment textAlignmen
     self = [super initWithFrame:frame];
     if (self) {
         _extendsLinkTouchArea = NO;
+        _sameLinkEnable = YES;
         self.userInteractionEnabled = YES;
         self.textInsets = UIEdgeInsetsZero;
     }
@@ -66,6 +68,7 @@ static inline CGFloat CJFlushFactorForTextAlignment(NSTextAlignment textAlignmen
 - (void)awakeFromNib {
     [super awakeFromNib];
     _extendsLinkTouchArea = NO;
+    _sameLinkEnable = YES;
     self.userInteractionEnabled = YES;
     self.textInsets = UIEdgeInsetsZero;
 }
@@ -74,16 +77,19 @@ static inline CGFloat CJFlushFactorForTextAlignment(NSTextAlignment textAlignmen
     
 }
 
+/**
+ *  重写drawTextInRect方法调整内边距（未实现）
+ */
 - (void)drawTextInRect:(CGRect)rect {
     return [super drawTextInRect:UIEdgeInsetsInsetRect(rect, self.textInsets)];
 }
 
-- (void)removeLinkString:(NSAttributedString *)linkString {
+- (void)removeLinkString:(NSString *)linkString {
     __block NSUInteger index = 0;
     __block BOOL needRemove = NO;
     [self.linkArray enumerateObjectsUsingBlock:^(id num, NSUInteger idx, BOOL *stop){
         CJLinkLabelModel *linkModel = (CJLinkLabelModel *)num;
-        if ([linkModel.linkString isEqualToAttributedString:linkString]) {
+        if ([linkModel.linkString isEqualToString:linkString]) {
             index = idx;
             needRemove = YES;
             *stop = YES;
@@ -92,17 +98,41 @@ static inline CGFloat CJFlushFactorForTextAlignment(NSTextAlignment textAlignmen
     [self.linkArray removeObjectAtIndex:index];
 }
 
-- (void)addLinkString:(NSAttributedString *)linkString block:(CJLinkLabelModelBlock)linkBlock {
-    CJLinkLabelModel *linkModel = [[CJLinkLabelModel alloc]initLinkLabelModelWithString:linkString range:[self getRangeWithLinkString:linkString] block:linkBlock];
-    if (nil != linkModel) {
-        [self.linkArray addObject:linkModel];
+- (void)addLinkString:(NSString *)linkString linkAddAttribute:(NSDictionary *)linkDic block:(CJLinkLabelModelBlock)linkBlock {
+    
+    NSArray *rangeAry = [NSString getRangeArrayWithLinkString:linkString inTextString:[self.attributedText string] lastRange:NSMakeRange(0, 0) rangeArray:[NSMutableArray array]];
+    NSRange linkRange = [NSString getFirstRangeWithLinkString:linkString inTextString:[self.attributedText string]];
+    NSMutableAttributedString *atrString = [[NSMutableAttributedString alloc] initWithAttributedString:self.attributedText];
+    
+    if (linkDic && linkDic.count > 0 && atrString.length > 0) {
+        NSEnumerator *enumerator = [linkDic keyEnumerator];
+        id key;
+        while ((key = [enumerator nextObject])) {
+            if (self.sameLinkEnable) {
+                for (NSString *strRange in rangeAry) {
+                    [atrString addAttribute:key value:linkDic[key] range:NSRangeFromString(strRange)];
+                }
+            }else{
+                [atrString addAttribute:key value:linkDic[key] range:linkRange];
+            }
+            
+        }
+        self.attributedText = atrString;
     }
-}
-
-- (NSRange)getRangeWithLinkString:(NSAttributedString *)linkString {
-    //点击链接的NSRange
-    NSRange linkRange = [[self.attributedText string] rangeOfString:[linkString string]];
-    return linkRange;
+    
+    if (self.sameLinkEnable) {
+        for (NSString *strRange in rangeAry) {
+            CJLinkLabelModel *linkModel = [[CJLinkLabelModel alloc]initLinkLabelModelWithString:linkString range:NSRangeFromString(strRange) block:linkBlock];
+            if (nil != linkModel) {
+                [self.linkArray addObject:linkModel];
+            }
+        }
+    }else{
+        CJLinkLabelModel *linkModel = [[CJLinkLabelModel alloc]initLinkLabelModelWithString:linkString range:linkRange block:linkBlock];
+        if (nil != linkModel) {
+            [self.linkArray addObject:linkModel];
+        }
+    }
 }
 
 - (void)touchesBegan:(NSSet<UITouch *> *)touches withEvent:(nullable UIEvent *)event {
@@ -208,7 +238,7 @@ static inline CGFloat CJFlushFactorForTextAlignment(NSTextAlignment textAlignmen
     CGRect textRect = [self textRectForBounds:bounds limitedToNumberOfLines:self.numberOfLines];
     textRect.size = CGSizeMake(CGFloat_ceil(textRect.size.width), CGFloat_ceil(textRect.size.height));
     //textRect的height值存在误差，值需设大一点，不然不会包含最后一行lines
-    CGRect pathRect = CGRectMake(textRect.origin.x, textRect.origin.y, textRect.size.width, textRect.size.height+8);
+    CGRect pathRect = CGRectMake(textRect.origin.x, textRect.origin.y, textRect.size.width, textRect.size.height+ 100000);
     if (!CGRectContainsPoint(textRect, p)) {
         return NSNotFound;
     }
@@ -287,7 +317,7 @@ static inline CGFloat CJFlushFactorForTextAlignment(NSTextAlignment textAlignmen
 
 @implementation CJLinkLabelModel
 
-- (instancetype)initLinkLabelModelWithString:(NSAttributedString *)linkString range:(NSRange)range block:(CJLinkLabelModelBlock)linkBlock {
+- (instancetype)initLinkLabelModelWithString:(NSString *)linkString range:(NSRange)range block:(CJLinkLabelModelBlock)linkBlock {
     if ((self = [super init])) {
         _linkBlock = linkBlock;
         _linkString = [linkString copy];

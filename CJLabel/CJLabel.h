@@ -17,19 +17,28 @@ typedef void (^CJLinkLabelModelBlock)(CJLinkLabelModel *linkModel);
 @property (nonatomic, assign) IBInspectable BOOL extendsLinkTouchArea;
 
 /**
+ *  文本中内容相同的链点是否都能够响应点击，
+ *  必须在设置self.attributedText前赋值，
+ *  如果值为NO，则取文本中首次出现的链点，
+ *  默认YES
+ */
+@property (nonatomic, assign) IBInspectable BOOL sameLinkEnable;
+
+/**
  *  增加点击链点
  *
  *  @param linkString 响应点击的字符串
+ *  @param linkDic    响应点击的字符串的Attribute值
  *  @param linkBlock  点击回调
  */
-- (void)addLinkString:(NSAttributedString *)linkString block:(CJLinkLabelModelBlock)linkBlock;
+- (void)addLinkString:(NSString *)linkString linkAddAttribute:(NSDictionary *)linkDic block:(CJLinkLabelModelBlock)linkBlock;
 
 /**
  *  取消点击链点
  *
  *  @param linkString 取消点击的字符串
  */
-- (void)removeLinkString:(NSAttributedString *)linkString;
+- (void)removeLinkString:(NSString *)linkString;
 @end
 
 /**
@@ -37,8 +46,8 @@ typedef void (^CJLinkLabelModelBlock)(CJLinkLabelModel *linkModel);
  */
 @interface CJLinkLabelModel : NSObject
 @property (nonatomic, copy) CJLinkLabelModelBlock linkBlock;
-@property (nonatomic, copy) NSAttributedString *linkString;
+@property (nonatomic, copy) NSString *linkString;
 @property (nonatomic, assign) NSRange range;
 
-- (instancetype)initLinkLabelModelWithString:(NSAttributedString *)linkString range:(NSRange)range block:(CJLinkLabelModelBlock)linkBlock;
+- (instancetype)initLinkLabelModelWithString:(NSString *)linkString range:(NSRange)range block:(CJLinkLabelModelBlock)linkBlock;
 @end
