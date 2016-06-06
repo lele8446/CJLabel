@@ -10,8 +10,10 @@
 
 ## cocoapods安装
 * Podfile<br/>
-> platform :ios, '7.0'
+```ruby
+platform :ios, '7.0'
 pod 'CJLabel', '~> 1.0.1'
+```
 
 ## V1.0.0
 v1.0.0版本注意：文本内存在相同链点时只有首次出现的链点能够响应点击
