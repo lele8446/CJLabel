@@ -15,8 +15,8 @@
 		438257941C1A6F5F00A3DA24 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 438257921C1A6F5F00A3DA24 /* LaunchScreen.storyboard */; };
 		4382579F1C1A6F5F00A3DA24 /* CJLabelTestTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4382579E1C1A6F5F00A3DA24 /* CJLabelTestTests.m */; };
 		438257AA1C1A6F5F00A3DA24 /* CJLabelTestUITests.m in Sources */ = {isa = PBXBuildFile; fileRef = 438257A91C1A6F5F00A3DA24 /* CJLabelTestUITests.m */; };
-		B477CF5E1D017C3C007BCA68 /* NSString+CJString.m in Sources */ = {isa = PBXBuildFile; fileRef = B477CF5D1D017C3C007BCA68 /* NSString+CJString.m */; };
-		B4D0BA2F1D015FBD00AFA3D2 /* CJLabel.m in Sources */ = {isa = PBXBuildFile; fileRef = B4D0BA2B1D015FBD00AFA3D2 /* CJLabel.m */; };
+		B431D5321D0545E700228988 /* CJLabel.m in Sources */ = {isa = PBXBuildFile; fileRef = B431D52E1D0545E700228988 /* CJLabel.m */; };
+		B431D5331D0545E700228988 /* NSString+CJString.m in Sources */ = {isa = PBXBuildFile; fileRef = B431D5311D0545E700228988 /* NSString+CJString.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -53,10 +53,10 @@
 		438257A51C1A6F5F00A3DA24 /* CJLabelTestUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = CJLabelTestUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		438257A91C1A6F5F00A3DA24 /* CJLabelTestUITests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CJLabelTestUITests.m; sourceTree = "<group>"; };
 		438257AB1C1A6F5F00A3DA24 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		B477CF5C1D017C3C007BCA68 /* NSString+CJString.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSString+CJString.h"; sourceTree = "<group>"; };
-		B477CF5D1D017C3C007BCA68 /* NSString+CJString.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSString+CJString.m"; sourceTree = "<group>"; };
-		B4D0BA2A1D015FBD00AFA3D2 /* CJLabel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CJLabel.h; sourceTree = "<group>"; };
-		B4D0BA2B1D015FBD00AFA3D2 /* CJLabel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CJLabel.m; sourceTree = "<group>"; };
+		B431D52D1D0545E700228988 /* CJLabel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CJLabel.h; sourceTree = "<group>"; };
+		B431D52E1D0545E700228988 /* CJLabel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CJLabel.m; sourceTree = "<group>"; };
+		B431D5301D0545E700228988 /* NSString+CJString.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSString+CJString.h"; sourceTree = "<group>"; };
+		B431D5311D0545E700228988 /* NSString+CJString.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSString+CJString.m"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -107,8 +107,7 @@
 		438257831C1A6F5F00A3DA24 /* CJLabelTest */ = {
 			isa = PBXGroup;
 			children = (
-				B477CF5B1D017C3C007BCA68 /* NSString+CJString */,
-				B4D0BA291D015FBD00AFA3D2 /* CJLabel */,
+				B431D52C1D0545E700228988 /* CJLabel */,
 				438257871C1A6F5F00A3DA24 /* AppDelegate.h */,
 				438257881C1A6F5F00A3DA24 /* AppDelegate.m */,
 				4382578A1C1A6F5F00A3DA24 /* ViewController.h */,
@@ -148,23 +147,25 @@
 			path = CJLabelTestUITests;
 			sourceTree = "<group>";
 		};
-		B477CF5B1D017C3C007BCA68 /* NSString+CJString */ = {
+		B431D52C1D0545E700228988 /* CJLabel */ = {
 			isa = PBXGroup;
 			children = (
-				B477CF5C1D017C3C007BCA68 /* NSString+CJString.h */,
-				B477CF5D1D017C3C007BCA68 /* NSString+CJString.m */,
+				B431D52D1D0545E700228988 /* CJLabel.h */,
+				B431D52E1D0545E700228988 /* CJLabel.m */,
+				B431D52F1D0545E700228988 /* NSString+CJString */,
+			);
+			name = CJLabel;
+			path = ../../CJLabel;
+			sourceTree = "<group>";
+		};
+		B431D52F1D0545E700228988 /* NSString+CJString */ = {
+			isa = PBXGroup;
+			children = (
+				B431D5301D0545E700228988 /* NSString+CJString.h */,
+				B431D5311D0545E700228988 /* NSString+CJString.m */,
 			);
 			path = "NSString+CJString";
-			sourceTree = SOURCE_ROOT;
-		};
-		B4D0BA291D015FBD00AFA3D2 /* CJLabel */ = {
-			isa = PBXGroup;
-			children = (
-				B4D0BA2A1D015FBD00AFA3D2 /* CJLabel.h */,
-				B4D0BA2B1D015FBD00AFA3D2 /* CJLabel.m */,
-			);
-			path = CJLabel;
-			sourceTree = SOURCE_ROOT;
+			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
 
@@ -298,10 +299,10 @@
 			buildActionMask = 2147483647;
 			files = (
 				4382578C1C1A6F5F00A3DA24 /* ViewController.m in Sources */,
-				B4D0BA2F1D015FBD00AFA3D2 /* CJLabel.m in Sources */,
+				B431D5321D0545E700228988 /* CJLabel.m in Sources */,
 				438257891C1A6F5F00A3DA24 /* AppDelegate.m in Sources */,
 				438257861C1A6F5F00A3DA24 /* main.m in Sources */,
-				B477CF5E1D017C3C007BCA68 /* NSString+CJString.m in Sources */,
+				B431D5331D0545E700228988 /* NSString+CJString.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
