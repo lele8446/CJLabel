@@ -9,7 +9,7 @@
 取消点击链点 removeLinkString:<br/>
 
 ## cocoapods安装
-* Podfile
+* Podfile<br/>
 > platform :ios, '7.0'
 pod 'CJLabel', '~> 1.0.1'
 
