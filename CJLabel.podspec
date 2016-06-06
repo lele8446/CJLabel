@@ -8,19 +8,11 @@
 
 Pod::Spec.new do |s|
 
-  # ―――  Spec Metadata  ―――――――――――――――――――――――――――――――――――――――――――――――――――――――――― #
-  #
-  #  These will help people to find your library, and whilst it
-  #  can feel like a chore to fill in it's definitely to your advantage. The
-  #  summary should be tweet-length, and the description more in depth.
-  #
-
   s.name         = "CJLabel"
   s.version      = "0.0.1"
   s.summary      = "A UILabel Class Extends."
   s.homepage     = "https://github.com/lele8446/CJLabelTest"
   # s.license      = "MIT"
-  # s.license      = "Copyright (c) 2016年 lele8446. All rights reserved."
   s.license      = { :type => 'Apache License, Version 2.0', :text => <<-LICENSE
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
