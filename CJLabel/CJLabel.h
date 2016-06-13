@@ -34,6 +34,16 @@ typedef void (^CJLinkLabelModelBlock)(CJLinkLabelModel *linkModel);
 - (void)addLinkString:(NSString *)linkString linkAddAttribute:(NSDictionary *)linkDic block:(CJLinkLabelModelBlock)linkBlock;
 
 /**
+ *  增加点击链点
+ *
+ *  @param linkString 响应点击的字符串
+ *  @param linkDic    响应点击的字符串的Attribute值
+ *  @param parameter  响应点击的字符串的相关参数：id，色值，字体大小等
+ *  @param linkBlock  点击回调
+ */
+- (void)addLinkString:(NSString *)linkString linkAddAttribute:(NSDictionary *)linkDic linkParameter:(id)parameter block:(CJLinkLabelModelBlock)linkBlock;
+
+/**
  *  取消点击链点
  *
  *  @param linkString 取消点击的字符串
@@ -48,6 +58,7 @@ typedef void (^CJLinkLabelModelBlock)(CJLinkLabelModel *linkModel);
 @property (nonatomic, copy) CJLinkLabelModelBlock linkBlock;
 @property (nonatomic, copy) NSString *linkString;
 @property (nonatomic, assign) NSRange range;
+@property (nonatomic, strong) id parameter;//点击链点的相关参数：id，色值，字体大小等
 
-- (instancetype)initLinkLabelModelWithString:(NSString *)linkString range:(NSRange)range block:(CJLinkLabelModelBlock)linkBlock;
+- (instancetype)initLinkLabelModelWithString:(NSString *)linkString range:(NSRange)range linkParameter:(id)parameter block:(CJLinkLabelModelBlock)linkBlock;
 @end

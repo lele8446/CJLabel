@@ -98,7 +98,10 @@ static inline CGFloat CJFlushFactorForTextAlignment(NSTextAlignment textAlignmen
 }
 
 - (void)addLinkString:(NSString *)linkString linkAddAttribute:(NSDictionary *)linkDic block:(CJLinkLabelModelBlock)linkBlock {
-    
+    [self addLinkString:linkString linkAddAttribute:linkDic linkParameter:nil block:linkBlock];
+}
+
+- (void)addLinkString:(NSString *)linkString linkAddAttribute:(NSDictionary *)linkDic linkParameter:(id)parameter block:(CJLinkLabelModelBlock)linkBlock {
     NSArray *rangeAry = [self getRangeArrayWithLinkString:linkString inTextString:[self.attributedText string] lastRange:NSMakeRange(0, 0) rangeArray:[NSMutableArray array]];
     NSRange linkRange = [self getFirstRangeWithLinkString:linkString inTextString:[self.attributedText string]];
     NSMutableAttributedString *atrString = [[NSMutableAttributedString alloc] initWithAttributedString:self.attributedText];
@@ -121,13 +124,13 @@ static inline CGFloat CJFlushFactorForTextAlignment(NSTextAlignment textAlignmen
     
     if (self.sameLinkEnable) {
         for (NSString *strRange in rangeAry) {
-            CJLinkLabelModel *linkModel = [[CJLinkLabelModel alloc]initLinkLabelModelWithString:linkString range:NSRangeFromString(strRange) block:linkBlock];
+            CJLinkLabelModel *linkModel = [[CJLinkLabelModel alloc]initLinkLabelModelWithString:linkString range:NSRangeFromString(strRange) linkParameter:parameter block:linkBlock];
             if (nil != linkModel) {
                 [self.linkArray addObject:linkModel];
             }
         }
     }else{
-        CJLinkLabelModel *linkModel = [[CJLinkLabelModel alloc]initLinkLabelModelWithString:linkString range:linkRange block:linkBlock];
+        CJLinkLabelModel *linkModel = [[CJLinkLabelModel alloc]initLinkLabelModelWithString:linkString range:linkRange linkParameter:parameter block:linkBlock];
         if (nil != linkModel) {
             [self.linkArray addObject:linkModel];
         }
@@ -355,12 +358,12 @@ static inline CGFloat CJFlushFactorForTextAlignment(NSTextAlignment textAlignmen
 @end
 
 @implementation CJLinkLabelModel
-
-- (instancetype)initLinkLabelModelWithString:(NSString *)linkString range:(NSRange)range block:(CJLinkLabelModelBlock)linkBlock {
+- (instancetype)initLinkLabelModelWithString:(NSString *)linkString range:(NSRange)range linkParameter:(id)parameter block:(CJLinkLabelModelBlock)linkBlock {
     if ((self = [super init])) {
         _linkBlock = linkBlock;
         _linkString = [linkString copy];
         _range = range;
+        _parameter = parameter;
     }
     return self;
 }

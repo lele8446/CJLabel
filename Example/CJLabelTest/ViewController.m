@@ -59,11 +59,15 @@
                                NSUnderlineStyleAttributeName:@(NSUnderlineStyleSingle)
                                };
     
-    [self.label addLinkString:@"的" linkAddAttribute:linkDic1 block:^(CJLinkLabelModel *linkModel) {
-        NSLog(@"点击了链接: %@",linkModel.linkString);
+//    [self.label addLinkString:@"的" linkAddAttribute:linkDic1 block:^(CJLinkLabelModel *linkModel) {
+//        NSLog(@"点击了链接: %@",linkModel.linkString);
+//    }];
+    
+    [self.label addLinkString:@"的" linkAddAttribute:linkDic1 linkParameter:@{@"id":@"1",@"type":@"text"} block:^(CJLinkLabelModel *linkModel) {
+        NSLog(@"点击了链接: %@",linkModel.parameter);
     }];
     
-    [self.label addLinkString:@"在左" linkAddAttribute:linkDic2 block:^(CJLinkLabelModel *linkModel) {
+    [self.label addLinkString:@"点击了链接" linkAddAttribute:linkDic2 block:^(CJLinkLabelModel *linkModel) {
         NSLog(@"点击了链接: %@",linkModel.linkString);
     }];
 
