@@ -3,7 +3,7 @@
 ## 功能简介
 #### NSString+CJString
 NSString类别
-  * `getNSAttributedString: labelDict:`
+  * `getNSAttributedString: labelDict:`<br/>
   NSMutableAttributedString属性封装方法
 
   ```objective-c
@@ -13,14 +13,14 @@ NSString类别
                        };
   NSMutableAttributedString *labelTitle = [NSString getNSAttributedString:@"this is test string" labelDict:dic];
   ```
-  * `sizeLabelToFit: width: height:`
+  * `sizeLabelToFit: width: height:`<br/>
   返回UILabel自适应后的size方法
 
-  * `getStringRect: width: height:`
+  * `getStringRect: width: height:`<br/>
   动态计算NSString的CGSize方法
 
 #### CJLabel
-UILabel的extension，可响应任意字符的点击
+UILabel的extension，可响应任意字符的点击<br/>
   * `addLinkString: linkAddAttribute: block:`
   增加点击链点方法
 
@@ -34,7 +34,7 @@ UILabel的extension，可响应任意字符的点击
       NSLog(@"点击了链接: %@",linkModel.linkString);
   }];
   ```
-  * `addLinkString: linkAddAttribute: linkParameter: block:`
+  * `addLinkString: linkAddAttribute: linkParameter: block:`<br/>
   增加点击链点方法
 
   ```objective-c
@@ -47,7 +47,7 @@ UILabel的extension，可响应任意字符的点击
       NSLog(@"点击了链接: %@",linkModel.linkString);
   }];
   ```
-  * `removeLinkString:`
+  * `removeLinkString:`<br/>
   移除点击链点方法
 
 ## cocoapods安装
@@ -67,5 +67,5 @@ v1.0.0版本注意：文本内存在相同链点时只有首次出现的链点�
 
 <br/>
 ## V1.0.2
-v1.0.2 点击链点增加扩展属性parameter<br/>
-增加方法addLinkString: linkAddAttribute: linkParameter: block:
+* 点击链点增加扩展属性parameter<br/>
+* 增加方法`addLinkString: linkAddAttribute: linkParameter: block:`
