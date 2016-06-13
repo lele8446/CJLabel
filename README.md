@@ -4,7 +4,7 @@
 包含NSString+CJString与CJLabel两个文件
 #### NSString+CJString
 NSString类别
-  * `getNSAttributedString: labelDict:`<br/>
+  * `-getNSAttributedString: labelDict:`<br/>
   NSMutableAttributedString属性封装方法
 
   ```objective-c
@@ -14,15 +14,15 @@ NSString类别
                        };
   NSMutableAttributedString *labelTitle = [NSString getNSAttributedString:@"this is test string" labelDict:dic];
   ```
-  * `sizeLabelToFit: width: height:`<br/>
+  * `-sizeLabelToFit: width: height:`<br/>
   返回UILabel自适应后的size方法
 
-  * `getStringRect: width: height:`<br/>
+  * `-getStringRect: width: height:`<br/>
   动态计算NSString的CGSize方法
 
 #### CJLabel
 UILabel的extension，可响应任意字符的点击
-  * `addLinkString: linkAddAttribute: block:`<br/>
+  * `-addLinkString: linkAddAttribute: block:`<br/>
   增加点击链点方法
 
   ```objective-c
@@ -35,7 +35,7 @@ UILabel的extension，可响应任意字符的点击
       NSLog(@"点击了链接: %@",linkModel.linkString);
   }];
   ```
-  * `addLinkString: linkAddAttribute: linkParameter: block:`<br/>
+  * `-addLinkString: linkAddAttribute: linkParameter: block:`<br/>
   增加点击链点方法
 
   ```objective-c
@@ -48,7 +48,7 @@ UILabel的extension，可响应任意字符的点击
       NSLog(@"点击了链接: %@",linkModel.linkString);
   }];
   ```
-  * `removeLinkString:`<br/>
+  * `-removeLinkString:`<br/>
   移除点击链点方法
 
 ## cocoapods安装
