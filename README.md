@@ -1,6 +1,7 @@
 # CJLabelTest 
 
 ## 功能简介
+包含NSString+CJString与CJLabel两个文件
 #### NSString+CJString
 NSString类别
   * `getNSAttributedString: labelDict:`<br/>
@@ -20,8 +21,8 @@ NSString类别
   动态计算NSString的CGSize方法
 
 #### CJLabel
-UILabel的extension，可响应任意字符的点击<br/>
-  * `addLinkString: linkAddAttribute: block:`
+UILabel的extension，可响应任意字符的点击
+  * `addLinkString: linkAddAttribute: block:`<br/>
   增加点击链点方法
 
   ```objective-c
