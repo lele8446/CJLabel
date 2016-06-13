@@ -55,7 +55,7 @@ UILabel的extension，可响应任意字符的点击
 * Podfile<br/>
 ```ruby
 platform :ios, '7.0'
-pod 'CJLabel', '~> 1.0.1'
+pod 'CJLabel', '~> 1.0.2'
 ```
 
 ## V1.0.0
