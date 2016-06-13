@@ -69,4 +69,4 @@ v1.0.0版本注意：文本内存在相同链点时只有首次出现的链点�
 <br/>
 ## V1.0.2
 * 点击链点增加扩展属性parameter<br/>
-* 增加方法`addLinkString: linkAddAttribute: linkParameter: block:`
+* 增加方法`- addLinkString: linkAddAttribute: linkParameter: block:`
