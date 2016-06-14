@@ -49,6 +49,11 @@ typedef void (^CJLinkLabelModelBlock)(CJLinkLabelModel *linkModel);
  *  @param linkString 取消点击的字符串
  */
 - (void)removeLinkString:(NSString *)linkString;
+
+/**
+ *  移除所有点击链点
+ */
+- (void)removeAllLink;
 @end
 
 /**

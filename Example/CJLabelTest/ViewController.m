@@ -50,7 +50,7 @@
 //    self.label.extendsLinkTouchArea = YES;
     
     NSDictionary *linkDic1 = @{
-                               NSForegroundColorAttributeName:[UIColor colorWithRed:0.9873 green:0.1617 blue:0.1402 alpha:1.0],
+                               NSForegroundColorAttributeName:[UIColor redColor],
                                NSUnderlineStyleAttributeName:@(NSUnderlineStyleSingle)
                                };
     

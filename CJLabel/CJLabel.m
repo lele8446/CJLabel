@@ -97,6 +97,10 @@ static inline CGFloat CJFlushFactorForTextAlignment(NSTextAlignment textAlignmen
     [self.linkArray removeObjectAtIndex:index];
 }
 
+- (void)removeAllLink {
+    [self.linkArray removeAllObjects];
+}
+
 - (void)addLinkString:(NSString *)linkString linkAddAttribute:(NSDictionary *)linkDic block:(CJLinkLabelModelBlock)linkBlock {
     [self addLinkString:linkString linkAddAttribute:linkDic linkParameter:nil block:linkBlock];
 }
