@@ -51,6 +51,9 @@ UILabel的extension，可响应任意字符的点击
   * `-removeLinkString:`<br/>
   移除点击链点方法
 
+  * `-removeAllLink`<br/>
+  移除所有点击链点方法
+
 ## cocoapods安装
 * Podfile<br/>
 ```ruby
