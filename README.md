@@ -1,4 +1,4 @@
-# CJLabelTest 
+# CJLabel
 
 ## 功能简介
 包含NSString+CJString与CJLabel两个文件
