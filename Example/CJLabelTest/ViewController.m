@@ -18,6 +18,19 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     
+    self.label.backgroundColor = [UIColor colorWithRed:0.8291 green:0.9203 blue:1.0 alpha:1.0];
+}
+
+- (void)didReceiveMemoryWarning {
+    [super didReceiveMemoryWarning];
+    // Dispose of any resources that can be recreated.
+}
+
+- (IBAction)send:(id)sender {
+    [self handleString:self.textView.text];
+}
+
+- (void)handleString:(NSString *)str {
     NSMutableParagraphStyle *paragraph = [[NSMutableParagraphStyle alloc] init];
     paragraph.alignment = NSTextAlignmentLeft;
     paragraph.lineSpacing = 1.2;
@@ -43,7 +56,7 @@
 //                          NSVerticalGlyphFormAttributeName:[NSNumber numberWithInt:0],/*(横竖排版)*/
                           };
     //设置label text
-    NSMutableAttributedString *labelTitle = [NSString getNSAttributedString:@"Mac中有些View为了其实现的便捷将原点变换到左上角，像NSTableView的坐标系坐标原点就在左上角。iOS UIKit的UIView的坐标系原点在左上角。往底层看，，通过打印出来看到值为点击了链接#http://www.lcj.com#属性文的context使用的坐标系的原点是在左下角。而在iOS中的底层界面绘制就是通过Core Graphics进行的，那么坐标系列是如何变换的呢本键2啊啊生生世世生生世世很过分的a" labelDict:dic];
+    NSMutableAttributedString *labelTitle = [NSString getNSAttributedString:str labelDict:dic];
     
 //    self.label.sameLinkEnable = NO;
     self.label.attributedText = labelTitle;
@@ -59,35 +72,41 @@
                                NSUnderlineStyleAttributeName:@(NSUnderlineStyleSingle)
                                };
     
-//    [self.label addLinkString:@"的" linkAddAttribute:linkDic1 block:^(CJLinkLabelModel *linkModel) {
+    if (str.length >= 6) {
+        NSRange range = NSMakeRange(str.length-3,2);
+        NSString *link1 = [str substringWithRange:range]; //截取字符串
+        
+        [self.label addLinkString:link1 linkAddAttribute:linkDic1 block:^(CJLinkLabelModel *linkModel) {
+            NSLog(@"点击了链接: %@",linkModel.linkString);
+        }];
+        
+        NSRange range2 = NSMakeRange(2,3);
+        NSString *link2 = [str substringWithRange:range2]; //截取字符串
+        
+        [self.label addLinkString:link2 linkAddAttribute:linkDic2 block:^(CJLinkLabelModel *linkModel) {
+            NSLog(@"点击了链接: %@",linkModel.linkString);
+        }];
+    }
+    
+    
+//    [self.label addLinkString:@"的" linkAddAttribute:linkDic1 linkParameter:@{@"id":@"1",@"type":@"text"} block:^(CJLinkLabelModel *linkModel) {
+//        NSLog(@"点击了链接: %@",linkModel.parameter);
+//    }];
+//    
+//    [self.label addLinkString:@"点击了链接" linkAddAttribute:linkDic2 block:^(CJLinkLabelModel *linkModel) {
 //        NSLog(@"点击了链接: %@",linkModel.linkString);
 //    }];
     
-    [self.label addLinkString:@"的" linkAddAttribute:linkDic1 linkParameter:@{@"id":@"1",@"type":@"text"} block:^(CJLinkLabelModel *linkModel) {
-        NSLog(@"点击了链接: %@",linkModel.parameter);
-    }];
-    
-    [self.label addLinkString:@"点击了链接" linkAddAttribute:linkDic2 block:^(CJLinkLabelModel *linkModel) {
-        NSLog(@"点击了链接: %@",linkModel.linkString);
-    }];
-
     CGFloat width = [[UIScreen mainScreen] bounds].size.width-20;
     CGRect labelFrame = self.label.frame;
     
-//    // TODO: 方法一
-//    labelFrame.size = [NSString getStringRect:labelTitle width:width height:MAXFLOAT];
+    // TODO: 方法一
+    labelFrame.size = [NSString getStringRect:labelTitle width:width height:MAXFLOAT];
     
     // TODO: 方法二
-    labelFrame.size = [NSString sizeLabelToFit:labelTitle width:width height:MAXFLOAT];
+//    labelFrame.size = [NSString sizeLabelToFit:labelTitle width:width height:MAXFLOAT];
     
     self.label.frame = labelFrame;
-    self.label.backgroundColor = [UIColor colorWithRed:0.8291 green:0.9203 blue:1.0 alpha:1.0];
-    
-}
-
-- (void)didReceiveMemoryWarning {
-    [super didReceiveMemoryWarning];
-    // Dispose of any resources that can be recreated.
 }
 
 @end

@@ -11,6 +11,8 @@
 
 @interface ViewController : UIViewController
 @property(nonatomic,weak)IBOutlet CJLabel *label;
+@property(nonatomic,weak)IBOutlet UITextView *textView;
+@property(nonatomic,weak)IBOutlet UIButton *button;
 
 
 @end

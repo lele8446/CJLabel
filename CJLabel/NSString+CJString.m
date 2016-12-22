@@ -75,16 +75,8 @@ static inline CGFLOAT_TYPE CGFloat_ceil(CGFLOAT_TYPE cgfloat) {
         paragraphStyle.paragraphSpacingBefore = 0;//段落之前的间距
         [atrString addAttribute:NSParagraphStyleAttributeName value:paragraphStyle range:range];
     }
-    
-    //设置默认字体属性
-    UIFont *font = dic[NSFontAttributeName];
-    if (!font || nil == font) {
-        font = [UIFont fontWithName:@"HelveticaNeue" size:12.0];
-        [atrString addAttribute:NSFontAttributeName value:font range:range];
-    }
-    
+        
     NSMutableDictionary *attDic = [NSMutableDictionary dictionaryWithDictionary:dic];
-    [attDic setObject:font forKey:NSFontAttributeName];
     [attDic setObject:paragraphStyle forKey:NSParagraphStyleAttributeName];
     
     CGSize strSize = [[aString string] boundingRectWithSize:CGSizeMake(width, height)

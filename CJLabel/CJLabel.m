@@ -200,7 +200,7 @@ static inline CGFloat CJFlushFactorForTextAlignment(NSTextAlignment textAlignmen
     [self.nextResponder touchesEnded:touches withEvent:event];
 }
 
-- (void)touchesCancelled:(nullable NSSet<UITouch *> *)touches withEvent:(nullable UIEvent *)event {
+- (void)touchesCancelled:(NSSet<UITouch *> *)touches withEvent:(nullable UIEvent *)event {
     [self.nextResponder touchesCancelled:touches withEvent:event];
 }
 
