@@ -17,7 +17,7 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    
+    NSLog(@"viewDidLoad");
     self.label.backgroundColor = [UIColor colorWithRed:0.8291 green:0.9203 blue:1.0 alpha:1.0];
 }
 
@@ -27,6 +27,7 @@
 }
 
 - (IBAction)send:(id)sender {
+    NSLog(@"test");
     [self handleString:self.textView.text];
 }
 
