@@ -45,23 +45,6 @@ typedef void (^CJLabelLinkModelBlock)(NSAttributedString *attributedString, UIIm
 
 
 /**
- 在指定位置插入图片，并返回插入图片后的NSMutableAttributedString（图片占位符所占的NSRange，length=1）
- 
- @param attrStr 需要插入图片的NSAttributedString
- @param imageName 图片名称
- @param size 图片大小
- @param loc 图片插入位置
- @param attributes 图片文本属性
- 
- @return 插入图片后的NSMutableAttributedString
- */
-+ (NSMutableAttributedString *)configureAttributedString:(NSAttributedString *)attrStr
-                                            addImageName:(NSString *)imageName
-                                               imageSize:(CGSize)size
-                                                 atIndex:(NSUInteger)loc
-                                              attributes:(NSDictionary *)attributes;
-
-/**
  在指定位置插入图片，图片是点击的链点！！！
  
  @param attrStr 需要插入图片的NSAttributedString
@@ -84,20 +67,8 @@ typedef void (^CJLabelLinkModelBlock)(NSAttributedString *attributedString, UIIm
                                         activeLinkAttributes:(NSDictionary *)activeLinkAttributes
                                                    parameter:(id)parameter
                                               clickLinkBlock:(CJLabelLinkModelBlock)clickLinkBlock
-                                              longPressBlock:(CJLabelLinkModelBlock)longPressBlock;
-
-/**
- 根据指定NSRange配置富文本
- 
- @param attrStr NSAttributedString源
- @param range 指定NSRange
- @param attributes 文本属性
- 
- @return 返回新的NSMutableAttributedString
- */
-+ (NSMutableAttributedString *)configureAttributedString:(NSAttributedString *)attrStr
-                                                 atRange:(NSRange)range
-                                              attributes:(NSDictionary *)attributes;
+                                              longPressBlock:(CJLabelLinkModelBlock)longPressBlock
+                                                      islink:(BOOL)isLink;
 
 /**
  根据指定NSRange配置富文本，指定NSRange文本为可点击链点！！！
@@ -118,22 +89,9 @@ typedef void (^CJLabelLinkModelBlock)(NSAttributedString *attributedString, UIIm
                                         activeLinkAttributes:(NSDictionary *)activeLinkAttributes
                                                    parameter:(id)parameter
                                               clickLinkBlock:(CJLabelLinkModelBlock)clickLinkBlock
-                                              longPressBlock:(CJLabelLinkModelBlock)longPressBlock;
+                                              longPressBlock:(CJLabelLinkModelBlock)longPressBlock
+                                                      islink:(BOOL)isLink;
 
-/**
- 对文本中跟withAttString相同的文字配置富文本
- 
- @param attrStr NSAttributedString源
- @param withAttString 需要设置的富文本
- @param sameStringEnable 文本中所有与withAttString的文字是否同步设置属性，sameStringEnable=NO 时取文本中首次匹配的String
- @param attributes 文本属性
- 
- @return 返回新的NSMutableAttributedString
- */
-+ (NSMutableAttributedString *)configureAttributedString:(NSAttributedString *)attrStr
-                                           withAttString:(NSAttributedString *)withAttString
-                                        sameStringEnable:(BOOL)sameStringEnable
-                                              attributes:(NSDictionary *)attributes;
 
 /**
  对文本中跟withAttString相同的文字配置富文本，指定的文字为可点击链点！！！
@@ -156,6 +114,7 @@ typedef void (^CJLabelLinkModelBlock)(NSAttributedString *attributedString, UIIm
                                         activeLinkAttributes:(NSDictionary *)activeLinkAttributes
                                                    parameter:(id)parameter
                                               clickLinkBlock:(CJLabelLinkModelBlock)clickLinkBlock
-                                              longPressBlock:(CJLabelLinkModelBlock)longPressBlock;
+                                              longPressBlock:(CJLabelLinkModelBlock)longPressBlock
+                                                      islink:(BOOL)isLink;
 
 @end

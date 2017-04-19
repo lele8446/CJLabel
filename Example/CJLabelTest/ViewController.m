@@ -106,7 +106,7 @@
 //                                                         kCJBackgroundLineWidthAttributeName:@(2)
 //                                                         }];
     
-    labelTitle = [CJLabelUtilities configureLinkAttributedString:labelTitle
+    labelTitle = [self.label configureLinkAttributedString:labelTitle
                                                      atRange:NSMakeRange(5,7)
                                               linkAttributes:@{
                                                                NSFontAttributeName:[UIFont systemFontOfSize:25],/*(字体)*/
@@ -131,7 +131,7 @@
     
     NSMutableAttributedString *title = [[NSMutableAttributedString alloc]initWithString:@"是是是" attributes:dic];
     
-    labelTitle = [CJLabelUtilities configureLinkAttributedString:labelTitle
+    labelTitle = [self.label configureLinkAttributedString:labelTitle
                                   withAttString:title
                                       sameStringEnable:NO
                                         linkAttributes:@{
@@ -157,7 +157,7 @@
                                                       NSLog(@"longPressBlock, str = %@, range = %@",attributedString.string,NSStringFromRange(range));
                                                   }];
     
-    labelTitle = [CJLabelUtilities configureLinkAttributedString:labelTitle
+    labelTitle = [self.label configureLinkAttributedString:labelTitle
                                                 addImageName:@"1.png"
                                                    imageSize:CGSizeMake(100, 75)
                                                      atIndex:35

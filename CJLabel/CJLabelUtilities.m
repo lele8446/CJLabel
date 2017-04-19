@@ -39,14 +39,6 @@ CGFloat RunDelegateGetWidthCallback(void * refCon) {
 
 @implementation CJLabelUtilities
 
-+ (NSMutableAttributedString *)configureAttributedString:(NSAttributedString *)attrStr
-                                            addImageName:(NSString *)imageName
-                                               imageSize:(CGSize)size
-                                                 atIndex:(NSUInteger)loc
-                                              attributes:(NSDictionary *)attributes
-{
-    return [self configureAttributedString:attrStr addImageName:imageName imageSize:size atIndex:loc linkAttributes:attributes activeLinkAttributes:nil parameter:nil clickLinkBlock:nil longPressBlock:nil islink:NO];
-}
 + (NSMutableAttributedString *)configureLinkAttributedString:(NSAttributedString *)attrStr
                                                 addImageName:(NSString *)imageName
                                                    imageSize:(CGSize)size
@@ -56,19 +48,7 @@ CGFloat RunDelegateGetWidthCallback(void * refCon) {
                                                    parameter:(id)parameter
                                               clickLinkBlock:(CJLabelLinkModelBlock)clickLinkBlock
                                               longPressBlock:(CJLabelLinkModelBlock)longPressBlock
-{
-    return [self configureAttributedString:attrStr addImageName:imageName imageSize:size atIndex:loc linkAttributes:linkAttributes activeLinkAttributes:activeLinkAttributes parameter:parameter clickLinkBlock:clickLinkBlock longPressBlock:longPressBlock islink:YES];
-}
-+ (NSMutableAttributedString *)configureAttributedString:(NSAttributedString *)attrStr
-                                            addImageName:(NSString *)imageName
-                                               imageSize:(CGSize)size
-                                                 atIndex:(NSUInteger)loc
-                                          linkAttributes:(NSDictionary *)linkAttributes
-                                    activeLinkAttributes:(NSDictionary *)activeLinkAttributes
-                                               parameter:(id)parameter
-                                          clickLinkBlock:(CJLabelLinkModelBlock)clickLinkBlock
-                                          longPressBlock:(CJLabelLinkModelBlock)longPressBlock
-                                                  islink:(BOOL)isLink
+                                                      islink:(BOOL)isLink
 {
     if (CJLabelIsNull(imageName) || imageName.length == 0) {
         return [[NSMutableAttributedString alloc]initWithAttributedString:attrStr];
@@ -116,12 +96,6 @@ CGFloat RunDelegateGetWidthCallback(void * refCon) {
     return attributedString;
 }
 
-+ (NSMutableAttributedString *)configureAttributedString:(NSAttributedString *)attrStr
-                                                 atRange:(NSRange)range
-                                              attributes:(NSDictionary *)attributes
-{
-    return [self configureAttributedString:attrStr atRange:range linkAttributes:attributes activeLinkAttributes:nil parameter:nil clickLinkBlock:nil longPressBlock:nil isLink:NO];
-}
 + (NSMutableAttributedString *)configureLinkAttributedString:(NSAttributedString *)attrStr
                                                      atRange:(NSRange)range
                                               linkAttributes:(NSDictionary *)linkAttributes
@@ -129,17 +103,7 @@ CGFloat RunDelegateGetWidthCallback(void * refCon) {
                                                    parameter:(id)parameter
                                               clickLinkBlock:(CJLabelLinkModelBlock)clickLinkBlock
                                               longPressBlock:(CJLabelLinkModelBlock)longPressBlock
-{
-    return [self configureAttributedString:attrStr atRange:range linkAttributes:linkAttributes activeLinkAttributes:activeLinkAttributes parameter:parameter clickLinkBlock:clickLinkBlock longPressBlock:longPressBlock isLink:YES];
-}
-+ (NSMutableAttributedString *)configureAttributedString:(NSAttributedString *)attrStr
-                                                 atRange:(NSRange)range
-                                          linkAttributes:(NSDictionary *)linkAttributes
-                                    activeLinkAttributes:(NSDictionary *)activeLinkAttributes
-                                               parameter:(id)parameter
-                                          clickLinkBlock:(CJLabelLinkModelBlock)clickLinkBlock
-                                          longPressBlock:(CJLabelLinkModelBlock)longPressBlock
-                                                  isLink:(BOOL)isLink
+                                                      islink:(BOOL)isLink
 {
     NSParameterAssert((range.location + range.length) <= attrStr.length);
     
@@ -173,13 +137,6 @@ CGFloat RunDelegateGetWidthCallback(void * refCon) {
     return attributedString;
 }
 
-+ (NSMutableAttributedString *)configureAttributedString:(NSAttributedString *)attrStr
-                                           withAttString:(NSAttributedString *)withAttString
-                                        sameStringEnable:(BOOL)sameStringEnable
-                                              attributes:(NSDictionary *)attributes
-{
-    return [self configureAttributedString:attrStr withAttString:withAttString sameStringEnable:sameStringEnable linkAttributes:attributes activeLinkAttributes:nil parameter:nil clickLinkBlock:nil longPressBlock:nil isLink:NO];
-}
 + (NSMutableAttributedString *)configureLinkAttributedString:(NSAttributedString *)attrStr
                                                withAttString:(NSAttributedString *)withAttString
                                             sameStringEnable:(BOOL)sameStringEnable
@@ -188,30 +145,19 @@ CGFloat RunDelegateGetWidthCallback(void * refCon) {
                                                    parameter:(id)parameter
                                               clickLinkBlock:(CJLabelLinkModelBlock)clickLinkBlock
                                               longPressBlock:(CJLabelLinkModelBlock)longPressBlock
-{
-    return [self configureAttributedString:attrStr withAttString:withAttString sameStringEnable:sameStringEnable linkAttributes:linkAttributes activeLinkAttributes:activeLinkAttributes parameter:parameter clickLinkBlock:clickLinkBlock longPressBlock:longPressBlock isLink:YES];
-}
-+ (NSMutableAttributedString *)configureAttributedString:(NSAttributedString *)attrStr
-                                           withAttString:(NSAttributedString *)withAttString
-                                        sameStringEnable:(BOOL)sameStringEnable
-                                          linkAttributes:(NSDictionary *)linkAttributes
-                                    activeLinkAttributes:(NSDictionary *)activeLinkAttributes
-                                               parameter:(id)parameter
-                                          clickLinkBlock:(CJLabelLinkModelBlock)clickLinkBlock
-                                          longPressBlock:(CJLabelLinkModelBlock)longPressBlock
-                                                  isLink:(BOOL)isLink
+                                                      islink:(BOOL)isLink
 {
     NSMutableAttributedString *attributedString = [[NSMutableAttributedString alloc]initWithAttributedString:attrStr];
     if (!sameStringEnable) {
         NSRange range = [self getFirstRangeWithAttString:withAttString inAttString:attrStr];
         if (range.location != NSNotFound) {
-            attributedString = [self configureAttributedString:attributedString atRange:range linkAttributes:linkAttributes activeLinkAttributes:activeLinkAttributes parameter:parameter clickLinkBlock:clickLinkBlock longPressBlock:longPressBlock isLink:isLink];
+            attributedString = [self configureLinkAttributedString:attributedString atRange:range linkAttributes:linkAttributes activeLinkAttributes:activeLinkAttributes parameter:parameter clickLinkBlock:clickLinkBlock longPressBlock:longPressBlock islink:isLink];
         }
     }else{
         NSArray *rangeAry = [self getRangeArrayWithString:withAttString.string inString:attrStr.string lastRange:NSMakeRange(0, 0) rangeArray:[NSMutableArray array]];
         if (rangeAry.count > 0) {
             for (NSString *strRange in rangeAry) {
-                attributedString = [self configureAttributedString:attributedString atRange:NSRangeFromString(strRange) linkAttributes:linkAttributes activeLinkAttributes:activeLinkAttributes parameter:parameter clickLinkBlock:clickLinkBlock longPressBlock:longPressBlock isLink:isLink];
+                attributedString = [self configureLinkAttributedString:attributedString atRange:NSRangeFromString(strRange) linkAttributes:linkAttributes activeLinkAttributes:activeLinkAttributes parameter:parameter clickLinkBlock:clickLinkBlock longPressBlock:longPressBlock islink:isLink];
             }
         }
     }
