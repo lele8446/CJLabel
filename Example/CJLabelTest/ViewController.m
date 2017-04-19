@@ -2,12 +2,12 @@
 //  ViewController.m
 //  CJLabelTest
 //
-//  Created by C.K.Lian on 15/12/11.
-//  Copyright © 2015年 C.K.Lian. All rights reserved.
+//  Created by ChiJinLian on 17/3/31.
+//  Copyright © 2017年 ChiJinLian. All rights reserved.
 //
 
 #import "ViewController.h"
-#import "NSString+CJString.h"
+#import <CoreText/CoreText.h>
 
 @interface ViewController ()
 
@@ -17,35 +17,55 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    NSLog(@"viewDidLoad");
-    self.label.backgroundColor = [UIColor colorWithRed:0.8291 green:0.9203 blue:1.0 alpha:1.0];
+    self.label.numberOfLines = 0;
+    self.label.extendsLinkTouchArea = YES;
+//    self.label.highlighted = YES;
+//    self.label.highlightedTextColor = [UIColor blueColor];
+//    self.label.verticalAlignment = CJContentVerticalAlignmentTop;
+    self.label.textInsets = UIEdgeInsetsMake(10, 10, 10, 10);
+    self.label.extendsLinkTouchArea = YES;
+    [self labelContent];
+    
+    NSString *str = @"这是aa一段测aa试数据aa";
+    NSMutableAttributedString *labelTitle =
+    [[NSMutableAttributedString alloc]initWithString:str attributes:@{
+                                                                      NSFontAttributeName:[UIFont systemFontOfSize:13],/*(字体)*/
+                                                                      NSForegroundColorAttributeName:[UIColor blackColor],/*(字体颜色)*/
+                                                                      }];
+    [labelTitle setAttributes:@{NSFontAttributeName:[UIFont systemFontOfSize:14]} range:NSMakeRange(7, 2)];
+    
+    NSMutableAttributedString *title =
+    [[NSMutableAttributedString alloc]initWithString:@"aa" attributes:@{
+                                                                      NSFontAttributeName:[UIFont systemFontOfSize:13],/*(字体)*/
+                                                                      NSForegroundColorAttributeName:[UIColor blackColor],/*(字体颜色)*/
+                                                                      }];
+    [CJLabelUtilities getFirstRangeWithAttString:title inAttString:labelTitle];
+    [CJLabelUtilities getRangeArrayWithAttString:title inAttString:labelTitle];
+    
 }
+
 
 - (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];
     // Dispose of any resources that can be recreated.
 }
 
-- (IBAction)send:(id)sender {
-    NSLog(@"test");
-    [self handleString:self.textView.text];
-}
 
-- (void)handleString:(NSString *)str {
+- (void)labelContent {
     NSMutableParagraphStyle *paragraph = [[NSMutableParagraphStyle alloc] init];
     paragraph.alignment = NSTextAlignmentLeft;
-    paragraph.lineSpacing = 1.2;
-//    paragraph.lineHeightMultiple = 1.1;//行间距是多少倍
+    paragraph.lineSpacing = 3.2;
+//    paragraph.lineHeightMultiple = 1;//行间距是多少倍
     
     NSShadow *shadow = [[NSShadow alloc] init];
     shadow.shadowColor = [UIColor colorWithRed:0.0 green:0.0 blue:0.0 alpha:0.8];
     shadow.shadowOffset = CGSizeMake(0, 1);
     
     NSDictionary *dic = @{
-                          NSFontAttributeName:[UIFont systemFontOfSize:20],/*(字体)*/
+                          NSFontAttributeName:[UIFont systemFontOfSize:13],/*(字体)*/
 //                          NSFontAttributeName:[UIFont fontWithName:@"Arial-BoldItalicMT" size:30.0],/*(字体)*/
 //                          NSBackgroundColorAttributeName:[UIColor grayColor],/*(字体背景色)*/
-//                          NSForegroundColorAttributeName:[UIColor blackColor],/*(字体颜色)*/
+                          NSForegroundColorAttributeName:[UIColor blackColor],/*(字体颜色)*/
                           NSParagraphStyleAttributeName:paragraph,/*(段落)*/
 //                          NSLigatureAttributeName:[NSNumber numberWithInt:1],/*(连字符)*/
 //                          NSKernAttributeName:[NSNumber numberWithInt:0],/*(字间距)*/
@@ -56,58 +76,107 @@
 //                          NSShadowAttributeName:shadow,/*(阴影)*/
 //                          NSVerticalGlyphFormAttributeName:[NSNumber numberWithInt:0],/*(横竖排版)*/
                           };
+    NSString *str = @"是是姑姑不合格被🐹女更好那好吧是是是是sd是是是是输的佛殿滴哦能力乱砍滥伐空间里聚集你可能离开家呢😄 i是是是是是是是是是是是是是是是是是是是是是是是。";
+    
     //设置label text
-    NSMutableAttributedString *labelTitle = [NSString getNSAttributedString:str labelDict:dic];
+    NSMutableAttributedString *labelTitle = [[NSMutableAttributedString alloc]initWithString:str attributes:dic];
     
-//    self.label.sameLinkEnable = NO;
+//    labelTitle = [CJLabel configureAttributedString:labelTitle
+//                                              addImage:@"1.png"
+//                                             imageSize:CGSizeMake(100, 75)
+//                                               atIndex:35
+//                                            attributes:@{
+////                                                         NSForegroundColorAttributeName:[UIColor redColor],/*(字体颜色)*/
+////                                                         kCJBackgroundStrokeColorAttributeName:[UIColor colorWithRed:0.2 green:0.6 blue:1 alpha:1],
+////                                                         kCJBackgroundFillColorAttributeName:[UIColor lightGrayColor],
+////                                                         kCJActiveBackgroundFillColorAttributeName:[UIColor orangeColor],
+////                                                         kCJActiveBackgroundStrokeColorAttributeName:[UIColor blackColor],
+////                                                         kCJBackgroundLineWidthAttributeName:@(2)
+//                                                         }];
+    
+//    labelTitle = [CJLabelUtilities configureAttributedString:labelTitle
+//                                               atRange:NSMakeRange(5,2)
+//                                            attributes:@{
+//                                                         NSFontAttributeName:[UIFont systemFontOfSize:15],/*(字体)*/
+//                                                         NSForegroundColorAttributeName:[UIColor redColor],/*(字体颜色)*/
+//                                                         kCJBackgroundStrokeColorAttributeName:[UIColor colorWithRed:0.2 green:0.6 blue:1 alpha:1],
+//                                                         kCJBackgroundFillColorAttributeName:[UIColor lightGrayColor],
+//                                                         kCJActiveBackgroundFillColorAttributeName:[UIColor orangeColor],
+//                                                         kCJActiveBackgroundStrokeColorAttributeName:[UIColor blackColor],
+//                                                         kCJBackgroundLineWidthAttributeName:@(2)
+//                                                         }];
+    
+    labelTitle = [CJLabelUtilities configureLinkAttributedString:labelTitle
+                                                     atRange:NSMakeRange(5,7)
+                                              linkAttributes:@{
+                                                               NSFontAttributeName:[UIFont systemFontOfSize:25],/*(字体)*/
+                                                               NSForegroundColorAttributeName:[UIColor redColor],/*(字体颜色)*/
+                                                               kCJBackgroundStrokeColorAttributeName:[UIColor colorWithRed:0.2 green:0.6 blue:1 alpha:1],
+                                                               kCJBackgroundFillColorAttributeName:[UIColor lightGrayColor],
+                                                               kCJBackgroundLineWidthAttributeName:@(2)
+                                                               }
+                                        activeLinkAttributes:@{
+                                                               NSFontAttributeName:[UIFont systemFontOfSize:20],/*(字体)*/
+                                                               NSForegroundColorAttributeName:[UIColor brownColor],/*(字体颜色)*/
+                                                               kCJActiveBackgroundFillColorAttributeName:[UIColor orangeColor],
+                                                               kCJActiveBackgroundStrokeColorAttributeName:[UIColor blackColor],
+                                                               }
+                                                   parameter:nil
+                                                  clickLinkBlock:^(NSAttributedString *attributedString, UIImage *image, id parameter, NSRange range){
+                                                      NSLog(@"clickLinkBlock, str = %@, range = %@",attributedString.string,NSStringFromRange(range));
+                                                  }
+                                                  longPressBlock:^(NSAttributedString *attributedString, UIImage *image, id parameter, NSRange range){
+                                                      NSLog(@"longPressBlock, str = %@, range = %@",attributedString.string, NSStringFromRange(range));
+                                                  }];
+    
+    NSMutableAttributedString *title = [[NSMutableAttributedString alloc]initWithString:@"是是是" attributes:dic];
+    
+    labelTitle = [CJLabelUtilities configureLinkAttributedString:labelTitle
+                                  withAttString:title
+                                      sameStringEnable:NO
+                                        linkAttributes:@{
+                                                         NSFontAttributeName:[UIFont fontWithName:@"Arial-BoldItalicMT" size:15.0],/*(字体)*/
+//                                                         NSBackgroundColorAttributeName:[UIColor whiteColor],/*(字体背景色)*/
+                                                         NSForegroundColorAttributeName:[UIColor redColor],/*(字体颜色)*/
+                                                         NSUnderlineStyleAttributeName:@(NSUnderlineStyleSingle),/*(下划线)*/
+//                                                         NSStrikethroughStyleAttributeName:@(NSUnderlinePatternSolid | NSUnderlineStyleSingle),/*(删除线)NSUnderlinePatternSolid(实线)*/
+                                                         kCJBackgroundFillColorAttributeName:[UIColor lightGrayColor],
+                                                         kCJBackgroundStrokeColorAttributeName:[UIColor orangeColor],
+                                                         kCJBackgroundLineWidthAttributeName:@(1),
+                                                         kCJBackgroundLineCornerRadiusAttributeName:@(10)
+                                                         }
+                                        activeLinkAttributes:@{
+                                                               kCJActiveBackgroundFillColorAttributeName:[UIColor orangeColor],
+                                                               kCJActiveBackgroundStrokeColorAttributeName:[UIColor blackColor],
+                                                               }
+                                             parameter:nil
+                                     clickLinkBlock:^(NSAttributedString *attributedString, UIImage *image, id parameter, NSRange range){
+                                         NSLog(@"clickLinkBlock, str = %@, range = %@",attributedString.string,NSStringFromRange(range));
+                                     }
+                                                  longPressBlock:^(NSAttributedString *attributedString, UIImage *image, id parameter, NSRange range){
+                                                      NSLog(@"longPressBlock, str = %@, range = %@",attributedString.string,NSStringFromRange(range));
+                                                  }];
+    
+    labelTitle = [CJLabelUtilities configureLinkAttributedString:labelTitle
+                                                addImageName:@"1.png"
+                                                   imageSize:CGSizeMake(100, 75)
+                                                     atIndex:35
+                                              linkAttributes:@{}
+                                            activeLinkAttributes:@{
+                                                                   kCJBackgroundLineWidthAttributeName:@(2),
+                                                                   kCJActiveBackgroundStrokeColorAttributeName:[UIColor orangeColor],
+                                                                   }
+                                                   parameter:nil
+                                                  clickLinkBlock:^(NSAttributedString *attributedString, UIImage *image, id parameter, NSRange range){
+                                                      NSLog(@"clickLinkBlock, str = %@, range = %@, image = %@",attributedString.string,NSStringFromRange(range),image);
+                                                  }
+                                                  longPressBlock:^(NSAttributedString *attributedString, UIImage *image, id parameter, NSRange range){
+                                                      NSLog(@"longPressBlock, str = %@, range = %@, image = %@",attributedString.string,NSStringFromRange(range),image);
+                                                  }];
+    
     self.label.attributedText = labelTitle;
-//    self.label.extendsLinkTouchArea = YES;
+//    self.label.text = labelTitle;
     
-    NSDictionary *linkDic1 = @{
-                               NSForegroundColorAttributeName:[UIColor redColor],
-                               NSUnderlineStyleAttributeName:@(NSUnderlineStyleSingle)
-                               };
-    
-    NSDictionary *linkDic2 = @{
-                               NSForegroundColorAttributeName:[UIColor colorWithRed:0.2758 green:0.2585 blue:0.9705 alpha:1.0],
-                               NSUnderlineStyleAttributeName:@(NSUnderlineStyleSingle)
-                               };
-    
-    if (str.length >= 6) {
-        NSRange range = NSMakeRange(str.length-3,2);
-        NSString *link1 = [str substringWithRange:range]; //截取字符串
-        
-        [self.label addLinkString:link1 linkAddAttribute:linkDic1 block:^(CJLinkLabelModel *linkModel) {
-            NSLog(@"点击了链接: %@",linkModel.linkString);
-        }];
-        
-        NSRange range2 = NSMakeRange(2,3);
-        NSString *link2 = [str substringWithRange:range2]; //截取字符串
-        
-        [self.label addLinkString:link2 linkAddAttribute:linkDic2 block:^(CJLinkLabelModel *linkModel) {
-            NSLog(@"点击了链接: %@",linkModel.linkString);
-        }];
-    }
-    
-    
-//    [self.label addLinkString:@"的" linkAddAttribute:linkDic1 linkParameter:@{@"id":@"1",@"type":@"text"} block:^(CJLinkLabelModel *linkModel) {
-//        NSLog(@"点击了链接: %@",linkModel.parameter);
-//    }];
-//    
-//    [self.label addLinkString:@"点击了链接" linkAddAttribute:linkDic2 block:^(CJLinkLabelModel *linkModel) {
-//        NSLog(@"点击了链接: %@",linkModel.linkString);
-//    }];
-    
-    CGFloat width = [[UIScreen mainScreen] bounds].size.width-20;
-    CGRect labelFrame = self.label.frame;
-    
-    // TODO: 方法一
-    labelFrame.size = [NSString getStringRect:labelTitle width:width height:MAXFLOAT];
-    
-    // TODO: 方法二
-//    labelFrame.size = [NSString sizeLabelToFit:labelTitle width:width height:MAXFLOAT];
-    
-    self.label.frame = labelFrame;
 }
 
 @end

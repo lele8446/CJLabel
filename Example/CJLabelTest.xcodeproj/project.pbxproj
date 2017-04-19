@@ -15,6 +15,7 @@
 		438257941C1A6F5F00A3DA24 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 438257921C1A6F5F00A3DA24 /* LaunchScreen.storyboard */; };
 		4382579F1C1A6F5F00A3DA24 /* CJLabelTestTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4382579E1C1A6F5F00A3DA24 /* CJLabelTestTests.m */; };
 		438257AA1C1A6F5F00A3DA24 /* CJLabelTestUITests.m in Sources */ = {isa = PBXBuildFile; fileRef = 438257A91C1A6F5F00A3DA24 /* CJLabelTestUITests.m */; };
+		B4088C891EA7638900EB1EA2 /* CJLabelUtilities.m in Sources */ = {isa = PBXBuildFile; fileRef = B4088C881EA7638900EB1EA2 /* CJLabelUtilities.m */; };
 		B431D5321D0545E700228988 /* CJLabel.m in Sources */ = {isa = PBXBuildFile; fileRef = B431D52E1D0545E700228988 /* CJLabel.m */; };
 		B431D5391D05540A00228988 /* NSString+CJString.m in Sources */ = {isa = PBXBuildFile; fileRef = B431D5381D05540A00228988 /* NSString+CJString.m */; };
 /* End PBXBuildFile section */
@@ -53,6 +54,8 @@
 		438257A51C1A6F5F00A3DA24 /* CJLabelTestUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = CJLabelTestUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		438257A91C1A6F5F00A3DA24 /* CJLabelTestUITests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CJLabelTestUITests.m; sourceTree = "<group>"; };
 		438257AB1C1A6F5F00A3DA24 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		B4088C871EA7638900EB1EA2 /* CJLabelUtilities.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CJLabelUtilities.h; sourceTree = "<group>"; };
+		B4088C881EA7638900EB1EA2 /* CJLabelUtilities.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CJLabelUtilities.m; sourceTree = "<group>"; };
 		B431D52D1D0545E700228988 /* CJLabel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CJLabel.h; sourceTree = "<group>"; };
 		B431D52E1D0545E700228988 /* CJLabel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CJLabel.m; sourceTree = "<group>"; };
 		B431D5371D05540A00228988 /* NSString+CJString.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSString+CJString.h"; sourceTree = "<group>"; };
@@ -152,6 +155,8 @@
 			children = (
 				B431D52D1D0545E700228988 /* CJLabel.h */,
 				B431D52E1D0545E700228988 /* CJLabel.m */,
+				B4088C871EA7638900EB1EA2 /* CJLabelUtilities.h */,
+				B4088C881EA7638900EB1EA2 /* CJLabelUtilities.m */,
 				B431D5371D05540A00228988 /* NSString+CJString.h */,
 				B431D5381D05540A00228988 /* NSString+CJString.m */,
 			);
@@ -226,7 +231,7 @@
 				TargetAttributes = {
 					438257801C1A6F5F00A3DA24 = {
 						CreatedOnToolsVersion = 7.0;
-						DevelopmentTeam = 2G9KQAD4K5;
+						DevelopmentTeam = 77MMW6NR5H;
 					};
 					438257991C1A6F5F00A3DA24 = {
 						CreatedOnToolsVersion = 7.0;
@@ -294,6 +299,7 @@
 				B431D5321D0545E700228988 /* CJLabel.m in Sources */,
 				438257891C1A6F5F00A3DA24 /* AppDelegate.m in Sources */,
 				438257861C1A6F5F00A3DA24 /* main.m in Sources */,
+				B4088C891EA7638900EB1EA2 /* CJLabelUtilities.m in Sources */,
 				B431D5391D05540A00228988 /* NSString+CJString.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -436,6 +442,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
+				DEVELOPMENT_TEAM = 77MMW6NR5H;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)",
@@ -444,7 +451,7 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				OTHER_LDFLAGS = "";
-				PRODUCT_BUNDLE_IDENTIFIER = cj.CJLabelTest;
+				PRODUCT_BUNDLE_IDENTIFIER = com.bitone.allApp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
@@ -454,6 +461,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
+				DEVELOPMENT_TEAM = 77MMW6NR5H;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)",
@@ -462,7 +470,7 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				OTHER_LDFLAGS = "";
-				PRODUCT_BUNDLE_IDENTIFIER = cj.CJLabelTest;
+				PRODUCT_BUNDLE_IDENTIFIER = com.bitone.allApp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;
