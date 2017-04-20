@@ -21,8 +21,8 @@
     self.label.extendsLinkTouchArea = YES;
 //    self.label.highlighted = YES;
 //    self.label.highlightedTextColor = [UIColor blueColor];
-//    self.label.verticalAlignment = CJContentVerticalAlignmentTop;
-    self.label.textInsets = UIEdgeInsetsMake(10, 10, 10, 10);
+    self.label.verticalAlignment = CJContentVerticalAlignmentTop;
+    self.label.textInsets = UIEdgeInsetsMake(10, 10, 0, 10);
     self.label.extendsLinkTouchArea = YES;
     [self labelContent];
     
@@ -129,15 +129,15 @@
                                                       NSLog(@"longPressBlock, str = %@, range = %@",attributedString.string, NSStringFromRange(range));
                                                   }];
     
-    NSMutableAttributedString *title = [[NSMutableAttributedString alloc]initWithString:@"是是是" attributes:dic];
+    NSMutableAttributedString *title = [[NSMutableAttributedString alloc]initWithString:@"是" attributes:dic];
     
     labelTitle = [self.label configureLinkAttributedString:labelTitle
                                   withAttString:title
-                                      sameStringEnable:NO
+                                      sameStringEnable:YES
                                         linkAttributes:@{
                                                          NSFontAttributeName:[UIFont fontWithName:@"Arial-BoldItalicMT" size:15.0],/*(字体)*/
 //                                                         NSBackgroundColorAttributeName:[UIColor whiteColor],/*(字体背景色)*/
-                                                         NSForegroundColorAttributeName:[UIColor redColor],/*(字体颜色)*/
+                                                         NSForegroundColorAttributeName:[UIColor blueColor],/*(字体颜色)*/
                                                          NSUnderlineStyleAttributeName:@(NSUnderlineStyleSingle),/*(下划线)*/
 //                                                         NSStrikethroughStyleAttributeName:@(NSUnderlinePatternSolid | NSUnderlineStyleSingle),/*(删除线)NSUnderlinePatternSolid(实线)*/
                                                          kCJBackgroundFillColorAttributeName:[UIColor lightGrayColor],
@@ -146,6 +146,7 @@
                                                          kCJBackgroundLineCornerRadiusAttributeName:@(10)
                                                          }
                                         activeLinkAttributes:@{
+                                                               NSForegroundColorAttributeName:[UIColor redColor],/*(字体颜色)*/
                                                                kCJActiveBackgroundFillColorAttributeName:[UIColor orangeColor],
                                                                kCJActiveBackgroundStrokeColorAttributeName:[UIColor blackColor],
                                                                }

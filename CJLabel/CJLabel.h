@@ -104,7 +104,7 @@ IB_DESIGNABLE
 + (CGSize)getStringRect:(NSAttributedString *)aString width:(CGFloat)width height:(CGFloat)height;
 
 /**
- 在指定位置插入图片，并返回插入图片后的NSMutableAttributedString（图片占位符所占的NSRange，length=1）
+ 在指定位置插入图片，并返回插入图片后的NSMutableAttributedString（图片占位符所占的NSRange={loc,1}）
  
  @param attrStr 需要插入图片的NSAttributedString
  @param imageName 图片名称
@@ -121,7 +121,8 @@ IB_DESIGNABLE
                                               attributes:(NSDictionary *)attributes;
 
 /**
- 在指定位置插入图片，图片是点击的链点！！！
+ 在指定位置插入图片，插入图片为点击的链点！！！
+ 返回插入图片后的NSMutableAttributedString（图片占位符所占的NSRange={loc,1}）
  
  @param attrStr 需要插入图片的NSAttributedString
  @param imageName 图片名称
@@ -184,7 +185,7 @@ IB_DESIGNABLE
  
  @param attrStr NSAttributedString源
  @param withAttString 需要设置的富文本
- @param sameStringEnable 文本中所有与withAttString的文字是否同步设置属性，sameStringEnable=NO 时取文本中首次匹配的String
+ @param sameStringEnable 文本中所有与withAttString相同的文字是否同步设置属性，sameStringEnable=NO 时取文本中首次匹配的NSAttributedString
  @param attributes 文本属性
  
  @return 返回新的NSMutableAttributedString
@@ -199,7 +200,7 @@ IB_DESIGNABLE
  
  @param attrStr NSAttributedString源
  @param withAttString 需要设置的富文本
- @param sameStringEnable 文本中所有与withAttString的文字是否同步设置属性，sameStringEnable=NO 时取文本中首次匹配的String
+ @param sameStringEnable 文本中所有与withAttString相同的文字是否同步设置属性，sameStringEnable=NO 时取文本中首次匹配的NSAttributedString
  @param linkAttributes 链点文本属性
  @param activeLinkAttributes 点击状态下的链点文本属性
  @param parameter 链点自定义参数

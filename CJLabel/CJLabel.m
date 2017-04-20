@@ -160,6 +160,7 @@ static inline BOOL isSameColor(UIColor *color1, UIColor *color2){
     BOOL _needsFramesetter;
     CTFramesetterRef _framesetter;
     CTFramesetterRef _highlightFramesetter;
+    CGFloat _yOffset;
     BOOL _longPress;//判断是否长按;
     BOOL _needRedrawn;//是否需要重新计算_runStrokeItemArray以及_linkStrokeItemArray数组
     NSArray <CJGlyphRunStrokeItem *>*_runStrokeItemArray;//所有需要重绘背景或边框线的StrokeItem数组
@@ -511,20 +512,19 @@ static inline BOOL isSameColor(UIColor *color1, UIColor *color2){
     textSize = CGSizeMake(CGFloat_ceil(textSize.width), CGFloat_ceil(textSize.height)); // Fix for iOS 4, CTFramesetterSuggestFrameSizeWithConstraints sometimes returns fractional sizes
     
     if (textSize.height < bounds.size.height) {
-        CGFloat yOffset = 0.0f;
+         _yOffset = 0.0f;
         switch (self.verticalAlignment) {
             case CJContentVerticalAlignmentCenter:
-                yOffset = CGFloat_floor((bounds.size.height - textSize.height) / 2.0f);
+                _yOffset = CGFloat_floor((bounds.size.height - textSize.height) / 2.0f);
                 break;
             case CJContentVerticalAlignmentBottom:
-                yOffset = bounds.size.height - textSize.height;
+                _yOffset = bounds.size.height - textSize.height;
                 break;
             case CJContentVerticalAlignmentTop:
             default:
                 break;
         }
-        
-        textRect.origin.y += yOffset;
+        textRect.origin.y += _yOffset;
     }
     
     return textRect;
@@ -583,9 +583,6 @@ static inline BOOL isSameColor(UIColor *color1, UIColor *color2){
         
         // 获取textRect
         CGRect textRect = [self textRectForBounds:rect limitedToNumberOfLines:self.numberOfLines];
-        // 获取textRect
-        CGRect insettextRect = [self textRectForBounds:insetRect limitedToNumberOfLines:self.numberOfLines];
-        
         // CTM 坐标移到左下角
         CGContextTranslateCTM(c, insetRect.origin.x, insetRect.size.height - textRect.origin.y - textRect.size.height);
         
@@ -762,9 +759,13 @@ static inline BOOL isSameColor(UIColor *color1, UIColor *color2){
 {
     if (runStrokeItems.count > 0) {
         for (CJGlyphRunStrokeItem *item in runStrokeItems) {
-            if (CGRectEqualToRect(_currentClickRunStrokeItem.runBounds,item.runBounds)) {
-                [self drawBackgroundColor:c runStrokeItem:_currentClickRunStrokeItem isStrokeColor:isStrokeColor active:YES];
-            }else{
+//            if (CGRectEqualToRect(_currentClickRunStrokeItem.runBounds,item.runBounds)) {
+//               [self drawBackgroundColor:c runStrokeItem:_currentClickRunStrokeItem isStrokeColor:isStrokeColor active:YES];
+//            }
+            if (_currentClickRunStrokeItem && NSEqualRanges(_currentClickRunStrokeItem.range,item.range) ) {
+                [self drawBackgroundColor:c runStrokeItem:item isStrokeColor:isStrokeColor active:YES];
+            }
+            else{
                 [self drawBackgroundColor:c runStrokeItem:item isStrokeColor:isStrokeColor active:NO];
             }
         }
@@ -779,10 +780,10 @@ static inline BOOL isSameColor(UIColor *color1, UIColor *color2){
                      active:(BOOL)active
 {
     CGContextSetLineJoin(c, kCGLineJoinRound);
-    CGRect roundedRect = CGRectMake(runStrokeItem.runBounds.origin.x-self.textInsets.left,
-                                    runStrokeItem.runBounds.origin.y-self.textInsets.top,
-                                    runStrokeItem.runBounds.size.width,
-                                    runStrokeItem.runBounds.size.height);
+    CGFloat x = runStrokeItem.runBounds.origin.x-self.textInsets.left;
+    CGFloat y = runStrokeItem.runBounds.origin.y;
+    
+    CGRect roundedRect = CGRectMake(x,y,runStrokeItem.runBounds.size.width,runStrokeItem.runBounds.size.height);
     CGPathRef glyphRunpath = [[UIBezierPath bezierPathWithRoundedRect:roundedRect cornerRadius:runStrokeItem.cornerRadius] CGPath];
     CGContextAddPath(c, glyphRunpath);
     
@@ -845,8 +846,9 @@ static inline BOOL isSameColor(UIColor *color1, UIColor *color2){
     
     CFIndex lineIndex = 0;
     // 遍历所有行
-    for (id line in lines) {
-        
+//    for (id line in lines) {
+    for (int i = 0; i < (self.numberOfLines != 0?self.numberOfLines:lines.count); i ++ ) {
+        id line = lines[i];
         _lastGlyphRunStrokeItem = nil;
         
         CGFloat ascent = 0.0f, descent = 0.0f, leading = 0.0f;
@@ -984,8 +986,7 @@ static inline BOOL isSameColor(UIColor *color1, UIColor *color2){
     }
     
     runBounds.origin.x = origins[lineIndex].x + rect.origin.x + xOffset;
-    runBounds.origin.y = origins[lineIndex].y + rect.origin.y;
-    runBounds.origin.y -= runDescent;
+    runBounds.origin.y = origins[lineIndex].y - runDescent;
     
     if (CGRectGetWidth(runBounds) > width) {
         runBounds.size.width = width;
@@ -1215,7 +1216,7 @@ static inline BOOL isSameColor(UIColor *color1, UIColor *color2){
         
         CGFloat top = self.textInsets.top;
         CGFloat bottom = self.textInsets.bottom;
-        bounds.origin.y = bounds.origin.y + top - bottom;
+        bounds.origin.y = bounds.origin.y + top - bottom + _yOffset;
         if (radius > 0) {
             bounds = CGRectInset(bounds,-radius,-radius);
         }
