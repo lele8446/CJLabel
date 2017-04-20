@@ -9,6 +9,7 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 #import <CoreText/CoreText.h>
+#import "CJLabel.h"
 
 #define CJLabelIsNull(a) ((a)==nil || (a)==NULL || (NSNull *)(a)==[NSNull null])
 
@@ -20,29 +21,14 @@ extern NSString * const kCJLinkRangeAttributesName;
 extern NSString * const kCJLinkParameterAttributesName;
 extern NSString * const kCJClickLinkBlockAttributesName;
 extern NSString * const kCJLongPressBlockAttributesName;
-
 extern NSString * const kCJLinkNeedRedrawnAttributesName;
 
-
-/**
- 链点回调block
- 
- @param attributedString 链点富文本
- @param image 链点图片
- @param parameter 链点自定义参数
- @param range 链点文本在整体文本中的NSRange
- */
-typedef void (^CJLabelLinkModelBlock)(NSAttributedString *attributedString, UIImage *image, id parameter, NSRange range);
 
 
 /**
  CJLabel工具类，提供NSMutableAttributedString封装方法
  */
 @interface CJLabelUtilities : NSObject
-
-+ (NSRange)getFirstRangeWithAttString:(NSAttributedString *)withAttString inAttString:(NSAttributedString *)attString;
-+ (NSArray <NSString *>*)getRangeArrayWithAttString:(NSAttributedString *)withAttString inAttString:(NSAttributedString *)attString;
-
 
 /**
  在指定位置插入图片，图片是点击的链点！！！
@@ -116,5 +102,32 @@ typedef void (^CJLabelLinkModelBlock)(NSAttributedString *attributedString, UIIm
                                               clickLinkBlock:(CJLabelLinkModelBlock)clickLinkBlock
                                               longPressBlock:(CJLabelLinkModelBlock)longPressBlock
                                                       islink:(BOOL)isLink;
+
+@end
+
+/**
+ 响应点击以及指定区域绘制边框线辅助类
+ */
+@interface CJGlyphRunStrokeItem : NSObject
+
+@property (nonatomic, strong) UIColor *fillColor;//填充背景色
+@property (nonatomic, strong) UIColor *strokeColor;//描边边框色
+@property (nonatomic, strong) UIColor *activeFillColor;//点击选中时候的填充背景色
+@property (nonatomic, strong) UIColor *activeStrokeColor;//点击选中时候的描边边框色
+@property (nonatomic, assign) CGFloat lineWidth;//描边边框大小
+@property (nonatomic, assign) CGFloat cornerRadius;//描边圆角
+@property (nonatomic, assign) CGRect runBounds;//描边区域在系统坐标下的rect（原点在左下角）
+@property (nonatomic, assign) CGRect locBounds;//描边区域在屏幕坐标下的rect（原点在左上角）
+@property (nonatomic, strong) UIImage *image;//插入的图片
+@property (nonatomic, assign) NSRange range;//链点在文本中的range
+@property (nonatomic, strong) id parameter;//链点自定义参数
+@property (nonatomic, copy) CJLabelLinkModelBlock linkBlock;//点击链点回调
+@property (nonatomic, copy) CJLabelLinkModelBlock longPressBlock;//长按点击链点回调
+
+//判断是否为点击链点
+@property (nonatomic, assign) BOOL isLink;
+//标记点击该链点是否需要重绘文本
+@property (nonatomic, assign) BOOL needRedrawn;
+
 
 @end

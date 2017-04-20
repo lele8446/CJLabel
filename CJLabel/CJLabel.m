@@ -7,10 +7,11 @@
 //
 
 #import "CJLabel.h"
-
 #import <QuartzCore/QuartzCore.h>
 #import <objc/runtime.h>
+#import "CJLabelUtilities.h"
 
+@class CJGlyphRunStrokeItem;
 
 NSString * const kCJBackgroundFillColorAttributeName         = @"kCJBackgroundFillColor";
 NSString * const kCJBackgroundStrokeColorAttributeName       = @"kCJBackgroundStrokeColor";
@@ -19,10 +20,7 @@ NSString * const kCJBackgroundLineCornerRadiusAttributeName  = @"kCJBackgroundLi
 NSString * const kCJActiveBackgroundFillColorAttributeName   = @"kCJActiveBackgroundFillColor";
 NSString * const kCJActiveBackgroundStrokeColorAttributeName = @"kCJActiveBackgroundStrokeColor";
 
-
 static CGFloat const CJFLOAT_MAX = 100000;
-
-
 
 static inline CGFLOAT_TYPE CGFloat_ceil(CGFLOAT_TYPE cgfloat) {
 #if CGFLOAT_IS_DOUBLE
@@ -51,7 +49,6 @@ static inline CGFloat CJFlushFactorForTextAlignment(NSTextAlignment textAlignmen
             return 0.0f;
     }
 }
-
 
 static inline CGColorRef CGColorRefFromColor(id color) {
     return [color isKindOfClass:[UIColor class]] ? [color CGColor] : (__bridge CGColorRef)color;
@@ -173,14 +170,104 @@ static inline BOOL isSameColor(UIColor *color1, UIColor *color2){
 @synthesize text = _text;
 @synthesize attributedText = _attributedText;
 
-#if !TARGET_OS_TV
-#pragma mark - UIResponderStandardEditActions
-
-- (void)copy:(__unused id)sender {
-    [[UIPasteboard generalPasteboard] setString:self.attributedText.string];
+#pragma mark - Public Method
++ (CGSize)getStringRect:(NSAttributedString *)aString width:(CGFloat)width height:(CGFloat)height {
+    CGSize size = CGSizeZero;
+    NSMutableAttributedString *atrString = [[NSMutableAttributedString alloc] initWithAttributedString:aString];
+    NSRange range = NSMakeRange(0, atrString.length);
+    
+    //获取指定位置上的属性信息，并返回与指定位置属性相同并且连续的字符串的范围信息。
+    NSDictionary* dic = [atrString attributesAtIndex:0 effectiveRange:&range];
+    //不存在段落属性，则存入默认值
+    NSMutableParagraphStyle *paragraphStyle = dic[NSParagraphStyleAttributeName];
+    if (!paragraphStyle || nil == paragraphStyle) {
+        paragraphStyle = [[NSParagraphStyle defaultParagraphStyle] mutableCopy];
+        paragraphStyle.lineSpacing = 0.0;//增加行高
+        paragraphStyle.headIndent = 0;//头部缩进，相当于左padding
+        paragraphStyle.tailIndent = 0;//相当于右padding
+        paragraphStyle.lineHeightMultiple = 0;//行间距是多少倍
+        paragraphStyle.alignment = NSTextAlignmentLeft;//对齐方式
+        paragraphStyle.firstLineHeadIndent = 0;//首行头缩进
+        paragraphStyle.paragraphSpacing = 0;//段落后面的间距
+        paragraphStyle.paragraphSpacingBefore = 0;//段落之前的间距
+        [atrString addAttribute:NSParagraphStyleAttributeName value:paragraphStyle range:range];
+    }
+    
+    NSMutableDictionary *attDic = [NSMutableDictionary dictionaryWithDictionary:dic];
+    [attDic setObject:paragraphStyle forKey:NSParagraphStyleAttributeName];
+    
+    CGSize strSize = [[aString string] boundingRectWithSize:CGSizeMake(width, height)
+                                                    options:NSStringDrawingUsesLineFragmentOrigin | NSStringDrawingUsesFontLeading
+                                                 attributes:attDic
+                                                    context:nil].size;
+    
+    size = CGSizeMake(CGFloat_ceil(strSize.width), CGFloat_ceil(strSize.height));
+    //    NSLog(@"boundingRectWithSize %@",NSStringFromCGSize(size));
+    return size;
 }
-#endif
 
+- (NSMutableAttributedString *)configureAttributedString:(NSAttributedString *)attrStr
+                                            addImageName:(NSString *)imageName
+                                               imageSize:(CGSize)size
+                                                 atIndex:(NSUInteger)loc
+                                              attributes:(NSDictionary *)attributes
+{
+    return [CJLabelUtilities configureLinkAttributedString:attrStr addImageName:imageName imageSize:size atIndex:loc linkAttributes:attributes activeLinkAttributes:nil parameter:nil clickLinkBlock:nil longPressBlock:nil islink:NO];
+}
+
+- (NSMutableAttributedString *)configureLinkAttributedString:(NSAttributedString *)attrStr
+                                                addImageName:(NSString *)imageName
+                                                   imageSize:(CGSize)size
+                                                     atIndex:(NSUInteger)loc
+                                              linkAttributes:(NSDictionary *)linkAttributes
+                                        activeLinkAttributes:(NSDictionary *)activeLinkAttributes
+                                                   parameter:(id)parameter
+                                              clickLinkBlock:(CJLabelLinkModelBlock)clickLinkBlock
+                                              longPressBlock:(CJLabelLinkModelBlock)longPressBlock
+{
+    return [CJLabelUtilities configureLinkAttributedString:attrStr addImageName:imageName imageSize:size atIndex:loc linkAttributes:linkAttributes activeLinkAttributes:activeLinkAttributes parameter:parameter clickLinkBlock:clickLinkBlock longPressBlock:longPressBlock islink:YES];
+}
+
+- (NSMutableAttributedString *)configureAttributedString:(NSAttributedString *)attrStr
+                                                 atRange:(NSRange)range
+                                              attributes:(NSDictionary *)attributes
+{
+    return [CJLabelUtilities configureLinkAttributedString:attrStr atRange:range linkAttributes:attributes activeLinkAttributes:nil parameter:nil clickLinkBlock:nil longPressBlock:nil islink:NO];
+}
+
+- (NSMutableAttributedString *)configureLinkAttributedString:(NSAttributedString *)attrStr
+                                                     atRange:(NSRange)range
+                                              linkAttributes:(NSDictionary *)linkAttributes
+                                        activeLinkAttributes:(NSDictionary *)activeLinkAttributes
+                                                   parameter:(id)parameter
+                                              clickLinkBlock:(CJLabelLinkModelBlock)clickLinkBlock
+                                              longPressBlock:(CJLabelLinkModelBlock)longPressBlock
+{
+    return [CJLabelUtilities configureLinkAttributedString:attrStr atRange:range linkAttributes:linkAttributes activeLinkAttributes:activeLinkAttributes parameter:parameter clickLinkBlock:clickLinkBlock longPressBlock:longPressBlock islink:YES];
+}
+
+- (NSMutableAttributedString *)configureAttributedString:(NSAttributedString *)attrStr
+                                           withAttString:(NSAttributedString *)withAttString
+                                        sameStringEnable:(BOOL)sameStringEnable
+                                              attributes:(NSDictionary *)attributes
+{
+    return [CJLabelUtilities configureLinkAttributedString:attrStr withAttString:withAttString sameStringEnable:sameStringEnable linkAttributes:attributes activeLinkAttributes:nil parameter:nil clickLinkBlock:nil longPressBlock:nil islink:NO];
+}
+
+- (NSMutableAttributedString *)configureLinkAttributedString:(NSAttributedString *)attrStr
+                                               withAttString:(NSAttributedString *)withAttString
+                                            sameStringEnable:(BOOL)sameStringEnable
+                                              linkAttributes:(NSDictionary *)linkAttributes
+                                        activeLinkAttributes:(NSDictionary *)activeLinkAttributes
+                                                   parameter:(id)parameter
+                                              clickLinkBlock:(CJLabelLinkModelBlock)clickLinkBlock
+                                              longPressBlock:(CJLabelLinkModelBlock)longPressBlock
+{
+    return [CJLabelUtilities configureLinkAttributedString:attrStr withAttString:withAttString sameStringEnable:sameStringEnable linkAttributes:linkAttributes activeLinkAttributes:activeLinkAttributes parameter:parameter clickLinkBlock:clickLinkBlock longPressBlock:longPressBlock islink:YES];
+}
+
+
+#pragma mark - Life cycle
 - (id)initWithCoder:(NSCoder *)coder {
     self = [super initWithCoder:coder];
     if (self) {
@@ -373,105 +460,8 @@ static inline BOOL isSameColor(UIColor *color1, UIColor *color2){
     _highlightFramesetter = highlightFramesetter;
 }
 
-#pragma mark - Public method
-+ (CGSize)getStringRect:(NSAttributedString *)aString width:(CGFloat)width height:(CGFloat)height {
-    CGSize size = CGSizeZero;
-    NSMutableAttributedString *atrString = [[NSMutableAttributedString alloc] initWithAttributedString:aString];
-    NSRange range = NSMakeRange(0, atrString.length);
-    
-    //获取指定位置上的属性信息，并返回与指定位置属性相同并且连续的字符串的范围信息。
-    NSDictionary* dic = [atrString attributesAtIndex:0 effectiveRange:&range];
-    //不存在段落属性，则存入默认值
-    NSMutableParagraphStyle *paragraphStyle = dic[NSParagraphStyleAttributeName];
-    if (!paragraphStyle || nil == paragraphStyle) {
-        paragraphStyle = [[NSParagraphStyle defaultParagraphStyle] mutableCopy];
-        paragraphStyle.lineSpacing = 0.0;//增加行高
-        paragraphStyle.headIndent = 0;//头部缩进，相当于左padding
-        paragraphStyle.tailIndent = 0;//相当于右padding
-        paragraphStyle.lineHeightMultiple = 0;//行间距是多少倍
-        paragraphStyle.alignment = NSTextAlignmentLeft;//对齐方式
-        paragraphStyle.firstLineHeadIndent = 0;//首行头缩进
-        paragraphStyle.paragraphSpacing = 0;//段落后面的间距
-        paragraphStyle.paragraphSpacingBefore = 0;//段落之前的间距
-        [atrString addAttribute:NSParagraphStyleAttributeName value:paragraphStyle range:range];
-    }
-    
-    NSMutableDictionary *attDic = [NSMutableDictionary dictionaryWithDictionary:dic];
-    [attDic setObject:paragraphStyle forKey:NSParagraphStyleAttributeName];
-    
-    CGSize strSize = [[aString string] boundingRectWithSize:CGSizeMake(width, height)
-                                                    options:NSStringDrawingUsesLineFragmentOrigin | NSStringDrawingUsesFontLeading
-                                                 attributes:attDic
-                                                    context:nil].size;
-    
-    size = CGSizeMake(CGFloat_ceil(strSize.width), CGFloat_ceil(strSize.height));
-//    NSLog(@"boundingRectWithSize %@",NSStringFromCGSize(size));
-    return size;
-}
-
-- (NSMutableAttributedString *)configureAttributedString:(NSAttributedString *)attrStr
-                                            addImageName:(NSString *)imageName
-                                               imageSize:(CGSize)size
-                                                 atIndex:(NSUInteger)loc
-                                              attributes:(NSDictionary *)attributes
-{
-    return [CJLabelUtilities configureLinkAttributedString:attrStr addImageName:imageName imageSize:size atIndex:loc linkAttributes:attributes activeLinkAttributes:nil parameter:nil clickLinkBlock:nil longPressBlock:nil islink:NO];
-}
-
-- (NSMutableAttributedString *)configureLinkAttributedString:(NSAttributedString *)attrStr
-                                                addImageName:(NSString *)imageName
-                                                   imageSize:(CGSize)size
-                                                     atIndex:(NSUInteger)loc
-                                              linkAttributes:(NSDictionary *)linkAttributes
-                                        activeLinkAttributes:(NSDictionary *)activeLinkAttributes
-                                                   parameter:(id)parameter
-                                              clickLinkBlock:(CJLabelLinkModelBlock)clickLinkBlock
-                                              longPressBlock:(CJLabelLinkModelBlock)longPressBlock
-{
-    return [CJLabelUtilities configureLinkAttributedString:attrStr addImageName:imageName imageSize:size atIndex:loc linkAttributes:linkAttributes activeLinkAttributes:activeLinkAttributes parameter:parameter clickLinkBlock:clickLinkBlock longPressBlock:longPressBlock islink:YES];
-}
-
-- (NSMutableAttributedString *)configureAttributedString:(NSAttributedString *)attrStr
-                                                 atRange:(NSRange)range
-                                              attributes:(NSDictionary *)attributes
-{
-    return [CJLabelUtilities configureLinkAttributedString:attrStr atRange:range linkAttributes:attributes activeLinkAttributes:nil parameter:nil clickLinkBlock:nil longPressBlock:nil islink:NO];
-}
-
-- (NSMutableAttributedString *)configureLinkAttributedString:(NSAttributedString *)attrStr
-                                                     atRange:(NSRange)range
-                                              linkAttributes:(NSDictionary *)linkAttributes
-                                        activeLinkAttributes:(NSDictionary *)activeLinkAttributes
-                                                   parameter:(id)parameter
-                                              clickLinkBlock:(CJLabelLinkModelBlock)clickLinkBlock
-                                              longPressBlock:(CJLabelLinkModelBlock)longPressBlock
-{
-    return [CJLabelUtilities configureLinkAttributedString:attrStr atRange:range linkAttributes:linkAttributes activeLinkAttributes:activeLinkAttributes parameter:parameter clickLinkBlock:clickLinkBlock longPressBlock:longPressBlock islink:YES];
-}
-
-- (NSMutableAttributedString *)configureAttributedString:(NSAttributedString *)attrStr
-                                           withAttString:(NSAttributedString *)withAttString
-                                        sameStringEnable:(BOOL)sameStringEnable
-                                              attributes:(NSDictionary *)attributes
-{
-    return [CJLabelUtilities configureLinkAttributedString:attrStr withAttString:withAttString sameStringEnable:sameStringEnable linkAttributes:attributes activeLinkAttributes:nil parameter:nil clickLinkBlock:nil longPressBlock:nil islink:NO];
-}
-
-- (NSMutableAttributedString *)configureLinkAttributedString:(NSAttributedString *)attrStr
-                                               withAttString:(NSAttributedString *)withAttString
-                                            sameStringEnable:(BOOL)sameStringEnable
-                                              linkAttributes:(NSDictionary *)linkAttributes
-                                        activeLinkAttributes:(NSDictionary *)activeLinkAttributes
-                                                   parameter:(id)parameter
-                                              clickLinkBlock:(CJLabelLinkModelBlock)clickLinkBlock
-                                              longPressBlock:(CJLabelLinkModelBlock)longPressBlock
-{
-    return [CJLabelUtilities configureLinkAttributedString:attrStr withAttString:withAttString sameStringEnable:sameStringEnable linkAttributes:linkAttributes activeLinkAttributes:activeLinkAttributes parameter:parameter clickLinkBlock:clickLinkBlock longPressBlock:longPressBlock islink:YES];
-}
-
 
 #pragma mark - UILabel
-
 - (void)setHighlighted:(BOOL)highlighted {
     [super setHighlighted:highlighted];
     [self setNeedsDisplay];
@@ -614,7 +604,7 @@ static inline BOOL isSameColor(UIColor *color1, UIColor *color2){
     CGContextRestoreGState(c);
 }
 
-#pragma mark - 绘制
+#pragma mark - Draw Method
 - (void)drawFramesetter:(CTFramesetterRef)framesetter
        attributedString:(NSAttributedString *)attributedString
               textRange:(CFRange)textRange
@@ -644,6 +634,24 @@ static inline BOOL isSameColor(UIColor *color1, UIColor *color2){
     
     CGPoint lineOrigins[numberOfLines];
     CTFrameGetLineOrigins(frame, CFRangeMake(0, numberOfLines), lineOrigins);
+    
+    CGFloat textHeight = 0;
+    CGFloat yy = 0;
+    for (CFIndex lineIndex = 0; lineIndex < CFArrayGetCount(lines); lineIndex++) {
+        CGPoint lineOrigin = lineOrigins[lineIndex];
+        CGContextSetTextPosition(c, lineOrigin.x, lineOrigin.y);
+        CTLineRef line = CFArrayGetValueAtIndex(lines, lineIndex);
+        
+        CGFloat ascent = 0.0f, descent = 0.0f, leading = 0.0f;
+        CTLineGetTypographicBounds((CTLineRef)line, &ascent, &descent, &leading);
+        
+        CGFloat y = lineOrigin.y;
+        NSLog(@"y = %@",@(y));
+        textHeight += y;
+        if (lineIndex == CFArrayGetCount(lines)-1) {
+            yy = y;
+        }
+    }
     
     for (CFIndex lineIndex = 0; lineIndex < numberOfLines; lineIndex++) {
         CGPoint lineOrigin = lineOrigins[lineIndex];
@@ -759,9 +767,6 @@ static inline BOOL isSameColor(UIColor *color1, UIColor *color2){
 {
     if (runStrokeItems.count > 0) {
         for (CJGlyphRunStrokeItem *item in runStrokeItems) {
-//            if (CGRectEqualToRect(_currentClickRunStrokeItem.runBounds,item.runBounds)) {
-//               [self drawBackgroundColor:c runStrokeItem:_currentClickRunStrokeItem isStrokeColor:isStrokeColor active:YES];
-//            }
             if (_currentClickRunStrokeItem && NSEqualRanges(_currentClickRunStrokeItem.range,item.range) ) {
                 [self drawBackgroundColor:c runStrokeItem:item isStrokeColor:isStrokeColor active:YES];
             }
@@ -1145,7 +1150,6 @@ static inline BOOL isSameColor(UIColor *color1, UIColor *color2){
 }
 
 #pragma mark - UIView
-
 - (CGSize)sizeThatFits:(CGSize)size {
     if (!self.attributedText) {
         return [super sizeThatFits:size];
@@ -1173,19 +1177,8 @@ static inline BOOL isSameColor(UIColor *color1, UIColor *color2){
 }
 
 #pragma mark - UIResponder
-
 - (BOOL)canBecomeFirstResponder {
     return YES;
-}
-
-- (BOOL)canPerformAction:(SEL)action
-              withSender:(__unused id)sender
-{
-#if !TARGET_OS_TV
-    return (action == @selector(copy:));
-#else
-    return NO;
-#endif
 }
 
 - (BOOL)containslinkAtPoint:(CGPoint)point {
@@ -1266,7 +1259,6 @@ static inline BOOL isSameColor(UIColor *color1, UIColor *color2){
             [super touchesEnded:touches withEvent:event];
         }
     }
-
 }
 
 - (void)touchesCancelled:(NSSet *)touches withEvent:(UIEvent *)event {
@@ -1280,17 +1272,14 @@ static inline BOOL isSameColor(UIColor *color1, UIColor *color2){
             [super touchesCancelled:touches withEvent:event];
         }
     }
-    
 }
 
 #pragma mark - UIGestureRecognizerDelegate
-
 - (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldReceiveTouch:(UITouch *)touch {
     return [self containslinkAtPoint:[touch locationInView:self]];
 }
 
 #pragma mark - UILongPressGestureRecognizer
-
 - (void)longPressGestureDidFire:(UILongPressGestureRecognizer *)sender {
     switch (sender.state) {
         case UIGestureRecognizerStateBegan: {
@@ -1319,27 +1308,3 @@ static inline BOOL isSameColor(UIColor *color1, UIColor *color2){
 
 @end
 
-
-@implementation CJGlyphRunStrokeItem
-
-- (id)copyWithZone:(NSZone *)zone {
-    CJGlyphRunStrokeItem *item = [[[self class] allocWithZone:zone] init];
-    item.strokeColor = [self.strokeColor copyWithZone:zone];
-    item.fillColor = self.fillColor;
-    item.lineWidth = self.lineWidth;
-    item.runBounds = self.runBounds;
-    item.locBounds = self.locBounds;
-    item.cornerRadius = self.cornerRadius;
-    item.activeFillColor = self.activeFillColor;
-    item.activeStrokeColor = self.activeStrokeColor;
-    item.image = self.image;
-    item.range = self.range;
-    item.parameter = self.parameter;
-    item.linkBlock = self.linkBlock;
-    item.longPressBlock = self.longPressBlock;
-    item.isLink = self.isLink;
-    item.needRedrawn = self.needRedrawn;
-    return item;
-}
-
-@end

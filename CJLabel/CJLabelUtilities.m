@@ -222,3 +222,29 @@ CGFloat RunDelegateGetWidthCallback(void * refCon) {
 }
 
 @end
+
+
+
+@implementation CJGlyphRunStrokeItem
+
+- (id)copyWithZone:(NSZone *)zone {
+    CJGlyphRunStrokeItem *item = [[[self class] allocWithZone:zone] init];
+    item.strokeColor = [self.strokeColor copyWithZone:zone];
+    item.fillColor = self.fillColor;
+    item.lineWidth = self.lineWidth;
+    item.runBounds = self.runBounds;
+    item.locBounds = self.locBounds;
+    item.cornerRadius = self.cornerRadius;
+    item.activeFillColor = self.activeFillColor;
+    item.activeStrokeColor = self.activeStrokeColor;
+    item.image = self.image;
+    item.range = self.range;
+    item.parameter = self.parameter;
+    item.linkBlock = self.linkBlock;
+    item.longPressBlock = self.longPressBlock;
+    item.isLink = self.isLink;
+    item.needRedrawn = self.needRedrawn;
+    return item;
+}
+
+@end
