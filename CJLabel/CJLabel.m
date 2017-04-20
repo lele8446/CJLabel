@@ -158,6 +158,7 @@ static inline BOOL isSameColor(UIColor *color1, UIColor *color2){
     CTFramesetterRef _framesetter;
     CTFramesetterRef _highlightFramesetter;
     CGFloat _yOffset;
+    NSDictionary *_normalAttDic;
     BOOL _longPress;//判断是否长按;
     BOOL _needRedrawn;//是否需要重新计算_runStrokeItemArray以及_linkStrokeItemArray数组
     NSArray <CJGlyphRunStrokeItem *>*_runStrokeItemArray;//所有需要重绘背景或边框线的StrokeItem数组
@@ -266,6 +267,73 @@ static inline BOOL isSameColor(UIColor *color1, UIColor *color2){
     return [CJLabelUtilities configureLinkAttributedString:attrStr withAttString:withAttString sameStringEnable:sameStringEnable linkAttributes:linkAttributes activeLinkAttributes:activeLinkAttributes parameter:parameter clickLinkBlock:clickLinkBlock longPressBlock:longPressBlock islink:YES];
 }
 
+- (void)removeLinkAtRange:(NSRange)range {
+    NSMutableArray *array = [NSMutableArray arrayWithCapacity:4];
+    for (CJGlyphRunStrokeItem *item in _runStrokeItemArray) {
+        if (!NSEqualRanges(range,item.range)) {
+            [array addObject:item];
+        }
+    }
+    _runStrokeItemArray = [array copy];
+    
+    [array removeAllObjects];
+    for (CJGlyphRunStrokeItem *item in _linkStrokeItemArray) {
+        if (!NSEqualRanges(range,item.range)) {
+            [array addObject:item];
+        }
+    }
+    _linkStrokeItemArray = [array copy];
+    
+    NSAttributedString *removeAttStr = [self.attributedText attributedSubstringFromRange:range];
+    NSMutableAttributedString *newAttributedText = [[NSMutableAttributedString alloc]initWithAttributedString:self.attributedText];
+    NSRange removeRange = NSMakeRange(0, removeAttStr.length);
+    NSDictionary *attDic = [removeAttStr attributesAtIndex:0 effectiveRange:&removeRange];
+    for (NSString *name in [attDic allKeys]) {
+        [newAttributedText removeAttribute:name range:range];
+    }
+    if (_normalAttDic && _normalAttDic.count > 0) {
+        [newAttributedText addAttributes:_normalAttDic range:range];
+    }
+    self.attributedText = newAttributedText;
+    
+    [self setNeedsFramesetter];
+    [self setNeedsDisplay];
+    //立即刷新界面
+    [CATransaction flush];
+}
+
+- (void)removeAllLink{
+    NSMutableArray *array = [NSMutableArray arrayWithCapacity:4];
+    NSMutableAttributedString *newAttributedText = [[NSMutableAttributedString alloc]initWithAttributedString:self.attributedText];
+    
+    for (CJGlyphRunStrokeItem *item in _runStrokeItemArray) {
+        if (!item.isLink) {
+            [array addObject:item];
+        }else{
+            NSRange range = item.range;
+            NSAttributedString *removeAttStr = [self.attributedText attributedSubstringFromRange:range];
+            
+            NSRange removeRange = NSMakeRange(0, removeAttStr.length);
+            NSDictionary *attDic = [removeAttStr attributesAtIndex:0 effectiveRange:&removeRange];
+            for (NSString *name in [attDic allKeys]) {
+                [newAttributedText removeAttribute:name range:range];
+            }
+            if (_normalAttDic && _normalAttDic.count > 0) {
+                [newAttributedText addAttributes:_normalAttDic range:range];
+            }
+        }
+    }
+    
+    self.attributedText = newAttributedText;
+    
+    _runStrokeItemArray = [array copy];
+    _linkStrokeItemArray = nil;
+    
+    [self setNeedsFramesetter];
+    [self setNeedsDisplay];
+    //立即刷新界面
+    [CATransaction flush];
+}
 
 #pragma mark - Life cycle
 - (id)initWithCoder:(NSCoder *)coder {
@@ -359,6 +427,9 @@ static inline BOOL isSameColor(UIColor *color1, UIColor *color2){
             [attText addAttribute:kCJLinkRangeAttributesName value:NSStringFromRange(range) range:range];
         }else{
             [attText removeAttribute:kCJLinkRangeAttributesName range:range];
+            if (!_normalAttDic) {
+                _normalAttDic = attrs;
+            }
         }
     }];
     
@@ -635,24 +706,6 @@ static inline BOOL isSameColor(UIColor *color1, UIColor *color2){
     CGPoint lineOrigins[numberOfLines];
     CTFrameGetLineOrigins(frame, CFRangeMake(0, numberOfLines), lineOrigins);
     
-    CGFloat textHeight = 0;
-    CGFloat yy = 0;
-    for (CFIndex lineIndex = 0; lineIndex < CFArrayGetCount(lines); lineIndex++) {
-        CGPoint lineOrigin = lineOrigins[lineIndex];
-        CGContextSetTextPosition(c, lineOrigin.x, lineOrigin.y);
-        CTLineRef line = CFArrayGetValueAtIndex(lines, lineIndex);
-        
-        CGFloat ascent = 0.0f, descent = 0.0f, leading = 0.0f;
-        CTLineGetTypographicBounds((CTLineRef)line, &ascent, &descent, &leading);
-        
-        CGFloat y = lineOrigin.y;
-        NSLog(@"y = %@",@(y));
-        textHeight += y;
-        if (lineIndex == CFArrayGetCount(lines)-1) {
-            yy = y;
-        }
-    }
-    
     for (CFIndex lineIndex = 0; lineIndex < numberOfLines; lineIndex++) {
         CGPoint lineOrigin = lineOrigins[lineIndex];
         CGContextSetTextPosition(c, lineOrigin.x, lineOrigin.y);
@@ -767,7 +820,7 @@ static inline BOOL isSameColor(UIColor *color1, UIColor *color2){
 {
     if (runStrokeItems.count > 0) {
         for (CJGlyphRunStrokeItem *item in runStrokeItems) {
-            if (_currentClickRunStrokeItem && NSEqualRanges(_currentClickRunStrokeItem.range,item.range) ) {
+            if (_currentClickRunStrokeItem && NSEqualRanges(_currentClickRunStrokeItem.range,item.range)) {
                 [self drawBackgroundColor:c runStrokeItem:item isStrokeColor:isStrokeColor active:YES];
             }
             else{

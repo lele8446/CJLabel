@@ -78,7 +78,7 @@ IB_DESIGNABLE
  *
  * CJLabel 已知bug：
    1. 在`index`位置插入图片，若`index`所在行对应的插入点之后的宽度小于图片宽度时，将只显示局部图片，而不是自动换行插入
-   2. `numberOfLines`不等于0，且`verticalAlignment`不等于`CJContentVerticalAlignmentTop`时，文本显示位置有偏差
+   2. `numberOfLines`大于0且小于实际`label.numberOfLines`，同时`verticalAlignment`不等于`CJContentVerticalAlignmentTop`时，文本显示位置有偏差
  *
  */
 @interface CJLabel : UILabel
@@ -243,11 +243,11 @@ IB_DESIGNABLE
                                               longPressBlock:(CJLabelLinkModelBlock)longPressBlock;
 
 /**
- *  取消点击链点
+ *  移除制定range的点击链点
  *
- *  @param linkString 取消点击的字符串
+ *  @param range 移除链点位置
  */
-- (void)removeLinkString:(NSString *)linkString;
+- (void)removeLinkAtRange:(NSRange)range;
 
 /**
  *  移除所有点击链点

@@ -17,7 +17,7 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    self.label.numberOfLines = 1;
+    self.label.numberOfLines = 5;
     self.label.extendsLinkTouchArea = YES;
 //    self.label.userInteractionEnabled = NO;
 //    self.label.shadowRadius = 0;
@@ -25,13 +25,24 @@
 //    self.label.shadowOffset = CGSizeMake(0, -1);
 //    self.label.highlighted = YES;
 //    self.label.highlightedTextColor = [UIColor blueColor];
-    self.label.verticalAlignment = CJContentVerticalAlignmentBottom;
+    self.label.verticalAlignment = CJContentVerticalAlignmentTop;
     self.label.textInsets = UIEdgeInsetsMake(10, 10, 0, 10);
     self.label.extendsLinkTouchArea = YES;
     [self labelContent];
     
 }
 
+- (IBAction)clear:(id)sender {
+    [self.label removeLinkAtRange:NSMakeRange(5, 7)];
+}
+
+- (IBAction)clearAll:(id)sender {
+    [self.label removeAllLink];
+}
+
+- (IBAction)reload:(id)sender {
+    [self labelContent];
+}
 
 - (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];
@@ -52,7 +63,7 @@
     NSDictionary *dic = @{
                           NSFontAttributeName:[UIFont systemFontOfSize:13],/*(字体)*/
 //                          NSFontAttributeName:[UIFont fontWithName:@"Arial-BoldItalicMT" size:30.0],/*(字体)*/
-                          NSBackgroundColorAttributeName:[UIColor grayColor],/*(字体背景色)*/
+//                          NSBackgroundColorAttributeName:[UIColor grayColor],/*(字体背景色)*/
                           NSForegroundColorAttributeName:[UIColor blackColor],/*(字体颜色)*/
                           NSParagraphStyleAttributeName:paragraph,/*(段落)*/
 //                          NSLigatureAttributeName:[NSNumber numberWithInt:1],/*(连字符)*/
@@ -72,7 +83,7 @@
     labelTitle = [self.label configureLinkAttributedString:labelTitle
                                                      atRange:NSMakeRange(5,7)
                                               linkAttributes:@{
-                                                               NSBackgroundColorAttributeName:[UIColor clearColor],/*(字体背景色)*/
+//                                                               NSBackgroundColorAttributeName:[UIColor clearColor],/*(字体背景色)*/
                                                                NSFontAttributeName:[UIFont systemFontOfSize:25],/*(字体)*/
                                                                NSForegroundColorAttributeName:[UIColor redColor],/*(字体颜色)*/
                                                                kCJBackgroundStrokeColorAttributeName:[UIColor colorWithRed:0.2 green:0.6 blue:1 alpha:1],
@@ -138,6 +149,8 @@
                                                   longPressBlock:^(NSAttributedString *attributedString, UIImage *image, id parameter, NSRange range){
                                                       NSLog(@"longPressBlock, str = %@, range = %@, image = %@",attributedString.string,NSStringFromRange(range),image);
                                                   }];
+    
+    labelTitle = [self.label configureAttributedString:labelTitle addImageName:@"1.png" imageSize:CGSizeMake(80, 60) atIndex:38 attributes:@{}];
     
     self.label.attributedText = labelTitle;
 //    self.label.text = labelTitle;

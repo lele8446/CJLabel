@@ -36,11 +36,50 @@
                                     </userDefinedRuntimeAttribute>
                                 </userDefinedRuntimeAttributes>
                             </label>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="9BA-G5-muT">
+                                <rect key="frame" x="16" y="484" width="64" height="30"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="64" id="W3N-Xt-KTP"/>
+                                    <constraint firstAttribute="height" constant="30" id="sVQ-9k-0y6"/>
+                                </constraints>
+                                <state key="normal" title="移除{5,7}"/>
+                                <connections>
+                                    <action selector="clear:" destination="BYZ-38-t0r" eventType="touchUpInside" id="tkd-m0-dMW"/>
+                                </connections>
+                            </button>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="m9L-Wt-f6Y">
+                                <rect key="frame" x="156" y="484" width="62" height="30"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="62" id="NEL-C0-log"/>
+                                    <constraint firstAttribute="height" constant="30" id="f1C-qz-j0i"/>
+                                </constraints>
+                                <state key="normal" title="移除所有"/>
+                                <connections>
+                                    <action selector="clearAll:" destination="BYZ-38-t0r" eventType="touchUpInside" id="3GC-wf-whz"/>
+                                </connections>
+                            </button>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Xw5-tV-75i">
+                                <rect key="frame" x="328" y="484" width="31" height="30"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="30" id="3eO-2k-qsa"/>
+                                    <constraint firstAttribute="width" constant="31" id="O2e-pQ-kk5"/>
+                                </constraints>
+                                <state key="normal" title="刷新"/>
+                                <connections>
+                                    <action selector="reload:" destination="BYZ-38-t0r" eventType="touchUpInside" id="9co-Qd-0Z1"/>
+                                </connections>
+                            </button>
                         </subviews>
                         <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <constraints>
+                            <constraint firstItem="m9L-Wt-f6Y" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="0F8-hv-Eak"/>
+                            <constraint firstAttribute="trailing" secondItem="Xw5-tV-75i" secondAttribute="trailing" constant="16" id="1Qe-uJ-1dY"/>
                             <constraint firstItem="nwp-7V-4IM" firstAttribute="leading" secondItem="8bC-Xf-vdC" secondAttribute="leading" constant="16" id="7hx-34-kRc"/>
                             <constraint firstAttribute="trailing" secondItem="nwp-7V-4IM" secondAttribute="trailing" constant="16" id="Eth-Nn-T6s"/>
+                            <constraint firstItem="9BA-G5-muT" firstAttribute="leading" secondItem="8bC-Xf-vdC" secondAttribute="leading" constant="16" id="IS7-id-JpG"/>
+                            <constraint firstItem="9BA-G5-muT" firstAttribute="top" secondItem="nwp-7V-4IM" secondAttribute="bottom" constant="44" id="Su6-dr-BM8"/>
+                            <constraint firstItem="Xw5-tV-75i" firstAttribute="top" secondItem="nwp-7V-4IM" secondAttribute="bottom" constant="44" id="Svj-b1-YGv"/>
+                            <constraint firstItem="m9L-Wt-f6Y" firstAttribute="top" secondItem="nwp-7V-4IM" secondAttribute="bottom" constant="44" id="iaI-fk-53w"/>
                             <constraint firstItem="nwp-7V-4IM" firstAttribute="top" secondItem="gGy-nF-YIg" secondAttribute="bottom" constant="20" id="kZr-fW-Emc"/>
                         </constraints>
                     </view>
