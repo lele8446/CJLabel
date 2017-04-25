@@ -17,7 +17,6 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    self.label.numberOfLines = 5;
     self.label.extendsLinkTouchArea = YES;
 //    self.label.userInteractionEnabled = NO;
 //    self.label.shadowRadius = 0;
@@ -26,14 +25,14 @@
 //    self.label.highlighted = YES;
 //    self.label.highlightedTextColor = [UIColor blueColor];
     self.label.verticalAlignment = CJContentVerticalAlignmentTop;
-    self.label.textInsets = UIEdgeInsetsMake(10, 10, 0, 10);
+//    self.label.textInsets = UIEdgeInsetsMake(10, 4, 10, 4);
     self.label.extendsLinkTouchArea = YES;
     [self labelContent];
     
 }
 
 - (IBAction)clear:(id)sender {
-    [self.label removeLinkAtRange:NSMakeRange(5, 7)];
+    [self.label removeLinkAtRange:NSMakeRange(13, 7)];
 }
 
 - (IBAction)clearAll:(id)sender {
@@ -51,10 +50,15 @@
 
 
 - (void)labelContent {
+    self.label.numberOfLines = 0;
+    self.textLabel.numberOfLines = 0;
+    
+    
     NSMutableParagraphStyle *paragraph = [[NSMutableParagraphStyle alloc] init];
     paragraph.alignment = NSTextAlignmentLeft;
-    paragraph.lineSpacing = 3.2;
-//    paragraph.lineHeightMultiple = 1;//行间距是多少倍
+    paragraph.lineSpacing = 5.2;
+    paragraph.lineBreakMode = NSLineBreakByCharWrapping;
+    paragraph.lineHeightMultiple = 1;//行间距是多少倍
     
     NSShadow *shadow = [[NSShadow alloc] init];
     shadow.shadowColor = [UIColor blackColor];
@@ -75,23 +79,23 @@
 //                          NSShadowAttributeName:shadow,/*(阴影)*/
 //                          NSVerticalGlyphFormAttributeName:[NSNumber numberWithInt:0],/*(横竖排版)*/
                           };
-    NSString *str = @"是是姑姑不合格被🐹女更好那好吧是是是是sd是是是是输的佛殿滴哦能力乱砍滥伐空间里聚集你可能离开家呢😄 i是是是是是是是是是是是是是是是是是是是是是是是。";
+    NSString *str = @"1这是一段测试数据2这是一段测试数据3这是一段测试数据4这是一段测试数据5这是一段测试数据6这是一段测试数据7这是一段测试数据8这是一段测试数据9这是一段测试数据10这是一段测试数据11这是一段测试数据。";
     
     //设置label text
     NSMutableAttributedString *labelTitle = [[NSMutableAttributedString alloc]initWithString:str attributes:dic];
     
     labelTitle = [self.label configureLinkAttributedString:labelTitle
-                                                     atRange:NSMakeRange(5,7)
+                                                     atRange:NSMakeRange(13,7)
                                               linkAttributes:@{
 //                                                               NSBackgroundColorAttributeName:[UIColor clearColor],/*(字体背景色)*/
-                                                               NSFontAttributeName:[UIFont systemFontOfSize:25],/*(字体)*/
+                                                               NSFontAttributeName:[UIFont systemFontOfSize:15],/*(字体)*/
                                                                NSForegroundColorAttributeName:[UIColor redColor],/*(字体颜色)*/
                                                                kCJBackgroundStrokeColorAttributeName:[UIColor colorWithRed:0.2 green:0.6 blue:1 alpha:1],
                                                                kCJBackgroundFillColorAttributeName:[UIColor lightGrayColor],
                                                                kCJBackgroundLineWidthAttributeName:@(2)
                                                                }
                                         activeLinkAttributes:@{
-                                                               NSFontAttributeName:[UIFont systemFontOfSize:20],/*(字体)*/
+                                                               NSFontAttributeName:[UIFont systemFontOfSize:13],/*(字体)*/
                                                                NSForegroundColorAttributeName:[UIColor brownColor],/*(字体颜色)*/
                                                                kCJActiveBackgroundFillColorAttributeName:[UIColor orangeColor],
                                                                kCJActiveBackgroundStrokeColorAttributeName:[UIColor blackColor],
@@ -104,16 +108,16 @@
                                                       NSLog(@"longPressBlock, str = %@, range = %@",attributedString.string, NSStringFromRange(range));
                                                   }];
     
-    NSMutableAttributedString *title = [[NSMutableAttributedString alloc]initWithString:@"是" attributes:dic];
+    NSMutableAttributedString *title = [[NSMutableAttributedString alloc]initWithString:@"11这是" attributes:dic];
     
     labelTitle = [self.label configureLinkAttributedString:labelTitle
                                   withAttString:title
                                       sameStringEnable:NO
                                         linkAttributes:@{
-                                                         NSFontAttributeName:[UIFont fontWithName:@"Arial-BoldItalicMT" size:15.0],/*(字体)*/
+                                                         NSFontAttributeName:[UIFont fontWithName:@"Arial-BoldItalicMT" size:13.0],/*(字体)*/
 //                                                         NSBackgroundColorAttributeName:[UIColor whiteColor],/*(字体背景色)*/
                                                          NSForegroundColorAttributeName:[UIColor blueColor],/*(字体颜色)*/
-                                                         NSUnderlineStyleAttributeName:@(NSUnderlineStyleSingle),/*(下划线)*/
+//                                                         NSUnderlineStyleAttributeName:@(NSUnderlineStyleSingle),/*(下划线)*/
 //                                                         NSStrikethroughStyleAttributeName:@(NSUnderlinePatternSolid | NSUnderlineStyleSingle),/*(删除线)NSUnderlinePatternSolid(实线)*/
                                                          kCJBackgroundFillColorAttributeName:[UIColor lightGrayColor],
                                                          kCJBackgroundStrokeColorAttributeName:[UIColor orangeColor],
@@ -133,10 +137,13 @@
                                                       NSLog(@"longPressBlock, str = %@, range = %@",attributedString.string,NSStringFromRange(range));
                                                   }];
     
-    labelTitle = [self.label configureLinkAttributedString:labelTitle
+    NSMutableAttributedString *labelStr = [[NSMutableAttributedString alloc]initWithAttributedString:labelTitle];
+    NSMutableAttributedString *labelStr2 = [[NSMutableAttributedString alloc]initWithAttributedString:labelTitle];
+    
+    labelStr = [self.label configureLinkAttributedString:labelTitle
                                                 addImageName:@"1.png"
                                                    imageSize:CGSizeMake(100, 75)
-                                                     atIndex:26
+                                                     atIndex:20
                                               linkAttributes:@{}
                                             activeLinkAttributes:@{
                                                                    kCJBackgroundLineWidthAttributeName:@(2),
@@ -150,10 +157,22 @@
                                                       NSLog(@"longPressBlock, str = %@, range = %@, image = %@",attributedString.string,NSStringFromRange(range),image);
                                                   }];
     
-    labelTitle = [self.label configureAttributedString:labelTitle addImageName:@"1.png" imageSize:CGSizeMake(80, 60) atIndex:38 attributes:@{}];
+//    labelStr = [self.label configureAttributedString:labelStr addImageName:@"1.png" imageSize:CGSizeMake(100, 75) atIndex:12 attributes:@{}];
     
-    self.label.attributedText = labelTitle;
-//    self.label.text = labelTitle;
+    
+    
+    NSTextAttachment *attachment = [[NSTextAttachment alloc]initWithData:nil ofType:nil];
+    UIImage *image = [UIImage imageNamed:@"1.png"];
+    attachment.image = image;
+    attachment.bounds = CGRectMake(0, 0, 100, 75);
+    
+    NSAttributedString *text = [NSAttributedString attributedStringWithAttachment:attachment];
+    [labelStr2 insertAttributedString:text atIndex:12];
+    
+//    self.label.attributedText = labelStr;
+    self.label.text = labelStr;
+    
+    self.textLabel.attributedText = labelStr2;
     
 }
 

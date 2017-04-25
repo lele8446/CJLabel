@@ -66,19 +66,31 @@ typedef void (^CJLabelLinkModelBlock)(NSAttributedString *attributedString, UIIm
 IB_DESIGNABLE
 
 /**
- * CJLabel 继承自 UILabel，其文本绘制基于NSAttributedString实现的，同时增加了图文混排富文本展示，添加自定义点击链点并设置点击链点文本属性的功能。
+ * CJLabel 继承自 UILabel，其文本绘制基于NSAttributedString实现，同时增加了图文混排、富文本展示以及添加自定义点击链点并设置点击链点文本属性的功能。
+ *
  *
  * CJLabel 与 UILabel 不同点：
+ *
    1. `- init` 不可直接调用init初始化，请使用`initWithFrame:` 或 `initWithCoder:`，以便完成相关初始属性设置
-   2. `attributedText` 与 `text` 均可设置文本，注意 [self setText:text] text类型只能是NSAttributedString或NSString
-   3. `extendsLinkTouchArea` 设置是否加大点击响应范围，类似于UIWebView的链点点击效果
-   4. `shadowRadius` 设置文本阴影模糊半径，可与 `shadowColor`、`shadowOffset` 配合设置，注意改设置将对全局文本起效
-   5. `textInsets` 设置文本内边距
-   6. `verticalAlignment` 设置垂直方向的文本对齐方式
+ 
+   2. `attributedText` 与 `text` 均可设置文本，注意 [self setText:text]中 text类型只能是NSAttributedString或NSString
+ 
+   3. `NSAttributedString`不再通过`NSTextAttachment`显示图片（使用`NSTextAttachment`不会起效），请调用
+      `- configureAttributedString: addImageName: imageSize: atIndex: attributes:`或者
+      `- configureLinkAttributedString: addImageName: imageSize: atIndex: linkAttributes: activeLinkAttributes: parameter: clickLinkBlock: longPressBlock:`方法添加图片
+ 
+   4. 新增`extendsLinkTouchArea`， 设置是否加大点击响应范围，类似于UIWebView的链点点击效果
+ 
+   5. 新增`shadowRadius`， 设置文本阴影模糊半径，可与 `shadowColor`、`shadowOffset` 配合设置，注意改设置将对全局文本起效
+ 
+   6. 新增`textInsets` 设置文本内边距
+ 
+   7. 新增`verticalAlignment` 设置垂直方向的文本对齐方式
+ *
  *
  * CJLabel 已知bug：
-   1. 在`index`位置插入图片，若`index`所在行对应的插入点之后的宽度小于图片宽度时，将只显示局部图片，而不是自动换行插入
-   2. `numberOfLines`大于0且小于实际`label.numberOfLines`，同时`verticalAlignment`不等于`CJContentVerticalAlignmentTop`时，文本显示位置有偏差
+ *
+   `numberOfLines`大于0且小于实际`label.numberOfLines`，同时`verticalAlignment`不等于`CJContentVerticalAlignmentTop`时，文本显示位置有偏差
  *
  */
 @interface CJLabel : UILabel
@@ -92,28 +104,28 @@ IB_DESIGNABLE
 /**
  * 对应UILabel的attributedText属性
  */
-@property (readwrite, nonatomic, copy) NSAttributedString *attributedText;
+@property (readwrite, nonatomic, copy) IBInspectable NSAttributedString *attributedText;
 /**
  * 对应UILabel的text属性
  */
-@property (readwrite, nonatomic, copy) id text;
+@property (readwrite, nonatomic, copy) IBInspectable id text;
 /**
  * 是否加大点击响应范围，类似于UIWebView的链点点击效果，默认NO
  */
-@property (readwrite, nonatomic, assign) BOOL extendsLinkTouchArea;
+@property (readwrite, nonatomic, assign) IBInspectable BOOL extendsLinkTouchArea;
 /**
  * 阴影模糊半径，值为0表示没有模糊，值越大越模糊，该值不能为负， 默认值为0。
  * 可与 `shadowColor`、`shadowOffset` 配合设置
  */
-@property (readwrite, nonatomic, assign) IBInspectable CGFloat shadowRadius;
+@property (readwrite, nonatomic, assign) CGFloat shadowRadius;
 /**
  * 绘制文本的内边距，默认UIEdgeInsetsZero
  */
-@property (readwrite, nonatomic, assign) IBInspectable UIEdgeInsets textInsets;
+@property (readwrite, nonatomic, assign) UIEdgeInsets textInsets;
 /**
  * 当text rect 小于 label frame 时文本在垂直方向的对齐方式，默认 CJContentVerticalAlignmentCenter
  */
-@property (readwrite, nonatomic, assign) IBInspectable CJAttributedLabelVerticalAlignment verticalAlignment;
+@property (readwrite, nonatomic, assign) CJAttributedLabelVerticalAlignment verticalAlignment;
 
 
 /**
@@ -130,6 +142,14 @@ IB_DESIGNABLE
 /**
  在指定位置插入图片，并返回插入图片后的NSMutableAttributedString（图片占位符所占的NSRange={loc,1}）
  
+ 注意！！！插入图片， 如果设置 NSParagraphStyleAttributeName 属性，例如:
+ NSMutableParagraphStyle *paragraph = [[NSMutableParagraphStyle alloc] init];
+ paragraph.lineBreakMode = NSLineBreakByWordWrapping;
+ [attrStr addAttribute:NSParagraphStyleAttributeName value:paragraph range:range];
+ 请保证 paragraph.lineBreakMode = NSLineBreakByWordWrapping，不然当Label的宽度不够显示内容或图片时，不会自动换行, 部分图片将会看不见
+    
+ 默认 paragraph.lineBreakMode = NSLineBreakByWordWrapping
+ 
  @param attrStr 需要插入图片的NSAttributedString
  @param imageName 图片名称
  @param size 图片大小
@@ -145,7 +165,7 @@ IB_DESIGNABLE
                                               attributes:(NSDictionary *)attributes;
 
 /**
- 在指定位置插入图片，插入图片为点击的链点！！！
+ 在指定位置插入图片，插入图片为可点击的链点！！！
  返回插入图片后的NSMutableAttributedString（图片占位符所占的NSRange={loc,1}）
  
  @param attrStr 需要插入图片的NSAttributedString

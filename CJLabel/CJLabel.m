@@ -8,7 +8,6 @@
 
 #import "CJLabel.h"
 #import <QuartzCore/QuartzCore.h>
-#import <objc/runtime.h>
 #import "CJLabelUtilities.h"
 
 @class CJGlyphRunStrokeItem;
@@ -275,8 +274,8 @@ static inline BOOL isSameColor(UIColor *color1, UIColor *color2){
         }
     }
     _runStrokeItemArray = [array copy];
-    
     [array removeAllObjects];
+    
     for (CJGlyphRunStrokeItem *item in _linkStrokeItemArray) {
         if (!NSEqualRanges(range,item.range)) {
             [array addObject:item];
@@ -421,13 +420,20 @@ static inline BOOL isSameColor(UIColor *color1, UIColor *color2){
     //获取点击链点的NSRange
     NSMutableAttributedString *attText = [[NSMutableAttributedString alloc]initWithAttributedString:text];
 
-    [attText enumerateAttributesInRange:NSMakeRange(0, text.length) options:NSAttributedStringEnumerationLongestEffectiveRangeNotRequired usingBlock:^(NSDictionary<NSString *, id> *attrs, NSRange range, BOOL *stop){
+    [attText enumerateAttributesInRange:NSMakeRange(0, attText.length) options:NSAttributedStringEnumerationLongestEffectiveRangeNotRequired usingBlock:^(NSDictionary<NSString *, id> *attrs, NSRange range, BOOL *stop){
         BOOL isLink = [attrs[kCJIsLinkAttributesName] boolValue];
         if (isLink) {
             [attText addAttribute:kCJLinkRangeAttributesName value:NSStringFromRange(range) range:range];
         }else{
             [attText removeAttribute:kCJLinkRangeAttributesName range:range];
-            if (!_normalAttDic) {
+            if (!_normalAttDic &&
+                CJLabelIsNull(attrs[kCJBackgroundFillColorAttributeName]) &&
+                CJLabelIsNull(attrs[kCJBackgroundStrokeColorAttributeName]) &&
+                CJLabelIsNull(attrs[kCJBackgroundLineWidthAttributeName]) &&
+                CJLabelIsNull(attrs[kCJBackgroundLineCornerRadiusAttributeName]) &&
+                CJLabelIsNull(attrs[kCJActiveBackgroundFillColorAttributeName]) &&
+                CJLabelIsNull(attrs[kCJActiveBackgroundStrokeColorAttributeName])
+                              ) {
                 _normalAttDic = attrs;
             }
         }
@@ -719,6 +725,8 @@ static inline BOOL isSameColor(UIColor *color1, UIColor *color2){
         // 根据水平对齐方式调整偏移量
         CGFloat flushFactor = CJFlushFactorForTextAlignment(self.textAlignment);
         
+        [self drawImageLine:line context:c lineOrigins:lineOrigins lineIndex:lineIndex];
+        
         if (lineIndex == numberOfLines - 1 && truncateLastLine) {
             // 判断最后一行是否占满整行
             CFRange lastLineRange = CTLineGetStringRange(line);
@@ -803,8 +811,8 @@ static inline BOOL isSameColor(UIColor *color1, UIColor *color2){
             CTLineDraw(line, c);
         }
         
-        // 绘制插入图片
-        [self drawImageLine:line context:c lineOrigins:lineOrigins lineIndex:lineIndex];
+//        // 绘制插入图片
+//        [self drawImageLine:line context:c lineOrigins:lineOrigins lineIndex:lineIndex];
     }
     
     // 绘制描边
@@ -877,8 +885,8 @@ static inline BOOL isSameColor(UIColor *color1, UIColor *color2){
         runRect = CGRectMake(lineOrigin.x + CTLineGetOffsetForStringIndex(line, CTRunGetStringRange(run).location, NULL), lineOrigin.y - runDescent, runRect.size.width, runAscent + runDescent);
         
         NSDictionary *imgInfoDic = attributes[kCJImageAttributeName];
-        if (imgInfoDic[@"imageName"]) {
-            UIImage *image = [UIImage imageNamed:imgInfoDic[@"imageName"]];
+        if (imgInfoDic[kCJImageName]) {
+            UIImage *image = [UIImage imageNamed:imgInfoDic[kCJImageName]];
             if (image) {
                 CGRect imageDrawRect;
                 CGFloat imageSizeWidth = ceil(runRect.size.width);
@@ -888,7 +896,6 @@ static inline BOOL isSameColor(UIColor *color1, UIColor *color2){
                 imageDrawRect.origin.y = lineOrigin.y;
                 CGContextDrawImage(c, imageDrawRect, image.CGImage);
             }
-            
         }
     }
 }
@@ -903,9 +910,19 @@ static inline BOOL isSameColor(UIColor *color1, UIColor *color2){
     NSMutableArray *allStrokePathItems = [NSMutableArray arrayWithCapacity:3];
     
     CFIndex lineIndex = 0;
+    NSInteger num = lines.count;
+    if (self.numberOfLines == 0) {
+        num = lines.count;
+    }
+    else if (0 < self.numberOfLines && self.numberOfLines < num){
+        num = self.numberOfLines;
+    }
+    else if (self.numberOfLines > num) {
+        num = lines.count;
+    };
+
     // 遍历所有行
-//    for (id line in lines) {
-    for (int i = 0; i < (self.numberOfLines != 0?self.numberOfLines:lines.count); i ++ ) {
+    for (NSInteger i = 0; i < num; i ++ ) {
         id line = lines[i];
         _lastGlyphRunStrokeItem = nil;
         
@@ -979,8 +996,8 @@ static inline BOOL isSameColor(UIColor *color1, UIColor *color2){
                 runStrokeItem.needRedrawn = needRedrawn;
                 
                 NSDictionary *imgInfoDic = attributes[kCJImageAttributeName];
-                if (imgInfoDic[@"imageName"]) {
-                    UIImage *image = [UIImage imageNamed:imgInfoDic[@"imageName"]];
+                if (imgInfoDic[kCJImageName]) {
+                    UIImage *image = [UIImage imageNamed:imgInfoDic[kCJImageName]];
                     runStrokeItem.image = image;
                 }
                 if (!CJLabelIsNull(attributes[kCJClickLinkBlockAttributesName])) {
@@ -1337,15 +1354,17 @@ static inline BOOL isSameColor(UIColor *color1, UIColor *color2){
     switch (sender.state) {
         case UIGestureRecognizerStateBegan: {
             _longPress = YES;
-            break;
-        }
-        case UIGestureRecognizerStateEnded:{
-            _longPress = NO;
             if (_currentClickRunStrokeItem) {
                 if (_currentClickRunStrokeItem.longPressBlock) {
                     NSAttributedString *attributedString = [self.attributedText attributedSubstringFromRange:_currentClickRunStrokeItem.range];
                     _currentClickRunStrokeItem.longPressBlock(attributedString, _currentClickRunStrokeItem.image, _currentClickRunStrokeItem.parameter, _currentClickRunStrokeItem.range);
                 }
+            }
+            break;
+        }
+        case UIGestureRecognizerStateEnded:{
+            _longPress = NO;
+            if (_currentClickRunStrokeItem) {
                 _needRedrawn = _currentClickRunStrokeItem.needRedrawn;
                 _currentClickRunStrokeItem = nil;
                 [self setNeedsFramesetter];

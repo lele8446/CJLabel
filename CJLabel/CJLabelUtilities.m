@@ -9,6 +9,10 @@
 #import "CJLabelUtilities.h"
 
 NSString * const kCJImageAttributeName                       = @"kCJImageAttributeName";
+NSString * const kCJImageName                                = @"kCJImageName";
+NSString * const kCJImageHeight                              = @"kCJImageHeight";
+NSString * const kCJImageWidth                               = @"kCJImageWidth";
+
 NSString * const kCJLinkAttributesName                       = @"kCJLinkAttributesName";
 NSString * const kCJActiveLinkAttributesName                 = @"kCJActiveLinkAttributesName";
 NSString * const kCJIsLinkAttributesName                     = @"kCJIsLinkAttributesName";
@@ -18,7 +22,8 @@ NSString * const kCJClickLinkBlockAttributesName             = @"kCJClickLinkBlo
 NSString * const kCJLongPressBlockAttributesName             = @"kCJLongPressBlockAttributesName";
 NSString * const kCJLinkNeedRedrawnAttributesName            = @"kCJLinkNeedRedrawnAttributesName";
 
-
+//插入图片 占位符
+NSString * const kAddImagePlaceholderString                  = @" ";
 
 void RunDelegateDeallocCallback(void * refCon) {
     
@@ -26,7 +31,7 @@ void RunDelegateDeallocCallback(void * refCon) {
 
 //获取图片高度
 CGFloat RunDelegateGetAscentCallback(void * refCon) {
-    return [(NSNumber *)[(__bridge NSDictionary *)refCon objectForKey:@"height"] floatValue];
+    return [(NSNumber *)[(__bridge NSDictionary *)refCon objectForKey:kCJImageHeight] floatValue];
 }
 
 CGFloat RunDelegateGetDescentCallback(void * refCon) {
@@ -34,7 +39,7 @@ CGFloat RunDelegateGetDescentCallback(void * refCon) {
 }
 //获取图片宽度
 CGFloat RunDelegateGetWidthCallback(void * refCon) {
-    return [(NSNumber *)[(__bridge NSDictionary *)refCon objectForKey:@"width"] floatValue];
+    return [(NSNumber *)[(__bridge NSDictionary *)refCon objectForKey:kCJImageWidth] floatValue];
 }
 
 @implementation CJLabelUtilities
@@ -54,7 +59,7 @@ CGFloat RunDelegateGetWidthCallback(void * refCon) {
         return [[NSMutableAttributedString alloc]initWithAttributedString:attrStr];
     }
     
-    NSDictionary *imgInfoDic = @{@"imageName":imageName,@"width":@(size.width),@"height":@(size.height)};
+    NSDictionary *imgInfoDic = @{kCJImageName:imageName,kCJImageWidth:@(size.width),kCJImageHeight:@(size.height)};
     
     //创建CTRunDelegateRef并设置回调函数
     CTRunDelegateCallbacks imageCallbacks;
@@ -65,31 +70,47 @@ CGFloat RunDelegateGetWidthCallback(void * refCon) {
     imageCallbacks.getDescent = RunDelegateGetDescentCallback;
     CTRunDelegateRef runDelegate = CTRunDelegateCreate(&imageCallbacks, (__bridge void *)imgInfoDic);
     
-    //插入空白表情占位符
-    NSMutableAttributedString *imageAttributedString = [[NSMutableAttributedString alloc] initWithString:@" "];
-    [imageAttributedString addAttribute:(NSString *)kCTRunDelegateAttributeName value:(__bridge id)runDelegate range:NSMakeRange(0, 1)];
-    [imageAttributedString addAttribute:kCJImageAttributeName value:imgInfoDic range:NSMakeRange(0, 1)];
+    //插入图片 空白占位符
+    NSMutableString *imgPlaceholderStr = [[NSMutableString alloc]initWithCapacity:3];
+    [imgPlaceholderStr appendString:kAddImagePlaceholderString];
+    NSRange imgRange = NSMakeRange(0, imgPlaceholderStr.length);
+    NSMutableAttributedString *imageAttributedString = [[NSMutableAttributedString alloc] initWithString:imgPlaceholderStr];
+    [imageAttributedString addAttribute:(NSString *)kCTRunDelegateAttributeName value:(__bridge id)runDelegate range:imgRange];
+    [imageAttributedString addAttribute:kCJImageAttributeName value:imgInfoDic range:imgRange];
     
     if (!CJLabelIsNull(linkAttributes) && linkAttributes.count > 0) {
-        [imageAttributedString addAttribute:kCJLinkAttributesName value:linkAttributes range:NSMakeRange(0, 1)];
+        [imageAttributedString addAttribute:kCJLinkAttributesName value:linkAttributes range:imgRange];
     }
     if (!CJLabelIsNull(activeLinkAttributes) && activeLinkAttributes.count > 0) {
-        [imageAttributedString addAttribute:kCJActiveLinkAttributesName value:activeLinkAttributes range:NSMakeRange(0, 1)];
+        [imageAttributedString addAttribute:kCJActiveLinkAttributesName value:activeLinkAttributes range:imgRange];
     }
     if (!CJLabelIsNull(parameter)) {
-        [imageAttributedString addAttribute:kCJLinkParameterAttributesName value:parameter range:NSMakeRange(0, 1)];
+        [imageAttributedString addAttribute:kCJLinkParameterAttributesName value:parameter range:imgRange];
     }
     if (!CJLabelIsNull(clickLinkBlock)) {
-        [imageAttributedString addAttribute:kCJClickLinkBlockAttributesName value:clickLinkBlock range:NSMakeRange(0, 1)];
+        [imageAttributedString addAttribute:kCJClickLinkBlockAttributesName value:clickLinkBlock range:imgRange];
     }
     if (!CJLabelIsNull(longPressBlock)) {
-        [imageAttributedString addAttribute:kCJLongPressBlockAttributesName value:longPressBlock range:NSMakeRange(0, 1)];
+        [imageAttributedString addAttribute:kCJLongPressBlockAttributesName value:longPressBlock range:imgRange];
     }
     if (isLink) {
-        [imageAttributedString addAttribute:kCJIsLinkAttributesName value:@(YES) range:NSMakeRange(0, 1)];
+        [imageAttributedString addAttribute:kCJIsLinkAttributesName value:@(YES) range:imgRange];
     }
-    NSRange range = NSMakeRange(loc, 1);
+    NSRange range = NSMakeRange(loc, imgPlaceholderStr.length);
     NSMutableAttributedString *attributedString = [[NSMutableAttributedString alloc]initWithAttributedString:attrStr];
+    
+    /* 设置默认换行模式为：NSLineBreakByCharWrapping
+     * 当Label的宽度不够显示内容或图片的时候就自动换行, 不自动换行, 部分图片将会看不见
+     */
+    NSRange attributedStringRange = NSMakeRange(0, attributedString.length);
+    NSDictionary *dic = [attributedString attributesAtIndex:0 effectiveRange:&attributedStringRange];
+    NSMutableParagraphStyle *paragraph = dic[NSParagraphStyleAttributeName];
+    if (CJLabelIsNull(paragraph)) {
+        paragraph = [[NSMutableParagraphStyle alloc] init];
+        paragraph.lineBreakMode = NSLineBreakByCharWrapping;
+        [attributedString addAttribute:NSParagraphStyleAttributeName value:paragraph range:attributedStringRange];
+    }
+    
     [attributedString insertAttributedString:imageAttributedString atIndex:range.location];
     CFRelease(runDelegate);
     

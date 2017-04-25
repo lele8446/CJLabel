@@ -21,13 +21,10 @@
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="nwp-7V-4IM" customClass="CJLabel">
-                                <rect key="frame" x="16" y="40" width="343" height="400"/>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="nwp-7V-4IM" customClass="CJLabel">
+                                <rect key="frame" x="16" y="40" width="343" height="21"/>
                                 <color key="backgroundColor" red="0.88804287829999995" green="0.91657804320000003" blue="0.83648036780000001" alpha="1" colorSpace="calibratedRGB"/>
-                                <constraints>
-                                    <constraint firstAttribute="height" constant="400" id="QfP-6z-CSc"/>
-                                </constraints>
-                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                <fontDescription key="fontDescription" name=".AppleSystemUIFont" family=".AppleSystemUIFont" pointSize="17"/>
                                 <nil key="textColor"/>
                                 <nil key="highlightedColor"/>
                                 <userDefinedRuntimeAttributes>
@@ -37,18 +34,18 @@
                                 </userDefinedRuntimeAttributes>
                             </label>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="9BA-G5-muT">
-                                <rect key="frame" x="16" y="484" width="64" height="30"/>
+                                <rect key="frame" x="16" y="105" width="74" height="30"/>
                                 <constraints>
-                                    <constraint firstAttribute="width" constant="64" id="W3N-Xt-KTP"/>
+                                    <constraint firstAttribute="width" constant="74" id="W3N-Xt-KTP"/>
                                     <constraint firstAttribute="height" constant="30" id="sVQ-9k-0y6"/>
                                 </constraints>
-                                <state key="normal" title="移除{5,7}"/>
+                                <state key="normal" title="移除{13,7}"/>
                                 <connections>
                                     <action selector="clear:" destination="BYZ-38-t0r" eventType="touchUpInside" id="tkd-m0-dMW"/>
                                 </connections>
                             </button>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="m9L-Wt-f6Y">
-                                <rect key="frame" x="156" y="484" width="62" height="30"/>
+                                <rect key="frame" x="156" y="105" width="62" height="30"/>
                                 <constraints>
                                     <constraint firstAttribute="width" constant="62" id="NEL-C0-log"/>
                                     <constraint firstAttribute="height" constant="30" id="f1C-qz-j0i"/>
@@ -59,7 +56,7 @@
                                 </connections>
                             </button>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Xw5-tV-75i">
-                                <rect key="frame" x="328" y="484" width="31" height="30"/>
+                                <rect key="frame" x="328" y="105" width="31" height="30"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="30" id="3eO-2k-qsa"/>
                                     <constraint firstAttribute="width" constant="31" id="O2e-pQ-kk5"/>
@@ -69,14 +66,24 @@
                                     <action selector="reload:" destination="BYZ-38-t0r" eventType="touchUpInside" id="9co-Qd-0Z1"/>
                                 </connections>
                             </button>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="bBz-Aw-d1t">
+                                <rect key="frame" x="16" y="165" width="343" height="20.5"/>
+                                <color key="backgroundColor" red="0.90984243567631595" green="0.92409893760275819" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                <nil key="textColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
                         </subviews>
                         <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <constraints>
                             <constraint firstItem="m9L-Wt-f6Y" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="0F8-hv-Eak"/>
                             <constraint firstAttribute="trailing" secondItem="Xw5-tV-75i" secondAttribute="trailing" constant="16" id="1Qe-uJ-1dY"/>
+                            <constraint firstItem="bBz-Aw-d1t" firstAttribute="top" secondItem="9BA-G5-muT" secondAttribute="bottom" constant="30" id="6Gz-HI-zsB"/>
                             <constraint firstItem="nwp-7V-4IM" firstAttribute="leading" secondItem="8bC-Xf-vdC" secondAttribute="leading" constant="16" id="7hx-34-kRc"/>
                             <constraint firstAttribute="trailing" secondItem="nwp-7V-4IM" secondAttribute="trailing" constant="16" id="Eth-Nn-T6s"/>
                             <constraint firstItem="9BA-G5-muT" firstAttribute="leading" secondItem="8bC-Xf-vdC" secondAttribute="leading" constant="16" id="IS7-id-JpG"/>
+                            <constraint firstAttribute="trailing" secondItem="bBz-Aw-d1t" secondAttribute="trailing" constant="16" id="Lec-lw-ZKW"/>
+                            <constraint firstItem="bBz-Aw-d1t" firstAttribute="leading" secondItem="8bC-Xf-vdC" secondAttribute="leading" constant="16" id="OEs-CU-SdT"/>
                             <constraint firstItem="9BA-G5-muT" firstAttribute="top" secondItem="nwp-7V-4IM" secondAttribute="bottom" constant="44" id="Su6-dr-BM8"/>
                             <constraint firstItem="Xw5-tV-75i" firstAttribute="top" secondItem="nwp-7V-4IM" secondAttribute="bottom" constant="44" id="Svj-b1-YGv"/>
                             <constraint firstItem="m9L-Wt-f6Y" firstAttribute="top" secondItem="nwp-7V-4IM" secondAttribute="bottom" constant="44" id="iaI-fk-53w"/>
@@ -85,6 +92,7 @@
                     </view>
                     <connections>
                         <outlet property="label" destination="nwp-7V-4IM" id="HQB-aF-pYF"/>
+                        <outlet property="textLabel" destination="bBz-Aw-d1t" id="yjF-lm-KhE"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>

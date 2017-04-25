@@ -12,6 +12,7 @@
 @interface ViewController : UIViewController
 
 @property (nonatomic, weak) IBOutlet CJLabel *label;
+@property (nonatomic, weak) IBOutlet UILabel *textLabel;
 
 
 @end

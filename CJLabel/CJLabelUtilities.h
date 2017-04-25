@@ -14,6 +14,10 @@
 #define CJLabelIsNull(a) ((a)==nil || (a)==NULL || (NSNull *)(a)==[NSNull null])
 
 extern NSString * const kCJImageAttributeName;
+extern NSString * const kCJImageName;
+extern NSString * const kCJImageHeight;
+extern NSString * const kCJImageWidth;
+
 extern NSString * const kCJLinkAttributesName;
 extern NSString * const kCJActiveLinkAttributesName;
 extern NSString * const kCJIsLinkAttributesName;
