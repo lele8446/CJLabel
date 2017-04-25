@@ -725,8 +725,6 @@ static inline BOOL isSameColor(UIColor *color1, UIColor *color2){
         // 根据水平对齐方式调整偏移量
         CGFloat flushFactor = CJFlushFactorForTextAlignment(self.textAlignment);
         
-        [self drawImageLine:line context:c lineOrigins:lineOrigins lineIndex:lineIndex];
-        
         if (lineIndex == numberOfLines - 1 && truncateLastLine) {
             // 判断最后一行是否占满整行
             CFRange lastLineRange = CTLineGetStringRange(line);
@@ -811,8 +809,8 @@ static inline BOOL isSameColor(UIColor *color1, UIColor *color2){
             CTLineDraw(line, c);
         }
         
-//        // 绘制插入图片
-//        [self drawImageLine:line context:c lineOrigins:lineOrigins lineIndex:lineIndex];
+        // 绘制插入图片
+        [self drawImageLine:line context:c lineOrigins:lineOrigins lineIndex:lineIndex];
     }
     
     // 绘制描边
