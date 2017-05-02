@@ -20,8 +20,8 @@
 		B40ACCA81EB30CF3006DB787 /* AttributedTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = B40ACCA51EB30CF3006DB787 /* AttributedTableViewCell.xib */; };
 		B40ACCA91EB30CF3006DB787 /* Example.txt in Resources */ = {isa = PBXBuildFile; fileRef = B40ACCA61EB30CF3006DB787 /* Example.txt */; };
 		B431D5321D0545E700228988 /* CJLabel.m in Sources */ = {isa = PBXBuildFile; fileRef = B431D52E1D0545E700228988 /* CJLabel.m */; };
-		B4C893111EB876A900AC9E42 /* DetailViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = B4C8930F1EB876A900AC9E42 /* DetailViewController.m */; };
-		B4C893121EB876A900AC9E42 /* DetailViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = B4C893101EB876A900AC9E42 /* DetailViewController.xib */; };
+		B4C893161EB87DC900AC9E42 /* DetailViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = B4C893141EB87DC900AC9E42 /* DetailViewController.m */; };
+		B4C893171EB87DC900AC9E42 /* DetailViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = B4C893151EB87DC900AC9E42 /* DetailViewController.xib */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -66,9 +66,9 @@
 		B40ACCA61EB30CF3006DB787 /* Example.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = Example.txt; sourceTree = "<group>"; };
 		B431D52D1D0545E700228988 /* CJLabel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CJLabel.h; sourceTree = "<group>"; };
 		B431D52E1D0545E700228988 /* CJLabel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CJLabel.m; sourceTree = "<group>"; };
-		B4C8930E1EB876A900AC9E42 /* DetailViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DetailViewController.h; sourceTree = "<group>"; };
-		B4C8930F1EB876A900AC9E42 /* DetailViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DetailViewController.m; sourceTree = "<group>"; };
-		B4C893101EB876A900AC9E42 /* DetailViewController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = DetailViewController.xib; sourceTree = "<group>"; };
+		B4C893131EB87DC900AC9E42 /* DetailViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DetailViewController.h; sourceTree = "<group>"; };
+		B4C893141EB87DC900AC9E42 /* DetailViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DetailViewController.m; sourceTree = "<group>"; };
+		B4C893151EB87DC900AC9E42 /* DetailViewController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = DetailViewController.xib; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -173,9 +173,9 @@
 		B40ACCAB1EB30D8F006DB787 /* Controllers */ = {
 			isa = PBXGroup;
 			children = (
-				B4C8930E1EB876A900AC9E42 /* DetailViewController.h */,
-				B4C8930F1EB876A900AC9E42 /* DetailViewController.m */,
-				B4C893101EB876A900AC9E42 /* DetailViewController.xib */,
+				B4C893131EB87DC900AC9E42 /* DetailViewController.h */,
+				B4C893141EB87DC900AC9E42 /* DetailViewController.m */,
+				B4C893151EB87DC900AC9E42 /* DetailViewController.xib */,
 				4382578A1C1A6F5F00A3DA24 /* ViewController.h */,
 				4382578B1C1A6F5F00A3DA24 /* ViewController.m */,
 			);
@@ -300,7 +300,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				438257941C1A6F5F00A3DA24 /* LaunchScreen.storyboard in Resources */,
-				B4C893121EB876A900AC9E42 /* DetailViewController.xib in Resources */,
+				B4C893171EB87DC900AC9E42 /* DetailViewController.xib in Resources */,
 				438257911C1A6F5F00A3DA24 /* Assets.xcassets in Resources */,
 				4382578F1C1A6F5F00A3DA24 /* Main.storyboard in Resources */,
 				B40ACCA91EB30CF3006DB787 /* Example.txt in Resources */,
@@ -335,7 +335,7 @@
 				438257891C1A6F5F00A3DA24 /* AppDelegate.m in Sources */,
 				438257861C1A6F5F00A3DA24 /* main.m in Sources */,
 				B4088C891EA7638900EB1EA2 /* CJLabelUtilities.m in Sources */,
-				B4C893111EB876A900AC9E42 /* DetailViewController.m in Sources */,
+				B4C893161EB87DC900AC9E42 /* DetailViewController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
