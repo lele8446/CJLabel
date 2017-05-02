@@ -39,7 +39,8 @@ pod 'CJLabel', '~> 2.1.2'
 ```
 
 ## API介绍
-* `NSMutableAttributedString`增加若干属性<br/>
+### 1、NSMutableAttributedString
+`NSMutableAttributedString`增加若干属性<br/>
 
    /**
     背景填充颜色。值为UIColor。默认 `nil`。
@@ -73,6 +74,7 @@ pod 'CJLabel', '~> 2.1.2'
     */<br/>
    `extern NSString * const kCJActiveBackgroundStrokeColorAttributeName;`
 
+### 2、CJLabel api
 * `+ sizeWithAttributedString:withConstraints:limitedToNumberOfLines:`<br/>
 计算指定NSAttributedString的size大小
 ```objective-c
