@@ -40,38 +40,39 @@ pod 'CJLabel', '~> 2.1.2'
 
 ## API介绍
 * `NSMutableAttributedString`新增若干属性<br/>
+
 `
    /**
     背景填充颜色。值为UIColor。默认 `nil`。
     该属性优先级低于NSBackgroundColorAttributeName，如果设置NSBackgroundColorAttributeName会覆盖kCJBackgroundFillColorAttributeName
     */<br/>
-   extern NSString * const kCJBackgroundFillColorAttributeName;
+   `extern NSString * const kCJBackgroundFillColorAttributeName;`
 
    /**
     背景边框线颜色。值为UIColor。默认 `nil`
     */<br/>
-   extern NSString * const kCJBackgroundStrokeColorAttributeName;
+   `extern NSString * const kCJBackgroundStrokeColorAttributeName;`
 
    /**
     背景边框线宽度。值为NSNumber。默认 `1.0f`
     */<br/>
-   extern NSString * const kCJBackgroundLineWidthAttributeName;
+   `extern NSString * const kCJBackgroundLineWidthAttributeName;`
 
    /**
     背景边框线圆角角度。值为NSNumber。默认 `5.0f`
     */<br/>
-   extern NSString * const kCJBackgroundLineCornerRadiusAttributeName;
+   `extern NSString * const kCJBackgroundLineCornerRadiusAttributeName;`
 
    /**
     点击时候的背景填充颜色。值为UIColor。默认 `nil`。
     该属性优先级低于NSBackgroundColorAttributeName，如果设置NSBackgroundColorAttributeName会覆盖kCJActiveBackgroundFillColorAttributeName
     */<br/>
-   extern NSString * const kCJActiveBackgroundFillColorAttributeName;
+   `extern NSString * const kCJActiveBackgroundFillColorAttributeName;`
 
    /**
     点击时候的背景边框线颜色。值为UIColor。默认 `nil`
     */<br/>
-   extern NSString * const kCJActiveBackgroundStrokeColorAttributeName;
+   `extern NSString * const kCJActiveBackgroundStrokeColorAttributeName;`
 `
 
 * `+ sizeWithAttributedString:withConstraints:limitedToNumberOfLines:`<br/>
