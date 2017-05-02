@@ -4,7 +4,6 @@
 
  * CJLabel 继承自 UILabel，其文本绘制基于NSAttributedString实现，同时增加了图文混排、富文本展示以及添加自定义点击链点并设置点击链点文本属性的功能。
  *
- *
  * CJLabel 与 UILabel 不同点：
  *
    1. `- init` 不可直接调用init初始化，请使用`initWithFrame:` 或 `initWithCoder:`，以便完成相关初始属性设置
@@ -25,15 +24,14 @@
    
    8. 新增`delegate` 点击链点代理
  *
- *
  * CJLabel 已知bug：
  *
    `numberOfLines`大于0且小于实际`label.numberOfLines`，同时`verticalAlignment`不等于`CJContentVerticalAlignmentTop`时，文本显示位置有偏差
 
 <br/>
 
-## 使用方法
-### 一、引用CJLabel
+## CJLabel引用
+### 一、直接导入
 下载demo，将CJLabel文件夹导入项目，引用头文件`#import "CJLabel.h"`
 ### 二、CocoaPods安装
 * Podfile<br/>
@@ -42,58 +40,13 @@ platform :ios, '7.0'
 pod 'CJLabel', '~> 2.1.2'
 ```
 
-包含NSString+CJString与CJLabel两个文件
-#### NSString+CJString
-NSString类别
-  * `-getNSAttributedString: labelDict:`<br/>
-  NSMutableAttributedString属性封装方法
-
-  ```objective-c
-  NSDictionary *dic = @{
-                        NSFontAttributeName:[UIFont systemFontOfSize:20],/*(字体)*/
-                        NSForegroundColorAttributeName:[UIColor blackColor],/*(字体颜色)*/
-                       };
-  NSMutableAttributedString *labelTitle = [NSString getNSAttributedString:@"this is test string" labelDict:dic];
+## API介绍
+* `+ sizeWithAttributedString:withConstraints:limitedToNumberOfLines:`
+计算指定NSAttributedString的size大小
+```objective-c
+CGSize size = [CJLabel sizeWithAttributedString:str withConstraints:CGSizeMake(320, CGFLOAT_MAX) limitedToNumberOfLines:0]
   ```
-  * `-sizeLabelToFit: width: height:`<br/>
-  返回UILabel自适应后的size方法
 
-  * `-getStringRect: width: height:`<br/>
-  动态计算NSString的CGSize方法
-
-#### CJLabel
-UILabel的extension，可响应任意字符的点击
-  * `-addLinkString: linkAddAttribute: block:`<br/>
-  增加点击链点方法
-
-  ```objective-c
-  NSDictionary *linkDic = @{
-                            NSForegroundColorAttributeName:[UIColor redColor],
-                            NSUnderlineStyleAttributeName:@(NSUnderlineStyleSingle)
-                          };
-    
-  [self.label addLinkString:@"点击" linkAddAttribute:linkDic block:^(CJLinkLabelModel *linkModel) {
-      NSLog(@"点击了链接: %@",linkModel.linkString);
-  }];
-  ```
-  * `-addLinkString: linkAddAttribute: linkParameter: block:`<br/>
-  增加点击链点方法
-
-  ```objective-c
-  NSDictionary *linkDic = @{
-                            NSForegroundColorAttributeName:[UIColor redColor],
-                            NSUnderlineStyleAttributeName:@(NSUnderlineStyleSingle)
-                          };
-    
-  [self.label addLinkString:@"点击" linkAddAttribute:linkDic linkParameter:@{@"id":@"1",@"type":@"text"} block:^(CJLinkLabelModel *linkModel) {
-      NSLog(@"点击了链接: %@",linkModel.linkString);
-  }];
-  ```
-  * `-removeLinkString:`<br/>
-  移除点击链点方法
-
-  * `-removeAllLink`<br/>
-  移除所有点击链点方法
 
 ## cocoapods安装
 * Podfile<br/>
