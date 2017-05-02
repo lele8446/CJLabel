@@ -35,7 +35,9 @@
 * Podfile<br/>
 ```ruby
 platform :ios, '7.0'
-pod 'CJLabel', '~> 2.1.2'
+target 'CJLabelDemo' do
+   pod 'CJLabel', '~> 2.1.2'
+end
 ```
 
 ## API介绍
