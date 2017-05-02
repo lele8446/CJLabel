@@ -1,9 +1,9 @@
 //
 //  main.m
-//  CJLabelTest
+//  tableViewLabelDemo
 //
-//  Created by C.K.Lian on 15/12/11.
-//  Copyright © 2015年 C.K.Lian. All rights reserved.
+//  Created by YiChe on 16/6/13.
+//  Copyright © 2016年 YiChe. All rights reserved.
 //
 
 #import <UIKit/UIKit.h>

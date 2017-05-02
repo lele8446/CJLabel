@@ -1,46 +1,48 @@
 //
 //  ViewController.m
-//  CJLabelTest
+//  tableViewLabelDemo
 //
-//  Created by ChiJinLian on 17/3/31.
-//  Copyright © 2017年 ChiJinLian. All rights reserved.
+//  Created by YiChe on 16/6/13.
+//  Copyright © 2016年 YiChe. All rights reserved.
 //
 
 #import "ViewController.h"
-#import <CoreText/CoreText.h>
+#import "AttributedTableViewCell.h"
+#import "DetailViewController.h"
 
-@interface ViewController ()
+@interface ViewController ()<UITableViewDelegate,UITableViewDataSource,CJLabelLinkDelegate>
+@property (nonatomic, strong) UITableView *tableView;
+@property (nonatomic, strong) NSMutableArray *espressos;
+
+@property (nonatomic, strong) AttributedTableViewCell *tempCell;
 
 @end
 
 @implementation ViewController
 
+- (AttributedTableViewCell *)tempCell {
+    if (!_tempCell) {
+        _tempCell = [[[NSBundle mainBundle] loadNibNamed:@"AttributedTableViewCell" owner:self options:Nil] lastObject];
+    }
+    return _tempCell;
+}
+
+
 - (void)viewDidLoad {
     [super viewDidLoad];
-    self.label.extendsLinkTouchArea = YES;
-//    self.label.userInteractionEnabled = NO;
-//    self.label.shadowRadius = 0;
-//    self.label.shadowColor = [UIColor blackColor];
-//    self.label.shadowOffset = CGSizeMake(0, -1);
-//    self.label.highlighted = YES;
-//    self.label.highlightedTextColor = [UIColor blueColor];
-    self.label.verticalAlignment = CJContentVerticalAlignmentTop;
-//    self.label.textInsets = UIEdgeInsetsMake(10, 4, 10, 4);
-    self.label.extendsLinkTouchArea = YES;
-    [self labelContent];
     
-}
-
-- (IBAction)clear:(id)sender {
-    [self.label removeLinkAtRange:NSMakeRange(13, 7)];
-}
-
-- (IBAction)clearAll:(id)sender {
-    [self.label removeAllLink];
-}
-
-- (IBAction)reload:(id)sender {
-    [self labelContent];
+    self.edgesForExtendedLayout = UIRectEdgeNone;
+    self.automaticallyAdjustsScrollViewInsets = NO;
+    
+    self.tableView = [[UITableView alloc]initWithFrame:CGRectMake(0, 0, self.view.bounds.size.width, self.view.bounds.size.height) style:UITableViewStylePlain];
+    self.tableView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+    self.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
+    self.tableView.delegate = self;
+    self.tableView.dataSource = self;
+    self.tableView.tableFooterView = [[UIView alloc] init];
+    [self.view addSubview:self.tableView];
+    
+    [self handleData];
 }
 
 - (void)didReceiveMemoryWarning {
@@ -48,132 +50,88 @@
     // Dispose of any resources that can be recreated.
 }
 
-
-- (void)labelContent {
-    self.label.numberOfLines = 0;
-    self.textLabel.numberOfLines = 0;
+- (void)handleData {
+    NSString *filePath = [[NSBundle mainBundle] pathForResource:@"Example" ofType:@"txt"];
+    NSArray *data = [[NSString stringWithContentsOfFile:filePath usedEncoding:nil error:nil] componentsSeparatedByCharactersInSet:[NSCharacterSet newlineCharacterSet]];
     
-    
-    NSMutableParagraphStyle *paragraph = [[NSMutableParagraphStyle alloc] init];
-    paragraph.alignment = NSTextAlignmentLeft;
-    paragraph.lineSpacing = 5.2;
-    paragraph.lineBreakMode = NSLineBreakByCharWrapping;
-    paragraph.lineHeightMultiple = 1;//行间距是多少倍
-    
-    NSShadow *shadow = [[NSShadow alloc] init];
-    shadow.shadowColor = [UIColor blackColor];
-    shadow.shadowOffset = CGSizeMake(0, 5);
-    
-    NSDictionary *dic = @{
-                          NSFontAttributeName:[UIFont systemFontOfSize:13],/*(字体)*/
-//                          NSFontAttributeName:[UIFont fontWithName:@"Arial-BoldItalicMT" size:30.0],/*(字体)*/
-//                          NSBackgroundColorAttributeName:[UIColor grayColor],/*(字体背景色)*/
-                          NSForegroundColorAttributeName:[UIColor blackColor],/*(字体颜色)*/
-                          NSParagraphStyleAttributeName:paragraph,/*(段落)*/
-//                          NSLigatureAttributeName:[NSNumber numberWithInt:1],/*(连字符)*/
-//                          NSKernAttributeName:[NSNumber numberWithInt:0],/*(字间距)*/
-//                          NSStrikethroughStyleAttributeName:@(NSUnderlinePatternSolid | NSUnderlineStyleSingle),/*(删除线)NSUnderlinePatternSolid(实线)*/
-//                          NSUnderlineStyleAttributeName:@(NSUnderlineStyleSingle),/*(下划线)*/
-//                          NSStrokeColorAttributeName:[UIColor redColor],/*(边线颜色)*/
-//                          NSStrokeWidthAttributeName:@(0.5),/*(边线宽度)*/
-//                          NSShadowAttributeName:shadow,/*(阴影)*/
-//                          NSVerticalGlyphFormAttributeName:[NSNumber numberWithInt:0],/*(横竖排版)*/
-                          };
-    NSString *str = @"1这是一段测试数据2这是一段测试数据3这是一段测试数据4这是一段测试数据5这是一段测试数据6这是一段测试数据7这是一段测试数据8这是一段测试数据9这是一段测试数据10这是一段测试数据11这是一段测试数据。";
-    
-    //设置label text
-    NSMutableAttributedString *labelTitle = [[NSMutableAttributedString alloc]initWithString:str attributes:dic];
-    
-    labelTitle = [self.label configureLinkAttributedString:labelTitle
-                                                     atRange:NSMakeRange(13,7)
-                                              linkAttributes:@{
-//                                                               NSBackgroundColorAttributeName:[UIColor clearColor],/*(字体背景色)*/
-                                                               NSFontAttributeName:[UIFont systemFontOfSize:15],/*(字体)*/
-                                                               NSForegroundColorAttributeName:[UIColor redColor],/*(字体颜色)*/
-                                                               kCJBackgroundStrokeColorAttributeName:[UIColor colorWithRed:0.2 green:0.6 blue:1 alpha:1],
-                                                               kCJBackgroundFillColorAttributeName:[UIColor lightGrayColor],
-                                                               kCJBackgroundLineWidthAttributeName:@(2)
-                                                               }
-                                        activeLinkAttributes:@{
-                                                               NSFontAttributeName:[UIFont systemFontOfSize:13],/*(字体)*/
-                                                               NSForegroundColorAttributeName:[UIColor brownColor],/*(字体颜色)*/
-                                                               kCJActiveBackgroundFillColorAttributeName:[UIColor orangeColor],
-                                                               kCJActiveBackgroundStrokeColorAttributeName:[UIColor blackColor],
-                                                               }
-                                                   parameter:nil
-                                                  clickLinkBlock:^(NSAttributedString *attributedString, UIImage *image, id parameter, NSRange range){
-                                                      NSLog(@"clickLinkBlock, str = %@, range = %@",attributedString.string,NSStringFromRange(range));
-                                                  }
-                                                  longPressBlock:^(NSAttributedString *attributedString, UIImage *image, id parameter, NSRange range){
-                                                      NSLog(@"longPressBlock, str = %@, range = %@",attributedString.string, NSStringFromRange(range));
-                                                  }];
-    
-    NSMutableAttributedString *title = [[NSMutableAttributedString alloc]initWithString:@"11这是" attributes:dic];
-    
-    labelTitle = [self.label configureLinkAttributedString:labelTitle
-                                  withAttString:title
-                                      sameStringEnable:NO
-                                        linkAttributes:@{
-                                                         NSFontAttributeName:[UIFont fontWithName:@"Arial-BoldItalicMT" size:13.0],/*(字体)*/
-//                                                         NSBackgroundColorAttributeName:[UIColor whiteColor],/*(字体背景色)*/
-                                                         NSForegroundColorAttributeName:[UIColor blueColor],/*(字体颜色)*/
-//                                                         NSUnderlineStyleAttributeName:@(NSUnderlineStyleSingle),/*(下划线)*/
-//                                                         NSStrikethroughStyleAttributeName:@(NSUnderlinePatternSolid | NSUnderlineStyleSingle),/*(删除线)NSUnderlinePatternSolid(实线)*/
-                                                         kCJBackgroundFillColorAttributeName:[UIColor lightGrayColor],
-                                                         kCJBackgroundStrokeColorAttributeName:[UIColor orangeColor],
-                                                         kCJBackgroundLineWidthAttributeName:@(1),
-                                                         kCJBackgroundLineCornerRadiusAttributeName:@(10)
-                                                         }
-                                        activeLinkAttributes:@{
-                                                               NSForegroundColorAttributeName:[UIColor redColor],/*(字体颜色)*/
-                                                               kCJActiveBackgroundFillColorAttributeName:[UIColor orangeColor],
-                                                               kCJActiveBackgroundStrokeColorAttributeName:[UIColor blackColor],
-                                                               }
-                                             parameter:nil
-                                     clickLinkBlock:^(NSAttributedString *attributedString, UIImage *image, id parameter, NSRange range){
-                                         NSLog(@"clickLinkBlock, str = %@, range = %@",attributedString.string,NSStringFromRange(range));
-                                     }
-                                                  longPressBlock:^(NSAttributedString *attributedString, UIImage *image, id parameter, NSRange range){
-                                                      NSLog(@"longPressBlock, str = %@, range = %@",attributedString.string,NSStringFromRange(range));
-                                                  }];
-    
-    NSMutableAttributedString *labelStr = [[NSMutableAttributedString alloc]initWithAttributedString:labelTitle];
-    NSMutableAttributedString *labelStr2 = [[NSMutableAttributedString alloc]initWithAttributedString:labelTitle];
-    
-    labelStr = [self.label configureLinkAttributedString:labelTitle
-                                                addImageName:@"1.png"
-                                                   imageSize:CGSizeMake(100, 75)
-                                                     atIndex:20
-                                              linkAttributes:@{}
-                                            activeLinkAttributes:@{
-                                                                   kCJBackgroundLineWidthAttributeName:@(2),
-                                                                   kCJActiveBackgroundStrokeColorAttributeName:[UIColor orangeColor],
-                                                                   }
-                                                   parameter:nil
-                                                  clickLinkBlock:^(NSAttributedString *attributedString, UIImage *image, id parameter, NSRange range){
-                                                      NSLog(@"clickLinkBlock, str = %@, range = %@, image = %@",attributedString.string,NSStringFromRange(range),image);
-                                                  }
-                                                  longPressBlock:^(NSAttributedString *attributedString, UIImage *image, id parameter, NSRange range){
-                                                      NSLog(@"longPressBlock, str = %@, range = %@, image = %@",attributedString.string,NSStringFromRange(range),image);
-                                                  }];
-    
-//    labelStr = [self.label configureAttributedString:labelStr addImageName:@"1.png" imageSize:CGSizeMake(100, 75) atIndex:12 attributes:@{}];
-    
-    
-    
-    NSTextAttachment *attachment = [[NSTextAttachment alloc]initWithData:nil ofType:nil];
-    UIImage *image = [UIImage imageNamed:@"1.png"];
-    attachment.image = image;
-    attachment.bounds = CGRectMake(0, 0, 100, 75);
-    
-    NSAttributedString *text = [NSAttributedString attributedStringWithAttachment:attachment];
-    [labelStr2 insertAttributedString:text atIndex:12];
-    
-//    self.label.attributedText = labelStr;
-    self.label.text = labelStr;
-    
-    self.textLabel.attributedText = labelStr2;
-    
+    self.espressos = [NSMutableArray array];
+    for (int i = 0;i<data.count;i++) {
+        NSString *str = [data objectAtIndex:i];
+        if (str.length == 0) {
+            continue;
+        }
+        NSMutableAttributedString *attStr = [[NSMutableAttributedString alloc]initWithString:str];
+        [attStr addAttribute:NSFontAttributeName value:[UIFont systemFontOfSize:14] range:NSMakeRange(0, str.length)];
+        
+        attStr = [CJLabel configureLinkAttributedString:attStr
+                                             withString:@"CJLabel"
+                                       sameStringEnable:YES
+                                         linkAttributes:@{
+                                                          NSForegroundColorAttributeName:[UIColor blueColor],
+                                                          NSFontAttributeName:[UIFont boldSystemFontOfSize:15]
+                                                          }
+                                   activeLinkAttributes:@{NSForegroundColorAttributeName:[UIColor redColor]}
+                                              parameter:nil
+                                         clickLinkBlock:nil
+                                         longPressBlock:nil];
+        
+        [self.espressos addObject:attStr];
+    }
 }
 
+
+- (NSInteger)tableView:(__unused UITableView *)tableView numberOfRowsInSection:(__unused NSInteger)section {
+    return (NSInteger)[self.espressos count];
+}
+
+- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(__unused NSIndexPath *)indexPath {
+    NSAttributedString *content = [self.espressos objectAtIndex:(NSUInteger)indexPath.row];
+    
+    // 方法一 systemLayoutSizeFittingSize:计算高度
+    self.tempCell.label.text = content;
+    CGSize size =[self.tempCell.contentView systemLayoutSizeFittingSize:UILayoutFittingCompressedSize];
+    return size.height+1;
+
+//    // 方法二 CJLabel类方法计算高度
+//    CGSize size1 = [CJLabel sizeWithAttributedString:content withConstraints:CGSizeMake(ScreenWidth-20, CGFLOAT_MAX) limitedToNumberOfLines:0];
+//    // label垂直方向约束高度top=10，另外再 + 1
+//    return size1.height+11;
+}
+
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
+    
+    static NSString *CellIdentifier = @"Cell";
+    AttributedTableViewCell *cell = (AttributedTableViewCell *)[tableView dequeueReusableCellWithIdentifier:CellIdentifier];
+    if (cell == nil) {
+        cell = [[[NSBundle mainBundle] loadNibNamed:@"AttributedTableViewCell" owner:self options:Nil] lastObject];
+    }
+    cell.selectionStyle = UITableViewCellSelectionStyleNone;
+    cell.label.delegate = self;
+    NSAttributedString *content = [self.espressos objectAtIndex:(NSUInteger)indexPath.row];
+    cell.label.text = content;
+    return cell;
+}
+
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
+    //    NSLog(@"点击第 %@ 行cell",@(indexPath.row+1));
+    DetailViewController *detailCtr = [[DetailViewController alloc]initWithNibName:@"DetailViewController" bundle:nil];
+    detailCtr.index = indexPath.row;
+    detailCtr.content = self.espressos[indexPath.row];
+    [self.navigationController pushViewController:detailCtr animated:YES];
+}
+
+#pragma mark - CJLabelLinkDelegate
+- (void)CJLable:(CJLabel *)label didClickLink:(CJLabelLinkModel *)linkModel {
+    UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"点击链点" message:linkModel.attributedString.string preferredStyle:UIAlertControllerStyleAlert];
+    UIAlertAction *cancel = [UIAlertAction actionWithTitle:@"取消" style:UIAlertActionStyleCancel handler:nil];
+    [alert addAction:cancel];
+    [self presentViewController:alert animated:YES completion:nil];
+}
+
+- (void)CJLable:(CJLabel *)label didLongPressLink:(CJLabelLinkModel *)linkModel {
+    UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"长按链点" message:linkModel.attributedString.string preferredStyle:UIAlertControllerStyleActionSheet];
+    UIAlertAction *cancel = [UIAlertAction actionWithTitle:@"取消" style:UIAlertActionStyleCancel handler:nil];
+    [alert addAction:cancel];
+    [self presentViewController:alert animated:YES completion:nil];
+}
 @end

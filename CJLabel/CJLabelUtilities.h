@@ -84,10 +84,10 @@ extern NSString * const kCJLinkNeedRedrawnAttributesName;
 
 
 /**
- 对文本中跟withAttString相同的文字配置富文本，指定的文字为可点击链点！！！
+ 对文本中跟withString相同的文字配置富文本，指定的文字为可点击链点！！！
  
  @param attrStr NSAttributedString源
- @param withAttString 需要设置的富文本
+ @param withString 需要设置的文本
  @param sameStringEnable 文本中所有与withAttString的文字是否同步设置属性，sameStringEnable=NO 时取文本中首次匹配的String
  @param linkAttributes 链点文本属性
  @param activeLinkAttributes 点击状态下的链点文本属性
@@ -98,7 +98,7 @@ extern NSString * const kCJLinkNeedRedrawnAttributesName;
  @return 返回新的NSMutableAttributedString
  */
 + (NSMutableAttributedString *)configureLinkAttributedString:(NSAttributedString *)attrStr
-                                               withAttString:(NSAttributedString *)withAttString
+                                                  withString:(NSString *)withString
                                             sameStringEnable:(BOOL)sameStringEnable
                                               linkAttributes:(NSDictionary *)linkAttributes
                                         activeLinkAttributes:(NSDictionary *)activeLinkAttributes
@@ -106,7 +106,6 @@ extern NSString * const kCJLinkNeedRedrawnAttributesName;
                                               clickLinkBlock:(CJLabelLinkModelBlock)clickLinkBlock
                                               longPressBlock:(CJLabelLinkModelBlock)longPressBlock
                                                       islink:(BOOL)isLink;
-
 @end
 
 /**
@@ -122,7 +121,7 @@ extern NSString * const kCJLinkNeedRedrawnAttributesName;
 @property (nonatomic, assign) CGFloat cornerRadius;//描边圆角
 @property (nonatomic, assign) CGRect runBounds;//描边区域在系统坐标下的rect（原点在左下角）
 @property (nonatomic, assign) CGRect locBounds;//描边区域在屏幕坐标下的rect（原点在左上角）
-@property (nonatomic, strong) UIImage *image;//插入的图片
+@property (nonatomic, copy) NSString *imageName;//插入图片名称
 @property (nonatomic, assign) NSRange range;//链点在文本中的range
 @property (nonatomic, strong) id parameter;//链点自定义参数
 @property (nonatomic, copy) CJLabelLinkModelBlock linkBlock;//点击链点回调

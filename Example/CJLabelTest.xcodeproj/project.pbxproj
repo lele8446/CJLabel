@@ -16,6 +16,11 @@
 		4382579F1C1A6F5F00A3DA24 /* CJLabelTestTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4382579E1C1A6F5F00A3DA24 /* CJLabelTestTests.m */; };
 		438257AA1C1A6F5F00A3DA24 /* CJLabelTestUITests.m in Sources */ = {isa = PBXBuildFile; fileRef = 438257A91C1A6F5F00A3DA24 /* CJLabelTestUITests.m */; };
 		B4088C891EA7638900EB1EA2 /* CJLabelUtilities.m in Sources */ = {isa = PBXBuildFile; fileRef = B4088C881EA7638900EB1EA2 /* CJLabelUtilities.m */; };
+		B40ACCA71EB30CF3006DB787 /* AttributedTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = B40ACCA41EB30CF3006DB787 /* AttributedTableViewCell.m */; };
+		B40ACCA81EB30CF3006DB787 /* AttributedTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = B40ACCA51EB30CF3006DB787 /* AttributedTableViewCell.xib */; };
+		B40ACCA91EB30CF3006DB787 /* Example.txt in Resources */ = {isa = PBXBuildFile; fileRef = B40ACCA61EB30CF3006DB787 /* Example.txt */; };
+		B40ACCAF1EB3369D006DB787 /* DetailViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = B40ACCAD1EB3369D006DB787 /* DetailViewController.m */; };
+		B40ACCB01EB3369D006DB787 /* DetailViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = B40ACCAE1EB3369D006DB787 /* DetailViewController.xib */; };
 		B431D5321D0545E700228988 /* CJLabel.m in Sources */ = {isa = PBXBuildFile; fileRef = B431D52E1D0545E700228988 /* CJLabel.m */; };
 /* End PBXBuildFile section */
 
@@ -41,8 +46,8 @@
 		438257851C1A6F5F00A3DA24 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		438257871C1A6F5F00A3DA24 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		438257881C1A6F5F00A3DA24 /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
-		4382578A1C1A6F5F00A3DA24 /* ViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ViewController.h; sourceTree = "<group>"; };
-		4382578B1C1A6F5F00A3DA24 /* ViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ViewController.m; sourceTree = "<group>"; };
+		4382578A1C1A6F5F00A3DA24 /* ViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ViewController.h; path = ../Example/CJLabelTest/ViewController.h; sourceTree = "<group>"; };
+		4382578B1C1A6F5F00A3DA24 /* ViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = ViewController.m; path = ../Example/CJLabelTest/ViewController.m; sourceTree = "<group>"; };
 		4382578E1C1A6F5F00A3DA24 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		438257901C1A6F5F00A3DA24 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		438257931C1A6F5F00A3DA24 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
@@ -55,6 +60,13 @@
 		438257AB1C1A6F5F00A3DA24 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		B4088C871EA7638900EB1EA2 /* CJLabelUtilities.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CJLabelUtilities.h; sourceTree = "<group>"; };
 		B4088C881EA7638900EB1EA2 /* CJLabelUtilities.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CJLabelUtilities.m; sourceTree = "<group>"; };
+		B40ACCA31EB30CF3006DB787 /* AttributedTableViewCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AttributedTableViewCell.h; sourceTree = "<group>"; };
+		B40ACCA41EB30CF3006DB787 /* AttributedTableViewCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AttributedTableViewCell.m; sourceTree = "<group>"; };
+		B40ACCA51EB30CF3006DB787 /* AttributedTableViewCell.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = AttributedTableViewCell.xib; sourceTree = "<group>"; };
+		B40ACCA61EB30CF3006DB787 /* Example.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = Example.txt; sourceTree = "<group>"; };
+		B40ACCAC1EB3369D006DB787 /* DetailViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DetailViewController.h; sourceTree = "<group>"; };
+		B40ACCAD1EB3369D006DB787 /* DetailViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DetailViewController.m; sourceTree = "<group>"; };
+		B40ACCAE1EB3369D006DB787 /* DetailViewController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = DetailViewController.xib; sourceTree = "<group>"; };
 		B431D52D1D0545E700228988 /* CJLabel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CJLabel.h; sourceTree = "<group>"; };
 		B431D52E1D0545E700228988 /* CJLabel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CJLabel.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -110,12 +122,9 @@
 				B431D52C1D0545E700228988 /* CJLabel */,
 				438257871C1A6F5F00A3DA24 /* AppDelegate.h */,
 				438257881C1A6F5F00A3DA24 /* AppDelegate.m */,
-				4382578A1C1A6F5F00A3DA24 /* ViewController.h */,
-				4382578B1C1A6F5F00A3DA24 /* ViewController.m */,
-				4382578D1C1A6F5F00A3DA24 /* Main.storyboard */,
+				B40ACCAB1EB30D8F006DB787 /* Controllers */,
+				B40ACCAA1EB30D6A006DB787 /* Views */,
 				438257901C1A6F5F00A3DA24 /* Assets.xcassets */,
-				438257921C1A6F5F00A3DA24 /* LaunchScreen.storyboard */,
-				438257951C1A6F5F00A3DA24 /* Info.plist */,
 				438257841C1A6F5F00A3DA24 /* Supporting Files */,
 			);
 			path = CJLabelTest;
@@ -124,6 +133,10 @@
 		438257841C1A6F5F00A3DA24 /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
+				B40ACCA61EB30CF3006DB787 /* Example.txt */,
+				4382578D1C1A6F5F00A3DA24 /* Main.storyboard */,
+				438257921C1A6F5F00A3DA24 /* LaunchScreen.storyboard */,
+				438257951C1A6F5F00A3DA24 /* Info.plist */,
 				438257851C1A6F5F00A3DA24 /* main.m */,
 			);
 			name = "Supporting Files";
@@ -145,6 +158,29 @@
 				438257AB1C1A6F5F00A3DA24 /* Info.plist */,
 			);
 			path = CJLabelTestUITests;
+			sourceTree = "<group>";
+		};
+		B40ACCAA1EB30D6A006DB787 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				B40ACCA31EB30CF3006DB787 /* AttributedTableViewCell.h */,
+				B40ACCA41EB30CF3006DB787 /* AttributedTableViewCell.m */,
+				B40ACCA51EB30CF3006DB787 /* AttributedTableViewCell.xib */,
+			);
+			name = Views;
+			sourceTree = "<group>";
+		};
+		B40ACCAB1EB30D8F006DB787 /* Controllers */ = {
+			isa = PBXGroup;
+			children = (
+				4382578A1C1A6F5F00A3DA24 /* ViewController.h */,
+				4382578B1C1A6F5F00A3DA24 /* ViewController.m */,
+				B40ACCAC1EB3369D006DB787 /* DetailViewController.h */,
+				B40ACCAD1EB3369D006DB787 /* DetailViewController.m */,
+				B40ACCAE1EB3369D006DB787 /* DetailViewController.xib */,
+			);
+			name = Controllers;
+			path = ../../CJLabel;
 			sourceTree = "<group>";
 		};
 		B431D52C1D0545E700228988 /* CJLabel */ = {
@@ -266,6 +302,9 @@
 				438257941C1A6F5F00A3DA24 /* LaunchScreen.storyboard in Resources */,
 				438257911C1A6F5F00A3DA24 /* Assets.xcassets in Resources */,
 				4382578F1C1A6F5F00A3DA24 /* Main.storyboard in Resources */,
+				B40ACCA91EB30CF3006DB787 /* Example.txt in Resources */,
+				B40ACCB01EB3369D006DB787 /* DetailViewController.xib in Resources */,
+				B40ACCA81EB30CF3006DB787 /* AttributedTableViewCell.xib in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -291,7 +330,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				4382578C1C1A6F5F00A3DA24 /* ViewController.m in Sources */,
+				B40ACCA71EB30CF3006DB787 /* AttributedTableViewCell.m in Sources */,
 				B431D5321D0545E700228988 /* CJLabel.m in Sources */,
+				B40ACCAF1EB3369D006DB787 /* DetailViewController.m in Sources */,
 				438257891C1A6F5F00A3DA24 /* AppDelegate.m in Sources */,
 				438257861C1A6F5F00A3DA24 /* main.m in Sources */,
 				B4088C891EA7638900EB1EA2 /* CJLabelUtilities.m in Sources */,
