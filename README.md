@@ -149,6 +149,8 @@ attStr = [CJLabel configureLinkAttributedString:attStr
 
                                  }];
 ```
+![点击链点](https://o44fado6w.qnssl.com/CJLabel.gif)
+
 ## cocoapods安装
 * Podfile<br/>
 ```ruby
