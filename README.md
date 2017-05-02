@@ -73,7 +73,9 @@ pod 'CJLabel', '~> 2.1.2'
     */<br/>
    `extern NSString * const kCJActiveBackgroundStrokeColorAttributeName;`
 
-### 2、CJLabel API
+### 2、CJLabel API<br/>
+先看点击链点效果图：
+![点击链点](https://o44fado6w.qnssl.com/CJLabel.gif)
 * 计算指定NSAttributedString的size大小
 ```objective-c
 CGSize size = [CJLabel sizeWithAttributedString:str withConstraints:CGSizeMake(320, CGFLOAT_MAX) limitedToNumberOfLines:0]
@@ -149,24 +151,34 @@ attStr = [CJLabel configureLinkAttributedString:attStr
 
                                  }];
 ```
-![点击链点](https://o44fado6w.qnssl.com/CJLabel.gif)
 
-## cocoapods安装
-* Podfile<br/>
-```ruby
-platform :ios, '7.0'
-pod 'CJLabel', '~> 1.0.3'
+* 移除点击链点<br/>
+```objective-c
+/**
+ *  移除制定range的点击链点
+ *
+ *  @param range 移除链点位置
+ */
+- (void)removeLinkAtRange:(NSRange)range;
+
+/**
+ *  移除所有点击链点
+ */
+- (void)removeAllLink;
 ```
 
-## V1.0.0
-v1.0.0版本注意：文本内存在相同链点时只有首次出现的链点能够响应点击
-
-<br/>
-## V1.0.1
+## 版本说明
+### V2.1.2
+* 修复单行文字时候点击链点的判断，增加delegate
+### V2.0.0
+* 重构了底层对点击链点响应的判断，增加插入图片、插入图片链点、点击链点背景色填充、点击链点边框线描边等功能
+* v2.0.0之后版本与v1.x.x版本差别较大，基本上重写了增加以及移除点击链点的API
+***
+### V1.0.2
+* 点击链点增加扩展属性parameter<br/>
+* 增加方法`- addLinkString: linkAddAttribute: linkParameter: block:`<br/>
+### V1.0.1
 *  增加文本中内容相同的链点能够响应点击属性sameLinkEnable，必须在设置self.attributedText前赋值，默认值为NO，只取文本中首次出现的链点。<br/>
 *  CJLinkLabelModel的linkString改为NSString类型<br/>
-
-<br/>
-## V1.0.2
-* 点击链点增加扩展属性parameter<br/>
-* 增加方法`- addLinkString: linkAddAttribute: linkParameter: block:`
+### V1.0.0
+*  v1.0.0版本注意：文本内存在相同链点时只有首次出现的链点能够响应点击
