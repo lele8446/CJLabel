@@ -44,7 +44,15 @@ pod 'CJLabel', '~> 2.1.2'
 ```objective-c
 CGSize size = [CJLabel sizeWithAttributedString:str withConstraints:CGSizeMake(320, CGFLOAT_MAX) limitedToNumberOfLines:0]
   ```
-* `+ sizeWithAttributedString:withConstraints:limitedToNumberOfLines:`<br/>
+* `+ configureLinkAttributedString:
+                                                addImageName:
+                                                   imageSize:
+                                                     atIndex:
+                                              linkAttributes:
+                                        activeLinkAttributes:
+                                                   parameter:
+                                              clickLinkBlock:
+                                              longPressBlock:`<br/>
 
 ## cocoapods安装
 * Podfile<br/>
