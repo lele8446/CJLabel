@@ -39,21 +39,67 @@ pod 'CJLabel', '~> 2.1.2'
 ```
 
 ## API介绍
+* `NSMutableAttributedString`新增若干属性<br/>
+`
+   /**
+    背景填充颜色。值为UIColor。默认 `nil`。
+    该属性优先级低于NSBackgroundColorAttributeName，如果设置NSBackgroundColorAttributeName会覆盖kCJBackgroundFillColorAttributeName
+    */<br/>
+   extern NSString * const kCJBackgroundFillColorAttributeName;
+
+   /**
+    背景边框线颜色。值为UIColor。默认 `nil`
+    */<br/>
+   extern NSString * const kCJBackgroundStrokeColorAttributeName;
+
+   /**
+    背景边框线宽度。值为NSNumber。默认 `1.0f`
+    */<br/>
+   extern NSString * const kCJBackgroundLineWidthAttributeName;
+
+   /**
+    背景边框线圆角角度。值为NSNumber。默认 `5.0f`
+    */<br/>
+   extern NSString * const kCJBackgroundLineCornerRadiusAttributeName;
+
+   /**
+    点击时候的背景填充颜色。值为UIColor。默认 `nil`。
+    该属性优先级低于NSBackgroundColorAttributeName，如果设置NSBackgroundColorAttributeName会覆盖kCJActiveBackgroundFillColorAttributeName
+    */<br/>
+   extern NSString * const kCJActiveBackgroundFillColorAttributeName;
+
+   /**
+    点击时候的背景边框线颜色。值为UIColor。默认 `nil`
+    */<br/>
+   extern NSString * const kCJActiveBackgroundStrokeColorAttributeName;
+`
+
 * `+ sizeWithAttributedString:withConstraints:limitedToNumberOfLines:`<br/>
 计算指定NSAttributedString的size大小
 ```objective-c
 CGSize size = [CJLabel sizeWithAttributedString:str withConstraints:CGSizeMake(320, CGFLOAT_MAX) limitedToNumberOfLines:0]
   ```
-* `+ configureLinkAttributedString:
-                                                addImageName:
-                                                   imageSize:
-                                                     atIndex:
-                                              linkAttributes:
-                                        activeLinkAttributes:
-                                                   parameter:
-                                              clickLinkBlock:
-                                              longPressBlock:`<br/>
-
+* `+ configureLinkAttributedString:addImageName:imageSize:atIndex:linkAttributes:activeLinkAttributes:parameter:clickLinkBlock:longPressBlock:`<br/>
+在指定位置插入图片，插入图片为可点击的链点！！！返回插入图片后的NSMutableAttributedString（图片占位符所占的NSRange={loc,1}）
+```objective-c
+attStr = [CJLabel configureLinkAttributedString:attStr
+                                               addImageName:@"CJLabel.png"
+                                                  imageSize:CGSizeMake(60, 43)
+                                                    atIndex:imageRange.location+imageRange.length
+                                             linkAttributes:@{
+                                                              kCJBackgroundStrokeColorAttributeName:[UIColor blueColor],
+                                                              kCJBackgroundLineWidthAttributeName:@(self.index == 5?1:2),
+                                                              }
+                                       activeLinkAttributes:@{
+                                                              kCJActiveBackgroundStrokeColorAttributeName:[UIColor redColor],
+                                                              }
+                                                  parameter:@"图片参数"
+                                             clickLinkBlock:^(CJLabelLinkModel *linkModel){
+                                                 [self clickLink:linkModel isImage:YES];
+                                             }longPressBlock:^(CJLabelLinkModel *linkModel){
+                                                 [self clicklongPressLink:linkModel isImage:YES];
+                                             }];
+  ```
 ## cocoapods安装
 * Podfile<br/>
 ```ruby
