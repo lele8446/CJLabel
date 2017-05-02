@@ -79,16 +79,16 @@ pod 'CJLabel', '~> 2.1.2'
 CGSize size = [CJLabel sizeWithAttributedString:str withConstraints:CGSizeMake(320, CGFLOAT_MAX) limitedToNumberOfLines:0]
   ```
   
-* 插入图片链点
+* 插入图片链点<br/>
 在指定位置插入图片，插入图片为可点击的链点！！！返回插入图片后的NSMutableAttributedString（图片占位符所占的NSRange={loc,1}）
 ```objective-c
 attStr = [CJLabel configureLinkAttributedString:attStr
                                    addImageName:@"CJLabel.png"
                                       imageSize:CGSizeMake(60, 43)
-                                        atIndex:imageRange.location+imageRange.length
-                                 linkAttributes:@{
+                                        atIndex:3
+                                 linkAttributes:@{
                                                   kCJBackgroundStrokeColorAttributeName:[UIColor blueColor],
-                                                  kCJBackgroundLineWidthAttributeName:@(self.index == 5?1:2),
+                                                  kCJBackgroundLineWidthAttributeName:@(1),
                                                   }
                            activeLinkAttributes:@{
                                                   kCJActiveBackgroundStrokeColorAttributeName:[UIColor redColor],
@@ -100,6 +100,55 @@ attStr = [CJLabel configureLinkAttributedString:attStr
 
                                              }];
   ```
+  
+* 根据指定NSRange配置富文本，指定NSRange文本为可点击链点！！！<br/>
+```objective-c
+attStr = [CJLabel configureLinkAttributedString:attStr
+                                        atRange:NSMakeRange(3, 4)
+                                 linkAttributes:@{
+                                                  NSForegroundColorAttributeName:[UIColor blueColor],
+                                                  NSFontAttributeName:[UIFont boldSystemFontOfSize:15],
+                                                  kCJBackgroundStrokeColorAttributeName:[UIColor orangeColor],
+                                                  kCJBackgroundLineWidthAttributeName:@(1),
+                                                  kCJBackgroundFillColorAttributeName:[UIColor lightGrayColor]
+                                                  }
+                           activeLinkAttributes:@{
+                                                  NSForegroundColorAttributeName:[UIColor redColor],
+                                                  kCJActiveBackgroundStrokeColorAttributeName:[UIColor blackColor],
+                                                  kCJActiveBackgroundFillColorAttributeName:[UIColor brownColor]
+                                                  }
+                                      parameter:nil
+                                 clickLinkBlock:^(CJLabelLinkModel *linkModel){
+
+                                 }longPressBlock:^(CJLabelLinkModel *linkModel){
+
+                                 }];
+```
+
+* 对文本中跟withString相同的文字配置富文本，指定的文字为可点击链点！！！<br/>
+```objective-c
+attStr = [CJLabel configureLinkAttributedString:attStr
+                                     withString:@"CJLabel"
+                               sameStringEnable:YES
+                                 linkAttributes:@{
+                                                  NSForegroundColorAttributeName:[UIColor blueColor],
+                                                  NSFontAttributeName:[UIFont boldSystemFontOfSize:15],
+                                                  kCJBackgroundStrokeColorAttributeName:[UIColor orangeColor],
+                                                  kCJBackgroundLineWidthAttributeName:@(1),
+                                                  kCJBackgroundFillColorAttributeName:[UIColor lightGrayColor]
+                                                  }
+                           activeLinkAttributes:@{
+                                                  NSForegroundColorAttributeName:[UIColor redColor],
+                                                  kCJActiveBackgroundStrokeColorAttributeName:[UIColor blackColor],
+                                                  kCJActiveBackgroundFillColorAttributeName:[UIColor brownColor]
+                                                  }
+                                      parameter:@"参数为字符串"
+                                 clickLinkBlock:^(CJLabelLinkModel *linkModel){
+
+                                 }longPressBlock:^(CJLabelLinkModel *linkModel){
+
+                                 }];
+```
 ## cocoapods安装
 * Podfile<br/>
 ```ruby
