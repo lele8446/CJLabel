@@ -39,8 +39,7 @@ pod 'CJLabel', '~> 2.1.2'
 ```
 
 ## API介绍
-### 1、NSMutableAttributedString
-`NSMutableAttributedString`增加若干属性<br/>
+### 1、NSMutableAttributedString 增加若干属性<br/>
 
    /**
     背景填充颜色。值为UIColor。默认 `nil`。
@@ -74,15 +73,27 @@ pod 'CJLabel', '~> 2.1.2'
     */<br/>
    `extern NSString * const kCJActiveBackgroundStrokeColorAttributeName;`
 
-### 2、CJLabel api
-* `+ sizeWithAttributedString:withConstraints:limitedToNumberOfLines:`<br/>
-计算指定NSAttributedString的size大小
+### 2、CJLabel API
+* 计算指定NSAttributedString的size大小
 ```objective-c
++ (CGSize)sizeWithAttributedString:(NSAttributedString *)attributedString
+                   withConstraints:(CGSize)size
+            limitedToNumberOfLines:(NSUInteger)numberOfLines;
 CGSize size = [CJLabel sizeWithAttributedString:str withConstraints:CGSizeMake(320, CGFLOAT_MAX) limitedToNumberOfLines:0]
   ```
-* `+ configureLinkAttributedString:addImageName:imageSize:atIndex:linkAttributes:activeLinkAttributes:parameter:clickLinkBlock:longPressBlock:`<br/>
+  
+* 插入图片链点
 在指定位置插入图片，插入图片为可点击的链点！！！返回插入图片后的NSMutableAttributedString（图片占位符所占的NSRange={loc,1}）
 ```objective-c
++ (NSMutableAttributedString *)configureLinkAttributedString:(NSAttributedString *)attrStr
+                                                addImageName:(NSString *)imageName
+                                                   imageSize:(CGSize)size
+                                                     atIndex:(NSUInteger)loc
+                                              linkAttributes:(NSDictionary *)linkAttributes
+                                        activeLinkAttributes:(NSDictionary *)activeLinkAttributes
+                                                   parameter:(id)parameter
+                                              clickLinkBlock:(CJLabelLinkModelBlock)clickLinkBlock
+                                              longPressBlock:(CJLabelLinkModelBlock)longPressBlock;
 attStr = [CJLabel configureLinkAttributedString:attStr
                                                addImageName:@"CJLabel.png"
                                                   imageSize:CGSizeMake(60, 43)
