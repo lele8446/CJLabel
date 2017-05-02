@@ -28,8 +28,6 @@
  *
    `numberOfLines`大于0且小于实际`label.numberOfLines`，同时`verticalAlignment`不等于`CJContentVerticalAlignmentTop`时，文本显示位置有偏差
 
-<br/>
-
 ## CJLabel引用
 ### 一、直接导入
 下载demo，将CJLabel文件夹导入项目，引用头文件`#import "CJLabel.h"`
@@ -41,12 +39,12 @@ pod 'CJLabel', '~> 2.1.2'
 ```
 
 ## API介绍
-* `+ sizeWithAttributedString:withConstraints:limitedToNumberOfLines:`
+* `+ sizeWithAttributedString:withConstraints:limitedToNumberOfLines:`<br/>
 计算指定NSAttributedString的size大小
 ```objective-c
 CGSize size = [CJLabel sizeWithAttributedString:str withConstraints:CGSizeMake(320, CGFLOAT_MAX) limitedToNumberOfLines:0]
   ```
-
+* `+ sizeWithAttributedString:withConstraints:limitedToNumberOfLines:`<br/>
 
 ## cocoapods安装
 * Podfile<br/>
