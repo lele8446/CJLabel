@@ -173,11 +173,11 @@
 		B40ACCAB1EB30D8F006DB787 /* Controllers */ = {
 			isa = PBXGroup;
 			children = (
+				4382578A1C1A6F5F00A3DA24 /* ViewController.h */,
+				4382578B1C1A6F5F00A3DA24 /* ViewController.m */,
 				B4C893131EB87DC900AC9E42 /* DetailViewController.h */,
 				B4C893141EB87DC900AC9E42 /* DetailViewController.m */,
 				B4C893151EB87DC900AC9E42 /* DetailViewController.xib */,
-				4382578A1C1A6F5F00A3DA24 /* ViewController.h */,
-				4382578B1C1A6F5F00A3DA24 /* ViewController.m */,
 			);
 			name = Controllers;
 			path = ../../CJLabel;
