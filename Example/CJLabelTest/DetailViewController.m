@@ -203,7 +203,7 @@
 - (void)clicklongPressLink:(CJLabelLinkModel *)linkModel isImage:(BOOL)isImage {
     NSString *title = [NSString stringWithFormat:@"长按点击: %@",linkModel.attributedString.string];
     if (isImage) {
-        title = [NSString stringWithFormat:@"点击链点图片：%@",linkModel.imageName];
+        title = [NSString stringWithFormat:@"长按点击图片：%@",linkModel.imageName];
     }
 
     UIAlertController *alert = [UIAlertController alertControllerWithTitle:title message:nil preferredStyle:UIAlertControllerStyleActionSheet];

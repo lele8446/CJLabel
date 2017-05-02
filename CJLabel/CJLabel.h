@@ -103,6 +103,8 @@ IB_DESIGNABLE
    6. 新增`textInsets` 设置文本内边距
  
    7. 新增`verticalAlignment` 设置垂直方向的文本对齐方式
+ 
+   8. 新增`delegate` 点击链点代理
  *
  *
  * CJLabel 已知bug：
