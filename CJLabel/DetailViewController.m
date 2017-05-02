@@ -28,7 +28,6 @@
     self.automaticallyAdjustsScrollViewInsets = NO;
     
     self.firstLabel.numberOfLines = 0;
-    self.firstLabel.userInteractionEnabled = YES;
     
     [self handleLabelContent];
     
@@ -130,6 +129,7 @@
             break;
             
         case 4:
+        case 5:
         {
             attStr = [CJLabel configureLinkAttributedString:attStr
                                                  withString:@"CJLabel"
@@ -138,7 +138,7 @@
                                                               NSForegroundColorAttributeName:[UIColor blueColor],
                                                               NSFontAttributeName:[UIFont boldSystemFontOfSize:15],
                                                               kCJBackgroundStrokeColorAttributeName:[UIColor orangeColor],
-                                                              kCJBackgroundLineWidthAttributeName:@(2),
+                                                              kCJBackgroundLineWidthAttributeName:@(self.index == 5?1:2),
                                                               kCJBackgroundFillColorAttributeName:[UIColor lightGrayColor]
                                                               }
                                        activeLinkAttributes:@{
@@ -160,7 +160,7 @@
                                                     atIndex:imageRange.location+imageRange.length
                                              linkAttributes:@{
                                                               kCJBackgroundStrokeColorAttributeName:[UIColor blueColor],
-                                                              kCJBackgroundLineWidthAttributeName:@(2)
+                                                              kCJBackgroundLineWidthAttributeName:@(self.index == 5?1:2),
                                                               }
                                        activeLinkAttributes:@{
                                                               kCJActiveBackgroundStrokeColorAttributeName:[UIColor redColor],

@@ -9,8 +9,8 @@
 Pod::Spec.new do |s|
 
   s.name         = "CJLabel"
-  s.version      = "2.0.2"
-  s.summary      = "继承自UILabel，基于NSAttributedString显示，支持图文混排、富文本展示以及添加自定义点击链点，并可设置点击链点文本属性"
+  s.version      = "2.0.0"
+  s.summary      = "继承自UILabel，基于NSAttributedString显示文本，支持图文混排、富文本展示以及添加自定义点击链点，并可设置点击链点文本属性"
   s.homepage     = "https://github.com/lele8446/CJLabelTest"
   # s.license      = "MIT"
   s.license      = { :type => 'Apache License, Version 2.0', :text => <<-LICENSE
@@ -29,7 +29,7 @@ Pod::Spec.new do |s|
   }
   s.author       = { "lele8446" => "641003000@qq.com" }
   s.platform     = :ios, "7.0"
-  s.source       = { :git => "https://github.com/lele8446/CJLabelTest.git", :tag => "2.0.2" }
+  s.source       = { :git => "https://github.com/lele8446/CJLabelTest.git", :tag => "2.0.0" }
   s.source_files  = "CJLabel/*"
 
 end

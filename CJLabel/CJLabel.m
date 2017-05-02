@@ -978,7 +978,7 @@ static inline BOOL isSameColor(UIColor *color1, UIColor *color2){
             
             // 当前glyphRun是一个可点击链点
             if (isLink) {
-                CJGlyphRunStrokeItem *runStrokeItem = [self runStrokeItemFromGlyphRun:glyphRun line:line origins:origins lineIndex:lineIndex inRect:rect width:width];
+                CJGlyphRunStrokeItem *runStrokeItem = [self runStrokeItemFromGlyphRun:glyphRun line:line origins:origins lineIndex:lineIndex inRect:rect width:width moreThanOneLine:(num > 1)];
                 
                 runStrokeItem.strokeColor = strokeColor;
                 runStrokeItem.fillColor = fillColor;
@@ -1008,7 +1008,7 @@ static inline BOOL isSameColor(UIColor *color1, UIColor *color2){
             }else{
                 //不是可点击链点。但存在自定义边框线或背景色
                 if (isNotClearColor(strokeColor) || isNotClearColor(fillColor) || isNotClearColor(activeStrokeColor) || isNotClearColor(activeFillColor)) {
-                    CJGlyphRunStrokeItem *runStrokeItem = [self runStrokeItemFromGlyphRun:glyphRun line:line origins:origins lineIndex:lineIndex inRect:rect width:width];
+                    CJGlyphRunStrokeItem *runStrokeItem = [self runStrokeItemFromGlyphRun:glyphRun line:line origins:origins lineIndex:lineIndex inRect:rect width:width moreThanOneLine:(num > 1)];
                     
                     runStrokeItem.strokeColor = strokeColor;
                     runStrokeItem.fillColor = fillColor;
@@ -1025,7 +1025,7 @@ static inline BOOL isSameColor(UIColor *color1, UIColor *color2){
         }
         
         // 再判断是否有需要合并的runStrokeItems
-        [allStrokePathItems addObjectsFromArray:[self mergeLineSameStrokePathItems:strokePathItems ascentAndDescent:ascentAndDescent]];
+        [allStrokePathItems addObjectsFromArray:[self mergeLineSameStrokePathItems:strokePathItems ascentAndDescent:ascentAndDescent moreThanOneLine:(num > 1)]];
         lineIndex ++;
     }
     
@@ -1038,6 +1038,7 @@ static inline BOOL isSameColor(UIColor *color1, UIColor *color2){
                                           lineIndex:(CFIndex)lineIndex
                                              inRect:(CGRect)rect
                                               width:(CGFloat)width
+                                    moreThanOneLine:(BOOL)more
 {
     CGRect runBounds = CGRectZero;
     CGFloat runAscent = 0.0f;
@@ -1065,7 +1066,7 @@ static inline BOOL isSameColor(UIColor *color1, UIColor *color2){
     }
 
     //转换为UIKit坐标系统
-    CGRect locBounds = [self convertRectFromLoc:runBounds];
+    CGRect locBounds = [self convertRectFromLoc:runBounds moreThanOneLine:more];
     CJGlyphRunStrokeItem *runStrokeItem = [[CJGlyphRunStrokeItem alloc]init];
     runStrokeItem.runBounds = runBounds;
     runStrokeItem.locBounds = locBounds;
@@ -1075,6 +1076,7 @@ static inline BOOL isSameColor(UIColor *color1, UIColor *color2){
 //判断是否有需要合并的runStrokeItems
 - (NSMutableArray <CJGlyphRunStrokeItem *>*)mergeLineSameStrokePathItems:(NSArray <CJGlyphRunStrokeItem *>*)lineStrokePathItems
                                              ascentAndDescent:(CGFloat)ascentAndDescent
+                                                         moreThanOneLine:(BOOL)more
 {
     NSMutableArray *mergeLineStrokePathItems = [[NSMutableArray alloc] initWithCapacity:3];
     
@@ -1130,7 +1132,7 @@ static inline BOOL isSameColor(UIColor *color1, UIColor *color2){
                                                    lastRunBounds.size.width + runBounds.size.width,
                                                    compareMaxNum(lastRunBounds.size.height,runBounds.size.height,YES));
                         _lastGlyphRunStrokeItem.runBounds = lastRunBounds;
-                        _lastGlyphRunStrokeItem.locBounds = [self convertRectFromLoc:lastRunBounds];
+                        _lastGlyphRunStrokeItem.locBounds = [self convertRectFromLoc:lastRunBounds moreThanOneLine:more];
                     }
                 }else if (!item.isLink && !_lastGlyphRunStrokeItem.isLink){
                     //非点击链点，但是是需要合并的连续run
@@ -1143,21 +1145,21 @@ static inline BOOL isSameColor(UIColor *color1, UIColor *color2){
                                                    lastRunBounds.size.width + runBounds.size.width,
                                                    compareMaxNum(lastRunBounds.size.height,runBounds.size.height,YES));
                         _lastGlyphRunStrokeItem.runBounds = lastRunBounds;
-                        _lastGlyphRunStrokeItem.locBounds = [self convertRectFromLoc:lastRunBounds];
+                        _lastGlyphRunStrokeItem.locBounds = [self convertRectFromLoc:lastRunBounds moreThanOneLine:more];
                     }
                 }
                 
                 //没有发生合并
                 if (!needMerge) {
                     
-                    _lastGlyphRunStrokeItem = [self adjustItemHeight:_lastGlyphRunStrokeItem height:ascentAndDescent];
+                    _lastGlyphRunStrokeItem = [self adjustItemHeight:_lastGlyphRunStrokeItem height:ascentAndDescent moreThanOneLine:more];
                     [strokePathTempItems addObject:[_lastGlyphRunStrokeItem copy]];
                     
                     _lastGlyphRunStrokeItem = item;
                     
                     //已经是最后一个run
                     if (i == lineStrokePathItems.count - 1) {
-                        _lastGlyphRunStrokeItem = [self adjustItemHeight:_lastGlyphRunStrokeItem height:ascentAndDescent];
+                        _lastGlyphRunStrokeItem = [self adjustItemHeight:_lastGlyphRunStrokeItem height:ascentAndDescent moreThanOneLine:more];
                         [strokePathTempItems addObject:[_lastGlyphRunStrokeItem copy]];
                     }
                 }
@@ -1165,7 +1167,7 @@ static inline BOOL isSameColor(UIColor *color1, UIColor *color2){
                 else{
                     //已经是最后一个run
                     if (i == lineStrokePathItems.count - 1) {
-                        _lastGlyphRunStrokeItem = [self adjustItemHeight:_lastGlyphRunStrokeItem height:ascentAndDescent];
+                        _lastGlyphRunStrokeItem = [self adjustItemHeight:_lastGlyphRunStrokeItem height:ascentAndDescent moreThanOneLine:more];
                         [strokePathTempItems addObject:[_lastGlyphRunStrokeItem copy]];
                     }
                 }
@@ -1176,7 +1178,7 @@ static inline BOOL isSameColor(UIColor *color1, UIColor *color2){
     else{
         if (lineStrokePathItems.count == 1) {
             CJGlyphRunStrokeItem *item = lineStrokePathItems[0];
-            item = [self adjustItemHeight:item height:ascentAndDescent];
+            item = [self adjustItemHeight:item height:ascentAndDescent moreThanOneLine:more];
             [mergeLineStrokePathItems addObject:item];
         }
         
@@ -1184,11 +1186,13 @@ static inline BOOL isSameColor(UIColor *color1, UIColor *color2){
     return mergeLineStrokePathItems;
 }
 
-- (CJGlyphRunStrokeItem *)adjustItemHeight:(CJGlyphRunStrokeItem *)item height:(CGFloat)ascentAndDescent {
+- (CJGlyphRunStrokeItem *)adjustItemHeight:(CJGlyphRunStrokeItem *)item
+                                    height:(CGFloat)ascentAndDescent
+                           moreThanOneLine:(BOOL)more {
     // runBounds小于 ascent + Descent 时，rect扩大 1
     if (item.runBounds.size.height < ascentAndDescent) {
         item.runBounds = CGRectInset(item.runBounds,-1,-1);
-        item.locBounds = [self convertRectFromLoc:item.runBounds];;
+        item.locBounds = [self convertRectFromLoc:item.runBounds moreThanOneLine:more];;
     }
     return item;
 }
@@ -1209,11 +1213,27 @@ static inline BOOL isSameColor(UIColor *color1, UIColor *color2){
  @param rect 坐标原点在左下角的 rect
  @return 坐标原点在左上角的 rect
  */
-- (CGRect)convertRectFromLoc:(CGRect)rect {
-    return CGRectMake(rect.origin.x ,
-                      self.bounds.size.height - rect.origin.y - rect.size.height ,
-                      rect.size.width,
-                      rect.size.height);
+- (CGRect)convertRectFromLoc:(CGRect)rect moreThanOneLine:(BOOL)more {    
+    if ((fabs(rect.origin.y) + fabs(rect.size.height)) <= self.bounds.size.height) {
+        rect = CGRectMake(rect.origin.x ,
+                          self.bounds.size.height - rect.origin.y - rect.size.height,
+                          rect.size.width,
+                          rect.size.height);
+    }else{
+        if (more) {
+            rect = CGRectMake(rect.origin.x ,
+                              self.bounds.size.height - rect.origin.y - rect.size.height,
+                              rect.size.width,
+                              rect.size.height);
+        }else{
+            rect = CGRectMake(rect.origin.x ,
+                              (self.bounds.size.height - rect.size.height)/2.0,
+                              rect.size.width,
+                              rect.size.height);
+        }
+    }
+    return rect;
+    
 }
 
 #pragma mark - UIView
