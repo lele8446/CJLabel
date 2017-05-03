@@ -184,3 +184,6 @@ attStr = [CJLabel configureLinkAttributedString:attStr
 *  CJLinkLabelModel的linkString改为NSString类型<br/>
 ### V1.0.0
 *  v1.0.0版本注意：文本内存在相同链点时只有首次出现的链点能够响应点击
+
+## 相关介绍
+[CJLabel图文混排二 —— UILabel插入图片以及精确链点点击](http://www.jianshu.com/p/9a70533d217e)
