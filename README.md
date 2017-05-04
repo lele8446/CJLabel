@@ -1,4 +1,6 @@
 # CJLabel
+先看点击链点效果图：
+![点击链点](https://o44fado6w.qnssl.com/CJLabel.gif)
 
 ## 功能简介
 
@@ -76,8 +78,6 @@ end
    `extern NSString * const kCJActiveBackgroundStrokeColorAttributeName;`
 
 ### 2、CJLabel API<br/>
-先看点击链点效果图：
-![点击链点](https://o44fado6w.qnssl.com/CJLabel.gif)
 * 计算指定NSAttributedString的size大小
 ```objective-c
 CGSize size = [CJLabel sizeWithAttributedString:str withConstraints:CGSizeMake(320, CGFLOAT_MAX) limitedToNumberOfLines:0]
