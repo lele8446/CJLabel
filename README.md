@@ -1,5 +1,5 @@
 # CJLabel
-先看点击链点效果图：
+先看点击链点效果图：<br/>
 ![点击链点](https://o44fado6w.qnssl.com/CJLabel.gif)
 
 ## 功能简介
