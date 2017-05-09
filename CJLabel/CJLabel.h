@@ -178,6 +178,7 @@ IB_DESIGNABLE
  @param imageName 图片名称
  @param size 图片大小
  @param loc 图片插入位置
+ @param verticalAlignment 图片所在行，图片与文字在垂直方向的对齐方式（只针对当前行）
  @param attributes 图片文本属性
  
  @return 插入图片后的NSMutableAttributedString
@@ -186,6 +187,7 @@ IB_DESIGNABLE
                                             addImageName:(NSString *)imageName
                                                imageSize:(CGSize)size
                                                  atIndex:(NSUInteger)loc
+                                       verticalAlignment:(CJAttributedLabelVerticalAlignment)verticalAlignment
                                               attributes:(NSDictionary *)attributes;
 
 /**
@@ -196,6 +198,7 @@ IB_DESIGNABLE
  @param imageName 图片名称
  @param size 图片大小
  @param loc 图片插入位置
+ @param verticalAlignment 图片所在行，图片与文字在垂直方向的对齐方式（只针对当前行）
  @param linkAttributes 图片链点属性
  @param activeLinkAttributes 点击状态下的图片链点属性
  @param parameter 链点自定义参数
@@ -208,6 +211,7 @@ IB_DESIGNABLE
                                                 addImageName:(NSString *)imageName
                                                    imageSize:(CGSize)size
                                                      atIndex:(NSUInteger)loc
+                                           verticalAlignment:(CJAttributedLabelVerticalAlignment)verticalAlignment
                                               linkAttributes:(NSDictionary *)linkAttributes
                                         activeLinkAttributes:(NSDictionary *)activeLinkAttributes
                                                    parameter:(id)parameter
@@ -290,13 +294,17 @@ IB_DESIGNABLE
  *  移除制定range的点击链点
  *
  *  @param range 移除链点位置
+ *
+ *  @return 返回新的NSAttributedString
  */
-- (void)removeLinkAtRange:(NSRange)range;
+- (NSAttributedString *)removeLinkAtRange:(NSRange)range;
 
 /**
  *  移除所有点击链点
+ *
+ *  @return 返回新的NSAttributedString
  */
-- (void)removeAllLink;
+- (NSAttributedString *)removeAllLink;
 
 @end
 

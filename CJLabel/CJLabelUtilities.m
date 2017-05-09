@@ -12,6 +12,7 @@ NSString * const kCJImageAttributeName                       = @"kCJImageAttribu
 NSString * const kCJImageName                                = @"kCJImageName";
 NSString * const kCJImageHeight                              = @"kCJImageHeight";
 NSString * const kCJImageWidth                               = @"kCJImageWidth";
+NSString * const kCJImageLineVerticalAlignment               = @"kCJImageLineVerticalAlignment";
 
 NSString * const kCJLinkAttributesName                       = @"kCJLinkAttributesName";
 NSString * const kCJActiveLinkAttributesName                 = @"kCJActiveLinkAttributesName";
@@ -48,6 +49,7 @@ CGFloat RunDelegateGetWidthCallback(void * refCon) {
                                                 addImageName:(NSString *)imageName
                                                    imageSize:(CGSize)size
                                                      atIndex:(NSUInteger)loc
+                                           verticalAlignment:(CJAttributedLabelVerticalAlignment)verticalAlignment
                                               linkAttributes:(NSDictionary *)linkAttributes
                                         activeLinkAttributes:(NSDictionary *)activeLinkAttributes
                                                    parameter:(id)parameter
@@ -75,6 +77,7 @@ CGFloat RunDelegateGetWidthCallback(void * refCon) {
     NSMutableAttributedString *imageAttributedString = [[NSMutableAttributedString alloc] initWithString:imgPlaceholderStr];
     [imageAttributedString addAttribute:(NSString *)kCTRunDelegateAttributeName value:(__bridge id)runDelegate range:imgRange];
     [imageAttributedString addAttribute:kCJImageAttributeName value:imgInfoDic range:imgRange];
+    [imageAttributedString addAttribute:kCJImageLineVerticalAlignment value:@(verticalAlignment) range:imgRange];
     
     if (!CJLabelIsNull(linkAttributes) && linkAttributes.count > 0) {
         [imageAttributedString addAttribute:kCJLinkAttributesName value:linkAttributes range:imgRange];
@@ -93,6 +96,8 @@ CGFloat RunDelegateGetWidthCallback(void * refCon) {
     }
     if (isLink) {
         [imageAttributedString addAttribute:kCJIsLinkAttributesName value:@(YES) range:imgRange];
+    }else{
+        [imageAttributedString addAttribute:kCJIsLinkAttributesName value:@(NO) range:imgRange];
     }
     NSRange range = NSMakeRange(loc, imgPlaceholderStr.length);
     NSMutableAttributedString *attributedString = [[NSMutableAttributedString alloc]initWithAttributedString:attrStr];

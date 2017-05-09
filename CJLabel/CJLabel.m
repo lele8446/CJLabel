@@ -7,7 +7,6 @@
 //
 
 #import "CJLabel.h"
-#import <QuartzCore/QuartzCore.h>
 #import "CJLabelUtilities.h"
 
 @class CJGlyphRunStrokeItem;
@@ -145,18 +144,28 @@ static inline BOOL isSameColor(UIColor *color1, UIColor *color2){
     return same;
 }
 
+/**
+ 当CTLine包含插入图片时，描述当前行文字在垂直方向的对齐方式
+ */
+struct CJCTLineStructure {
+    CFIndex line;//第几行
+    CGFloat lineHeight;//行高
+    CJAttributedLabelVerticalAlignment verticalAlignment;//对齐方式（默认底部对齐）
+};
+typedef struct CJCTLineStructure CJCTLineStructure;
 
 
 @interface CJLabel ()<UIGestureRecognizerDelegate>
 
 //当前显示的AttributedText
 @property (readwrite, nonatomic, copy) NSAttributedString *renderedAttributedText;
-@property (nonatomic, strong, readonly) UILongPressGestureRecognizer *longPressGestureRecognizer;
+@property (readonly, nonatomic, strong) UILongPressGestureRecognizer *longPressGestureRecognizer;
 @end
 
 @implementation CJLabel {
 @private
     BOOL _needsFramesetter;
+    NSInteger _numberOfLines;
     CTFramesetterRef _framesetter;
     CTFramesetterRef _highlightFramesetter;
     CGFloat _yOffset;
@@ -167,6 +176,7 @@ static inline BOOL isSameColor(UIColor *color1, UIColor *color2){
     NSArray <CJGlyphRunStrokeItem *>*_linkStrokeItemArray;//可点击链点的StrokeItem数组
     CJGlyphRunStrokeItem *_lastGlyphRunStrokeItem;//计算StrokeItem的中间变量
     CJGlyphRunStrokeItem *_currentClickRunStrokeItem;//当前点击选中的StrokeItem
+    NSArray *_CTLineStructureArray;//记录 包含插入图片的CTLine在垂直方向的对齐方式的数组
 }
 
 
@@ -195,22 +205,24 @@ static inline BOOL isSameColor(UIColor *color1, UIColor *color2){
                                             addImageName:(NSString *)imageName
                                                imageSize:(CGSize)size
                                                  atIndex:(NSUInteger)loc
+                                       verticalAlignment:(CJAttributedLabelVerticalAlignment)verticalAlignment
                                               attributes:(NSDictionary *)attributes
 {
-    return [CJLabelUtilities configureLinkAttributedString:attrStr addImageName:imageName imageSize:size atIndex:loc linkAttributes:attributes activeLinkAttributes:nil parameter:nil clickLinkBlock:nil longPressBlock:nil islink:NO];
+    return [CJLabelUtilities configureLinkAttributedString:attrStr addImageName:imageName imageSize:size atIndex:loc verticalAlignment:verticalAlignment linkAttributes:attributes activeLinkAttributes:nil parameter:nil clickLinkBlock:nil longPressBlock:nil islink:NO];
 }
 
 + (NSMutableAttributedString *)configureLinkAttributedString:(NSAttributedString *)attrStr
                                                 addImageName:(NSString *)imageName
                                                    imageSize:(CGSize)size
                                                      atIndex:(NSUInteger)loc
+                                           verticalAlignment:(CJAttributedLabelVerticalAlignment)verticalAlignment
                                               linkAttributes:(NSDictionary *)linkAttributes
                                         activeLinkAttributes:(NSDictionary *)activeLinkAttributes
                                                    parameter:(id)parameter
                                               clickLinkBlock:(CJLabelLinkModelBlock)clickLinkBlock
                                               longPressBlock:(CJLabelLinkModelBlock)longPressBlock
 {
-    return [CJLabelUtilities configureLinkAttributedString:attrStr addImageName:imageName imageSize:size atIndex:loc linkAttributes:linkAttributes activeLinkAttributes:activeLinkAttributes parameter:parameter clickLinkBlock:clickLinkBlock longPressBlock:longPressBlock islink:YES];
+    return [CJLabelUtilities configureLinkAttributedString:attrStr addImageName:imageName imageSize:size atIndex:loc verticalAlignment:verticalAlignment linkAttributes:linkAttributes activeLinkAttributes:activeLinkAttributes parameter:parameter clickLinkBlock:clickLinkBlock longPressBlock:longPressBlock islink:YES];
 }
 
 + (NSMutableAttributedString *)configureAttributedString:(NSAttributedString *)attrStr
@@ -251,74 +263,83 @@ static inline BOOL isSameColor(UIColor *color1, UIColor *color2){
     return [CJLabelUtilities configureLinkAttributedString:attrStr withString:withString sameStringEnable:sameStringEnable linkAttributes:linkAttributes activeLinkAttributes:activeLinkAttributes parameter:parameter clickLinkBlock:clickLinkBlock longPressBlock:longPressBlock islink:YES];
 }
 
-- (void)removeLinkAtRange:(NSRange)range {
-    NSParameterAssert((range.location + range.length) <= self.attributedText.length);
+- (NSAttributedString *)removeLinkAtRange:(NSRange)linkRange {
+    NSParameterAssert((linkRange.location + linkRange.length) <= self.attributedText.length);
     
-    NSMutableArray *array = [NSMutableArray arrayWithCapacity:4];
-    for (CJGlyphRunStrokeItem *item in _runStrokeItemArray) {
-        if (!NSEqualRanges(range,item.range)) {
-            [array addObject:item];
+    NSMutableAttributedString *attText = [[NSMutableAttributedString alloc]initWithAttributedString:self.attributedText];
+    [attText enumerateAttributesInRange:NSMakeRange(0, attText.length) options:NSAttributedStringEnumerationLongestEffectiveRangeNotRequired usingBlock:^(NSDictionary<NSString *, id> *attrs, NSRange range, BOOL *stop){
+        BOOL isLink = [attrs[kCJIsLinkAttributesName] boolValue];
+        if (isLink &&
+            (linkRange.location >= range.location) &&
+            (linkRange.location <= range.location+range.length) &&
+            (linkRange.location+linkRange.length <= range.location + range.length))
+        {
+            [attText removeAttribute:kCJLinkAttributesName range:linkRange];
+            [attText removeAttribute:kCJActiveLinkAttributesName range:linkRange];
+            [attText removeAttribute:kCJIsLinkAttributesName range:linkRange];
+            [attText removeAttribute:kCJLinkRangeAttributesName range:linkRange];
+            [attText removeAttribute:kCJLinkNeedRedrawnAttributesName range:linkRange];
+            
+            [attText removeAttribute:kCJBackgroundFillColorAttributeName range:linkRange];
+            [attText removeAttribute:kCJBackgroundStrokeColorAttributeName range:linkRange];
+            [attText removeAttribute:kCJBackgroundLineWidthAttributeName range:linkRange];
+            [attText removeAttribute:kCJBackgroundLineCornerRadiusAttributeName range:linkRange];
+            [attText removeAttribute:kCJActiveBackgroundFillColorAttributeName range:linkRange];
+            [attText removeAttribute:kCJActiveBackgroundStrokeColorAttributeName range:linkRange];
+            
+        }else{
+            
         }
-    }
-    _runStrokeItemArray = [array copy];
-    [array removeAllObjects];
+    }];
     
-    for (CJGlyphRunStrokeItem *item in _linkStrokeItemArray) {
-        if (!NSEqualRanges(range,item.range)) {
-            [array addObject:item];
-        }
-    }
-    _linkStrokeItemArray = [array copy];
-    
-    NSAttributedString *removeAttStr = [self.attributedText attributedSubstringFromRange:range];
-    NSMutableAttributedString *newAttributedText = [[NSMutableAttributedString alloc]initWithAttributedString:self.attributedText];
-    NSRange removeRange = NSMakeRange(0, removeAttStr.length);
-    NSDictionary *attDic = [removeAttStr attributesAtIndex:0 effectiveRange:&removeRange];
-    for (NSString *name in [attDic allKeys]) {
-        [newAttributedText removeAttribute:name range:range];
-    }
-    if (_normalAttDic && _normalAttDic.count > 0) {
-        [newAttributedText addAttributes:_normalAttDic range:range];
-    }
-    self.attributedText = newAttributedText;
+    _runStrokeItemArray = nil;
+    _linkStrokeItemArray = nil;
+    _needRedrawn = YES;
+    self.attributedText = attText;
     
     [self setNeedsFramesetter];
     [self setNeedsDisplay];
     //立即刷新界面
     [CATransaction flush];
+    return self.attributedText;
 }
 
-- (void)removeAllLink{
-    NSMutableArray *array = [NSMutableArray arrayWithCapacity:4];
+- (NSAttributedString *)removeAllLink{
+    
     NSMutableAttributedString *newAttributedText = [[NSMutableAttributedString alloc]initWithAttributedString:self.attributedText];
     
-    for (CJGlyphRunStrokeItem *item in _runStrokeItemArray) {
-        if (!item.isLink) {
-            [array addObject:item];
-        }else{
-            NSRange range = item.range;
-            NSAttributedString *removeAttStr = [self.attributedText attributedSubstringFromRange:range];
+    [newAttributedText enumerateAttributesInRange:NSMakeRange(0, newAttributedText.length) options:NSAttributedStringEnumerationLongestEffectiveRangeNotRequired usingBlock:^(NSDictionary<NSString *, id> *attrs, NSRange range, BOOL *stop){
+        BOOL isLink = [attrs[kCJIsLinkAttributesName] boolValue];
+        if (isLink)
+        {
+            [newAttributedText removeAttribute:kCJLinkAttributesName range:range];
+            [newAttributedText removeAttribute:kCJActiveLinkAttributesName range:range];
+            [newAttributedText removeAttribute:kCJIsLinkAttributesName range:range];
+            [newAttributedText removeAttribute:kCJLinkRangeAttributesName range:range];
+            [newAttributedText removeAttribute:kCJLinkNeedRedrawnAttributesName range:range];
             
-            NSRange removeRange = NSMakeRange(0, removeAttStr.length);
-            NSDictionary *attDic = [removeAttStr attributesAtIndex:0 effectiveRange:&removeRange];
-            for (NSString *name in [attDic allKeys]) {
-                [newAttributedText removeAttribute:name range:range];
-            }
-            if (_normalAttDic && _normalAttDic.count > 0) {
-                [newAttributedText addAttributes:_normalAttDic range:range];
-            }
+            [newAttributedText removeAttribute:kCJBackgroundFillColorAttributeName range:range];
+            [newAttributedText removeAttribute:kCJBackgroundStrokeColorAttributeName range:range];
+            [newAttributedText removeAttribute:kCJBackgroundLineWidthAttributeName range:range];
+            [newAttributedText removeAttribute:kCJBackgroundLineCornerRadiusAttributeName range:range];
+            [newAttributedText removeAttribute:kCJActiveBackgroundFillColorAttributeName range:range];
+            [newAttributedText removeAttribute:kCJActiveBackgroundStrokeColorAttributeName range:range];
+            
+        }else{
+            
         }
-    }
+    }];
     
-    self.attributedText = newAttributedText;
-    
-    _runStrokeItemArray = [array copy];
+    _runStrokeItemArray = nil;
     _linkStrokeItemArray = nil;
+    _needRedrawn = YES;
+    self.attributedText = newAttributedText;
     
     [self setNeedsFramesetter];
     [self setNeedsDisplay];
     //立即刷新界面
     [CATransaction flush];
+    return self.attributedText;
 }
 
 #pragma mark - Life cycle
@@ -342,6 +363,7 @@ static inline BOOL isSameColor(UIColor *color1, UIColor *color2){
     self.userInteractionEnabled = YES;
     self.textInsets = UIEdgeInsetsZero;
     self.verticalAlignment = CJContentVerticalAlignmentCenter;
+    _numberOfLines = -1;
     _needRedrawn = NO;
     _longPress = NO;
     _extendsLinkTouchArea = NO;
@@ -349,6 +371,7 @@ static inline BOOL isSameColor(UIColor *color1, UIColor *color2){
     _linkStrokeItemArray = nil;
     _runStrokeItemArray = nil;
     _currentClickRunStrokeItem = nil;
+    _CTLineStructureArray = nil;
     _longPressGestureRecognizer = [[UILongPressGestureRecognizer alloc] initWithTarget:self
                                                                                 action:@selector(longPressGestureDidFire:)];
     self.longPressGestureRecognizer.delegate = self;
@@ -681,6 +704,7 @@ static inline BOOL isSameColor(UIColor *color1, UIColor *color2){
     CGPathAddRect(path, NULL, rect);
     CTFrameRef frame = CTFramesetterCreateFrame(framesetter, textRange, path, NULL);
     
+    [self allCTLineStructureArray:frame inRect:rect];
     if (_needRedrawn) {
         // 获取所有需要重绘背景的StrokeItem数组
         _runStrokeItemArray = [self calculateRunStrokeItemsFrame:frame inRect:rect];
@@ -695,13 +719,18 @@ static inline BOOL isSameColor(UIColor *color1, UIColor *color2){
     
     
     CFArrayRef lines = CTFrameGetLines(frame);
-    NSInteger numberOfLines = self.numberOfLines > 0 ? MIN(self.numberOfLines, CFArrayGetCount(lines)) : CFArrayGetCount(lines);
+    if (_numberOfLines == -1) {
+        _numberOfLines = self.numberOfLines > 0 ? MIN(self.numberOfLines, CFArrayGetCount(lines)) : CFArrayGetCount(lines);
+    }
+    
     BOOL truncateLastLine = (self.lineBreakMode == NSLineBreakByTruncatingHead || self.lineBreakMode == NSLineBreakByTruncatingMiddle || self.lineBreakMode == NSLineBreakByTruncatingTail);
     
-    CGPoint lineOrigins[numberOfLines];
-    CTFrameGetLineOrigins(frame, CFRangeMake(0, numberOfLines), lineOrigins);
+    CGPoint lineOrigins[_numberOfLines];
+    CTFrameGetLineOrigins(frame, CFRangeMake(0, _numberOfLines), lineOrigins);
     
-    for (CFIndex lineIndex = 0; lineIndex < numberOfLines; lineIndex++) {
+    CGFloat hight = 0;
+
+    for (CFIndex lineIndex = 0; lineIndex < _numberOfLines; lineIndex++) {
         CGPoint lineOrigin = lineOrigins[lineIndex];
         CGContextSetTextPosition(c, lineOrigin.x, lineOrigin.y);
         CTLineRef line = CFArrayGetValueAtIndex(lines, lineIndex);
@@ -709,12 +738,13 @@ static inline BOOL isSameColor(UIColor *color1, UIColor *color2){
         CGFloat ascent = 0.0f, descent = 0.0f, leading = 0.0f;
         CTLineGetTypographicBounds((CTLineRef)line, &ascent, &descent, &leading);
 
+        CGFloat lineHight = ascent + descent + leading;
         CGFloat y = lineOrigin.y;
         
         // 根据水平对齐方式调整偏移量
         CGFloat flushFactor = CJFlushFactorForTextAlignment(self.textAlignment);
         
-        if (lineIndex == numberOfLines - 1 && truncateLastLine) {
+        if (lineIndex == _numberOfLines - 1 && truncateLastLine) {
             // 判断最后一行是否占满整行
             CFRange lastLineRange = CTLineGetStringRange(line);
             
@@ -725,7 +755,7 @@ static inline BOOL isSameColor(UIColor *color1, UIColor *color2){
                 NSLineBreakMode lineBreakMode = self.lineBreakMode;
                 
                 // 多行时lineBreakMode默认为NSLineBreakByTruncatingTail
-                if (numberOfLines != 1) {
+                if (_numberOfLines != 1) {
                     lineBreakMode = NSLineBreakByTruncatingTail;
                 }
                 
@@ -744,14 +774,12 @@ static inline BOOL isSameColor(UIColor *color1, UIColor *color2){
                         break;
                 }
                 
-                NSAttributedString *attributedTruncationString = nil;
-                if (!attributedTruncationString) {
-                    NSString *truncationTokenString = @"\u2026"; // \u2026 对应"..."的Unicode编码
-                    
-                    NSDictionary *truncationTokenStringAttributes = truncationTokenStringAttributes = [attributedString attributesAtIndex:(NSUInteger)truncationAttributePosition effectiveRange:NULL];
-                    
-                    attributedTruncationString = [[NSAttributedString alloc] initWithString:truncationTokenString attributes:truncationTokenStringAttributes];
-                }
+                NSString *truncationTokenString = @"\u2026"; // \u2026 对应"..."的Unicode编码
+                
+                NSDictionary *truncationTokenStringAttributes = truncationTokenStringAttributes = [attributedString attributesAtIndex:(NSUInteger)truncationAttributePosition effectiveRange:NULL];
+                
+                NSAttributedString *attributedTruncationString = [[NSAttributedString alloc] initWithString:truncationTokenString attributes:truncationTokenStringAttributes];
+                
                 CTLineRef truncationToken = CTLineCreateWithAttributedString((__bridge CFAttributedStringRef)attributedTruncationString);
                 
                 // Append truncationToken to the string
@@ -780,33 +808,67 @@ static inline BOOL isSameColor(UIColor *color1, UIColor *color2){
                 }
                 
                 CGFloat penOffset = (CGFloat)CTLineGetPenOffsetForFlush(truncatedLine, flushFactor, rect.size.width);
-                CGContextSetTextPosition(c, penOffset, y );
-                
-                CTLineDraw(truncatedLine, c);
+//                CGContextSetTextPosition(c, penOffset, y );
+//                CTLineDraw(truncatedLine, c);
+                hight = hight + [self drawCTRun:c line:truncatedLine x:penOffset y:y lineIndex:lineIndex];
                 
                 CFRelease(truncatedLine);
                 CFRelease(truncationLine);
                 CFRelease(truncationToken);
             } else {
                 CGFloat penOffset = (CGFloat)CTLineGetPenOffsetForFlush(line, flushFactor, rect.size.width);
-                CGContextSetTextPosition(c, penOffset, y );
-                CTLineDraw(line, c);
+//                CGContextSetTextPosition(c, penOffset, y );
+//                CTLineDraw(line, c);
+                hight = hight + [self drawCTRun:c line:line x:penOffset y:y lineIndex:lineIndex];
             }
-        } else {
+        }
+        else {
             CGFloat penOffset = (CGFloat)CTLineGetPenOffsetForFlush(line, flushFactor, rect.size.width);
-            CGContextSetTextPosition(c, penOffset, y );
-            CTLineDraw(line, c);
+//            CGContextSetTextPosition(c, penOffset, y );
+//            CTLineDraw(line, c);
+            hight = hight + [self drawCTRun:c line:line x:penOffset y:y lineIndex:lineIndex];
         }
         
         // 绘制插入图片
         [self drawImageLine:line context:c lineOrigins:lineOrigins lineIndex:lineIndex];
     }
+    NSLog(@"\n");
+    NSLog(@"所有行高 = %@",@(hight));
     
     // 绘制描边
     [self drawBackgroundColor:c runStrokeItems:_runStrokeItemArray isStrokeColor:YES];
     
     CFRelease(frame);
     CGPathRelease(path);
+}
+
+- (CGFloat)drawCTRun:(CGContextRef)c line:(CTLineRef)line x:(CGFloat)x y:(CGFloat)y lineIndex:(CFIndex)lineIndex{
+    
+    CGFloat ascent = 0.0f, descent = 0.0f, leading = 0.0f;
+    CTLineGetTypographicBounds(line, &ascent, &descent, &leading);
+    CGFloat lineHight = ascent + descent ;
+    NSLog(@"\n");
+    NSLog(@"当前lineHight = %@",@(lineHight));
+    y = y  ;
+    NSLog(@"第%@行的 y = %@",@(lineIndex),@(y));
+    
+    CFArrayRef runs = CTLineGetGlyphRuns(line);
+    for (CFIndex j = 0; j < CFArrayGetCount(runs); ++j) {
+        CTRunRef run = CFArrayGetValueAtIndex(runs, j);
+        CGFloat runAscent = 0.0f, runDescent = 0.0f, runLeading = 0.0f;
+        CTRunGetTypographicBounds(run, CFRangeMake(0, 0), &runAscent, &runDescent, &runLeading);
+        CGFloat runHight = runAscent + runDescent;
+        NSLog(@"runHight = %@",@(runHight));
+        
+        CGFloat yy = y;
+        
+        CGContextSetTextPosition(c, x, yy );
+        
+        // 获取CTRun的属性
+//        NSDictionary *attDic = (__bridge NSDictionary *)CTRunGetAttributes(run);
+        CTRunDraw(run, c, CFRangeMake(0, 0));
+    }
+    return lineHight;
 }
 
 - (void)drawBackgroundColor:(CGContextRef)c
@@ -859,12 +921,23 @@ static inline BOOL isSameColor(UIColor *color1, UIColor *color2){
     }
 }
 
-// 插入图片
+/**
+ 指定位置插入图片
+
+ @param line 当前绘制行
+ @param c CGContextRef
+ @param lineOrigins CTLine坐标原点
+ @param lineIndex 第几行
+ */
 - (void)drawImageLine:(CTLineRef)line
               context:(CGContextRef)c
           lineOrigins:(CGPoint[])lineOrigins
             lineIndex:(CFIndex)lineIndex
 {
+    CGFloat ascent = 0.0f, descent = 0.0f, leading = 0.0f;
+    CTLineGetTypographicBounds(line, &ascent, &descent, &leading);
+    CGFloat lineHight = ascent + descent + leading;
+    
     CFArrayRef runs = CTLineGetGlyphRuns(line);
     for (int j = 0; j < CFArrayGetCount(runs); j++) {
         CGFloat runAscent;
@@ -884,15 +957,68 @@ static inline BOOL isSameColor(UIColor *color1, UIColor *color2){
             UIImage *image = [UIImage imageNamed:imgInfoDic[kCJImageName]];
             if (image) {
                 CGRect imageDrawRect;
-                CGFloat imageSizeWidth = ceil(runRect.size.width);
-                CGFloat imageSizeHeight = ceil(runRect.size.height);
+//                CGFloat imageSizeWidth = ceil(runRect.size.width);
+//                CGFloat imageSizeHeight = ceil(runRect.size.height);
+                CGFloat imageSizeWidth = runRect.size.width;
+                CGFloat imageSizeHeight = runRect.size.height;
                 imageDrawRect.size = CGSizeMake(imageSizeWidth, imageSizeHeight);
                 imageDrawRect.origin.x = runRect.origin.x + lineOrigin.x;
-                imageDrawRect.origin.y = lineOrigin.y;
+//                imageDrawRect.origin.y = lineOrigin.y;
+                imageDrawRect.origin.y = lineOrigin.y-(lineHight-imageSizeHeight)/2.0;
                 CGContextDrawImage(c, imageDrawRect, image.CGImage);
             }
         }
     }
+}
+
+- (NSArray *)allCTLineStructureArray:(CTFrameRef)frame inRect:(CGRect)rect {
+    
+    NSArray *lines = (__bridge NSArray *)CTFrameGetLines(frame);
+    CGPoint origins[[lines count]];
+    CTFrameGetLineOrigins(frame, CFRangeMake(0, 0), origins);
+    
+    NSMutableArray *allStrokePathItems = [NSMutableArray arrayWithCapacity:3];
+    
+    
+    if (_numberOfLines == -1) {
+        _numberOfLines = self.numberOfLines > 0 ? MIN(self.numberOfLines, lines.count) : lines.count;
+    }
+    NSInteger num = _numberOfLines;
+    CFIndex lineIndex = 0;
+    // 遍历所有行
+    for (NSInteger i = 0; i < num; i ++ ) {
+        id line = lines[i];
+        
+        CGFloat ascent = 0.0f, descent = 0.0f, leading = 0.0f;
+        CTLineGetTypographicBounds((__bridge CTLineRef)line, &ascent, &descent, &leading);
+        CGFloat lineHeight = ascent + descent;
+//        NSLog(@"\n");
+//        NSLog(@"\n");
+//        NSLog(@"行lineHeight = %@",@(lineHeight));
+//        NSLog(@"行leading = %@",@(leading));
+//        NSLog(@"行高 = %@",@(lineHeight+leading));
+        
+        //遍历每一行的所有glyphRun
+        for (id glyphRun in (__bridge NSArray *)CTLineGetGlyphRuns((__bridge CTLineRef)line)) {
+            
+            NSDictionary *attributes = (__bridge NSDictionary *)CTRunGetAttributes((__bridge CTRunRef) glyphRun);
+            CGRect runBounds = CGRectZero;
+            CGFloat runAscent = 0.0f;
+            CGFloat runDescent = 0.0f;
+            CGFloat leading = 0.0f;
+            
+            runBounds.size.width = (CGFloat)CTRunGetTypographicBounds((__bridge CTRunRef)glyphRun, CFRangeMake(0, 0), &runAscent, &runDescent, &leading);
+            runBounds.size.height = runAscent + runDescent;
+//            NSLog(@"\n");
+//            NSLog(@"run lineHeight = %@",@(runBounds.size.height));
+//            NSLog(@"run leading = %@",@(leading));
+//            NSLog(@"run 行高 = %@",@(runBounds.size.height+leading));
+        
+        }
+        lineIndex ++;
+    }
+    
+    return allStrokePathItems;
 }
 
 // 计算可点击链点，以及需要填充背景或边框线的run数组
@@ -904,18 +1030,11 @@ static inline BOOL isSameColor(UIColor *color1, UIColor *color2){
     
     NSMutableArray *allStrokePathItems = [NSMutableArray arrayWithCapacity:3];
     
+    if (_numberOfLines == -1) {
+        _numberOfLines = self.numberOfLines > 0 ? MIN(self.numberOfLines, lines.count) : lines.count;
+    }
+    NSInteger num = _numberOfLines;
     CFIndex lineIndex = 0;
-    NSInteger num = lines.count;
-    if (self.numberOfLines == 0) {
-        num = lines.count;
-    }
-    else if (0 < self.numberOfLines && self.numberOfLines < num){
-        num = self.numberOfLines;
-    }
-    else if (self.numberOfLines > num) {
-        num = lines.count;
-    };
-
     // 遍历所有行
     for (NSInteger i = 0; i < num; i ++ ) {
         id line = lines[i];
@@ -1437,7 +1556,8 @@ static inline BOOL isSameColor(UIColor *color1, UIColor *color2){
                                imageName:(NSString *)imageName
                                imageRect:(CGRect )imageRect
                                parameter:(id)parameter
-                               linkRange:(NSRange)linkRange;{
+                               linkRange:(NSRange)linkRange
+{
     self = [super init];
     if (self) {
         _attributedString = attributedString;

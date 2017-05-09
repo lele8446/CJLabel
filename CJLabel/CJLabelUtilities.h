@@ -17,6 +17,7 @@ extern NSString * const kCJImageAttributeName;
 extern NSString * const kCJImageName;
 extern NSString * const kCJImageHeight;
 extern NSString * const kCJImageWidth;
+extern NSString * const kCJImageLineVerticalAlignment;
 
 extern NSString * const kCJLinkAttributesName;
 extern NSString * const kCJActiveLinkAttributesName;
@@ -41,6 +42,7 @@ extern NSString * const kCJLinkNeedRedrawnAttributesName;
  @param imageName 图片名称
  @param size 图片大小
  @param loc 图片插入位置
+ @param verticalAlignment 图片所在行，图片与文字在垂直方向的对齐方式（只针对当前行）
  @param linkAttributes 图片链点属性
  @param activeLinkAttributes 点击状态下的图片链点属性
  @param parameter 链点自定义参数
@@ -53,6 +55,7 @@ extern NSString * const kCJLinkNeedRedrawnAttributesName;
                                                 addImageName:(NSString *)imageName
                                                    imageSize:(CGSize)size
                                                      atIndex:(NSUInteger)loc
+                                           verticalAlignment:(CJAttributedLabelVerticalAlignment)verticalAlignment
                                               linkAttributes:(NSDictionary *)linkAttributes
                                         activeLinkAttributes:(NSDictionary *)activeLinkAttributes
                                                    parameter:(id)parameter

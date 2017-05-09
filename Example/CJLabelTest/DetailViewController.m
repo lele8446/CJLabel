@@ -14,9 +14,12 @@
                                                  green:((float)((rgbValue & 0xFF00) >> 8))/255.0 \
                                                   blue:((float)(rgbValue & 0xFF))/255.0 alpha:1.0]
 
-@interface DetailViewController ()
+@interface DetailViewController ()<UITextFieldDelegate>
 @property (nonatomic, weak) IBOutlet CJLabel *firstLabel;
 @property (nonatomic, strong) CJLabel *secondLabel;
+
+@property (nonatomic, weak) IBOutlet CJLabel *label;
+@property (nonatomic, weak) IBOutlet UITextField *textField;
 @end
 
 @implementation DetailViewController
@@ -29,30 +32,98 @@
     
     self.firstLabel.numberOfLines = 0;
     
-    [self handleLabelContent];
+    NSAttributedString *content = self.content;
+    [self handleContent:content];
+//    [self handleLabelContent:content];
     
+    self.textField.delegate = self;
+    
+}
+
+- (BOOL)textFieldShouldReturn:(UITextField *)textField {
+    NSMutableAttributedString *attstr = [[NSMutableAttributedString alloc]initWithAttributedString:self.label.attributedText];
+    [attstr replaceCharactersInRange:NSMakeRange(6, 2) withString:textField.text];
+    self.label.attributedText = attstr;
+    
+    return YES;
 }
 
 - (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];
-    
 }
 
-- (void)handleLabelContent {
+- (void)handleLabelContent:(NSAttributedString *)content {
+    NSAttributedString *attStr = content;
+    attStr = [CJLabel configureLinkAttributedString:attStr
+                                            atRange:NSMakeRange(0, 3)
+                                     linkAttributes:@{NSForegroundColorAttributeName:[UIColor blackColor],
+                                                      NSFontAttributeName:[UIFont boldSystemFontOfSize:15]
+                                                      }
+                               activeLinkAttributes:@{NSForegroundColorAttributeName:[UIColor blueColor],
+                                                      NSFontAttributeName:[UIFont boldSystemFontOfSize:15]
+                                                      }
+                                          parameter:nil
+                                     clickLinkBlock:nil
+                                     longPressBlock:nil];
+    self.label.attributedText = attStr;
     
-    NSAttributedString *attStr = self.content;
+    NSRange imageRange = [attStr.string rangeOfString:@"图片"];
+    if (imageRange.location != NSNotFound) {
+        attStr = [CJLabel configureLinkAttributedString:attStr
+                                           addImageName:@"CJLabel.png"
+                                              imageSize:CGSizeMake(60, 43)
+                                                atIndex:imageRange.location+imageRange.length
+                                      verticalAlignment:CJContentVerticalAlignmentBottom
+                                         linkAttributes:@{
+                                                          kCJBackgroundStrokeColorAttributeName:[UIColor blueColor],
+                                                          kCJBackgroundLineWidthAttributeName:@(1),
+                                                          }
+                                   activeLinkAttributes:@{
+                                                          kCJActiveBackgroundStrokeColorAttributeName:[UIColor redColor],
+                                                          }
+                                              parameter:@"图片参数"
+                                         clickLinkBlock:^(CJLabelLinkModel *linkModel){
+                                             [self clickLink:linkModel isImage:YES];
+                                         }longPressBlock:^(CJLabelLinkModel *linkModel){
+                                             [self clicklongPressLink:linkModel isImage:YES];
+                                         }];
+    }
+
+    attStr = [CJLabel configureLinkAttributedString:attStr
+                                       addImageName:@"CJLabel.png"
+                                          imageSize:CGSizeMake(40, 23)
+                                            atIndex:5
+                                  verticalAlignment:CJContentVerticalAlignmentBottom
+                                     linkAttributes:@{
+                                                      kCJBackgroundStrokeColorAttributeName:[UIColor blueColor],
+                                                      kCJBackgroundLineWidthAttributeName:@(1),
+                                                      }
+                               activeLinkAttributes:@{
+                                                      kCJActiveBackgroundStrokeColorAttributeName:[UIColor redColor],
+                                                      }
+                                          parameter:@"图片参数"
+                                     clickLinkBlock:^(CJLabelLinkModel *linkModel){
+                                         [self clickLink:linkModel isImage:YES];
+                                     }longPressBlock:^(CJLabelLinkModel *linkModel){
+                                         [self clicklongPressLink:linkModel isImage:YES];
+                                     }];
+    self.label.attributedText = attStr;
+}
+
+- (void)handleContent:(NSAttributedString *)content {
+    
+    NSAttributedString *attStr = content;
     attStr = [CJLabel configureAttributedString:attStr
                                         atRange:NSMakeRange(0, 3)
                                      attributes:@{NSForegroundColorAttributeName:[UIColor blackColor],
-                                                  NSFontAttributeName:[UIFont boldSystemFontOfSize:15]
+                                                  NSFontAttributeName:[UIFont boldSystemFontOfSize:25]
                                                   }];
-    
     switch (self.index) {
         case 0:
             self.firstLabel.hidden = YES;
             self.secondLabel = [[CJLabel alloc]initWithFrame:CGRectMake(10, 10, [[UIScreen mainScreen] bounds].size.width - 20, [[UIScreen mainScreen] bounds].size.height - 64 - 100)];
             self.secondLabel.backgroundColor = UIColorFromRGB(0xf0f0de);
-            self.secondLabel.numberOfLines = 0;
+            self.secondLabel.numberOfLines = 10;
             self.secondLabel.textInsets = UIEdgeInsetsMake(10, 15, 20, 0);
             self.secondLabel.verticalAlignment = CJContentVerticalAlignmentBottom;
             [self.view addSubview:self.secondLabel];
@@ -62,7 +133,7 @@
                                        sameStringEnable:NO
                                              attributes:@{
                                                           NSForegroundColorAttributeName:[UIColor blueColor],
-                                                          NSFontAttributeName:[UIFont boldSystemFontOfSize:15],
+                                                          NSFontAttributeName:[UIFont boldSystemFontOfSize:25],
                                                           kCJBackgroundStrokeColorAttributeName:[UIColor orangeColor],
                                                           kCJBackgroundLineWidthAttributeName:@(2),
                                                           kCJBackgroundFillColorAttributeName:[UIColor lightGrayColor]
@@ -78,7 +149,7 @@
                                            sameStringEnable:(self.index==1?NO:YES)
                                              linkAttributes:@{
                                                               NSForegroundColorAttributeName:[UIColor blueColor],
-                                                              NSFontAttributeName:[UIFont boldSystemFontOfSize:15],
+                                                              NSFontAttributeName:[UIFont boldSystemFontOfSize:25],
                                                               kCJBackgroundStrokeColorAttributeName:[UIColor orangeColor],
                                                               kCJBackgroundLineWidthAttributeName:@((self.index==1?2:1)),
                                                               kCJBackgroundFillColorAttributeName:[UIColor lightGrayColor]
@@ -95,6 +166,12 @@
                                                  [self clicklongPressLink:linkModel isImage:NO];
                                              }];
             self.firstLabel.attributedText = attStr;
+            if (self.index == 2) {
+                UIBarButtonItem *item = [[UIBarButtonItem alloc]initWithTitle:@"删除首个链点" style:UIBarButtonItemStylePlain target:self action:@selector(itemClick:)];
+                item.tag = 100;
+                self.navigationItem.rightBarButtonItem = item;
+            }
+            
         }
             break;
             
@@ -111,6 +188,7 @@
                                            addImageName:@"CJLabel.png"
                                               imageSize:CGSizeMake(120, 85)
                                                 atIndex:imageRange.location+imageRange.length
+                                      verticalAlignment:CJContentVerticalAlignmentBottom
                                              attributes:@{kCJBackgroundStrokeColorAttributeName:[UIColor redColor],
                                                           kCJBackgroundLineWidthAttributeName:@(2)}];
             
@@ -119,7 +197,7 @@
                                        sameStringEnable:NO
                                              attributes:@{
                                                           NSForegroundColorAttributeName:[UIColor blueColor],
-                                                          NSFontAttributeName:[UIFont boldSystemFontOfSize:15],
+                                                          NSFontAttributeName:[UIFont boldSystemFontOfSize:25],
                                                           kCJBackgroundStrokeColorAttributeName:[UIColor orangeColor],
                                                           kCJBackgroundLineWidthAttributeName:@(2),
                                                           kCJBackgroundFillColorAttributeName:[UIColor lightGrayColor]
@@ -136,7 +214,7 @@
                                            sameStringEnable:NO
                                              linkAttributes:@{
                                                               NSForegroundColorAttributeName:[UIColor blueColor],
-                                                              NSFontAttributeName:[UIFont boldSystemFontOfSize:15],
+                                                              NSFontAttributeName:[UIFont boldSystemFontOfSize:25],
                                                               kCJBackgroundStrokeColorAttributeName:[UIColor orangeColor],
                                                               kCJBackgroundLineWidthAttributeName:@(self.index == 5?1:2),
                                                               kCJBackgroundFillColorAttributeName:[UIColor lightGrayColor]
@@ -158,12 +236,13 @@
                                                addImageName:@"CJLabel.png"
                                                   imageSize:CGSizeMake(60, 43)
                                                     atIndex:imageRange.location+imageRange.length
+                                          verticalAlignment:CJContentVerticalAlignmentBottom
                                              linkAttributes:@{
-                                                              kCJBackgroundStrokeColorAttributeName:[UIColor blueColor],
-                                                              kCJBackgroundLineWidthAttributeName:@(self.index == 5?1:2),
+//                                                              kCJBackgroundStrokeColorAttributeName:[UIColor blueColor],
+//                                                              kCJBackgroundLineWidthAttributeName:@(self.index == 5?1:2),
                                                               }
                                        activeLinkAttributes:@{
-                                                              kCJActiveBackgroundStrokeColorAttributeName:[UIColor redColor],
+//                                                              kCJActiveBackgroundStrokeColorAttributeName:[UIColor redColor],
                                                               }
                                                   parameter:@"图片参数"
                                              clickLinkBlock:^(CJLabelLinkModel *linkModel){
@@ -177,14 +256,34 @@
             NSMutableAttributedString *str = [[NSMutableAttributedString alloc]initWithAttributedString:attStr];
             NSMutableParagraphStyle *paragraph = [[NSMutableParagraphStyle alloc] init];
             paragraph.lineBreakMode = NSLineBreakByCharWrapping;
+//            paragraph.lineSpacing = 2;
+//            paragraph.lineHeightMultiple = 1.0;
             [str addAttribute:NSParagraphStyleAttributeName value:paragraph range:NSMakeRange(0, str.length)];
             
             self.firstLabel.attributedText = str;
+            
+            if (self.index == 4) {
+                UIBarButtonItem *item = [[UIBarButtonItem alloc]initWithTitle:@"删除全部链点" style:UIBarButtonItemStylePlain target:self action:@selector(itemClick:)];
+                item.tag = 200;
+                self.navigationItem.rightBarButtonItem = item;
+            }
         }
             break;
             
         default:
             break;
+    }
+}
+
+- (void)itemClick:(UIBarButtonItem *)item {
+    
+    if (item.tag == 100) {
+        NSRange labelRange = [self.firstLabel.attributedText.string rangeOfString:@"CJLabel"];
+        [self.firstLabel removeLinkAtRange:labelRange];
+        item.enabled = NO;
+    }else if (item.tag == 200) {
+        [self.firstLabel removeAllLink];
+        item.enabled = NO;
     }
 }
 
@@ -212,4 +311,14 @@
     [self presentViewController:alert animated:YES completion:nil];
 }
 
+- (void)viewDidAppear:(BOOL)animated {
+    [super viewDidAppear:animated];
+    UILabel *label = self.firstLabel;
+    if (self.index == 0 || self.index == 3) {
+        label = self.secondLabel;
+    }
+    CGFloat hight = CGRectGetHeight(label.frame);
+    NSLog(@"\n");
+    NSLog(@"整体label hight = %@",@(hight));
+}
 @end
