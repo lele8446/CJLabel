@@ -846,13 +846,24 @@ typedef struct CJCTLineStructure CJCTLineStructure;
     
     CGFloat ascent = 0.0f, descent = 0.0f, leading = 0.0f;
     CTLineGetTypographicBounds(line, &ascent, &descent, &leading);
-    CGFloat lineHight = ascent + descent ;
+    CGFloat lineHight = ascent + descent + leading;
     NSLog(@"\n");
     NSLog(@"当前lineHight = %@",@(lineHight));
     y = y  ;
     NSLog(@"第%@行的 y = %@",@(lineIndex),@(y));
     
     CFArrayRef runs = CTLineGetGlyphRuns(line);
+    CGFloat maxRunHight = 0;
+    for (CFIndex j = 0; j < CFArrayGetCount(runs); ++j) {
+        CTRunRef run = CFArrayGetValueAtIndex(runs, j);
+        CGFloat runAscent = 0.0f, runDescent = 0.0f, runLeading = 0.0f;
+        CTRunGetTypographicBounds(run, CFRangeMake(0, 0), &runAscent, &runDescent, &runLeading);
+        NSDictionary *attDic = (__bridge NSDictionary *)CTRunGetAttributes(run);
+        if (!attDic[kCJImageAttributeName]) {
+            maxRunHight = MAX(maxRunHight, runAscent + runDescent + runLeading);
+        }
+    }
+    
     for (CFIndex j = 0; j < CFArrayGetCount(runs); ++j) {
         CTRunRef run = CFArrayGetValueAtIndex(runs, j);
         CGFloat runAscent = 0.0f, runDescent = 0.0f, runLeading = 0.0f;
@@ -860,7 +871,7 @@ typedef struct CJCTLineStructure CJCTLineStructure;
         CGFloat runHight = runAscent + runDescent;
         NSLog(@"runHight = %@",@(runHight));
         
-        CGFloat yy = y;
+        CGFloat yy = y - descent - self.font.descender + (lineHight-maxRunHight)/2.0;
         
         CGContextSetTextPosition(c, x, yy );
         

@@ -116,7 +116,7 @@
     attStr = [CJLabel configureAttributedString:attStr
                                         atRange:NSMakeRange(0, 3)
                                      attributes:@{NSForegroundColorAttributeName:[UIColor blackColor],
-                                                  NSFontAttributeName:[UIFont boldSystemFontOfSize:25]
+                                                  NSFontAttributeName:[UIFont boldSystemFontOfSize:15]
                                                   }];
     switch (self.index) {
         case 0:
@@ -133,7 +133,7 @@
                                        sameStringEnable:NO
                                              attributes:@{
                                                           NSForegroundColorAttributeName:[UIColor blueColor],
-                                                          NSFontAttributeName:[UIFont boldSystemFontOfSize:25],
+                                                          NSFontAttributeName:[UIFont boldSystemFontOfSize:15],
                                                           kCJBackgroundStrokeColorAttributeName:[UIColor orangeColor],
                                                           kCJBackgroundLineWidthAttributeName:@(2),
                                                           kCJBackgroundFillColorAttributeName:[UIColor lightGrayColor]
@@ -149,7 +149,7 @@
                                            sameStringEnable:(self.index==1?NO:YES)
                                              linkAttributes:@{
                                                               NSForegroundColorAttributeName:[UIColor blueColor],
-                                                              NSFontAttributeName:[UIFont boldSystemFontOfSize:25],
+                                                              NSFontAttributeName:[UIFont boldSystemFontOfSize:15],
                                                               kCJBackgroundStrokeColorAttributeName:[UIColor orangeColor],
                                                               kCJBackgroundLineWidthAttributeName:@((self.index==1?2:1)),
                                                               kCJBackgroundFillColorAttributeName:[UIColor lightGrayColor]
@@ -197,7 +197,7 @@
                                        sameStringEnable:NO
                                              attributes:@{
                                                           NSForegroundColorAttributeName:[UIColor blueColor],
-                                                          NSFontAttributeName:[UIFont boldSystemFontOfSize:25],
+                                                          NSFontAttributeName:[UIFont boldSystemFontOfSize:15],
                                                           kCJBackgroundStrokeColorAttributeName:[UIColor orangeColor],
                                                           kCJBackgroundLineWidthAttributeName:@(2),
                                                           kCJBackgroundFillColorAttributeName:[UIColor lightGrayColor]
@@ -214,7 +214,7 @@
                                            sameStringEnable:NO
                                              linkAttributes:@{
                                                               NSForegroundColorAttributeName:[UIColor blueColor],
-                                                              NSFontAttributeName:[UIFont boldSystemFontOfSize:25],
+                                                              NSFontAttributeName:[UIFont boldSystemFontOfSize:15],
                                                               kCJBackgroundStrokeColorAttributeName:[UIColor orangeColor],
                                                               kCJBackgroundLineWidthAttributeName:@(self.index == 5?1:2),
                                                               kCJBackgroundFillColorAttributeName:[UIColor lightGrayColor]
