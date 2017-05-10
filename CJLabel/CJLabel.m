@@ -151,6 +151,7 @@ struct CJCTLineVerticalLayout {
     CFIndex line;//第几行
     CGFloat maxRunHeight;//当前行run的最大高度（不包括图片）
     CGFloat lineHeight;//行高
+    CGFloat imageHeight;//行高
     CJAttributedLabelVerticalAlignment verticalAlignment;//对齐方式（默认底部对齐）
 };
 typedef struct CJCTLineVerticalLayout CJCTLineVerticalLayout;
@@ -840,8 +841,13 @@ typedef struct CJCTLineVerticalLayout CJCTLineVerticalLayout;
     CGPathRelease(path);
 }
 
-- (CGFloat)yOffset:(CGFloat)y lineVerticalLayout:(CJCTLineVerticalLayout)lineVerticalLayout isImage:(BOOL)isImage lineDescent:(CGFloat)lineDescent lineHight:(CGFloat)lineHight maxRunHight:(CGFloat)maxRunHight imageHeight:(CGFloat)imageHeight {
+- (CGFloat)yOffset:(CGFloat)y lineVerticalLayout:(CJCTLineVerticalLayout)lineVerticalLayout isImage:(BOOL)isImage lineDescent:(CGFloat)lineDescent  {
+    CGFloat lineHight = lineVerticalLayout.lineHeight;
+    CGFloat maxRunHight = lineVerticalLayout.maxRunHeight;
+    CGFloat imageHeight = lineVerticalLayout.imageHeight;
+    
     CGFloat yy = y;
+    CGFloat imageY = y - lineDescent;
     if (lineVerticalLayout.verticalAlignment == CJContentVerticalAlignmentBottom) {
         if (isImage) {
             yy = y - (lineHight-imageHeight)/2.0;
@@ -849,7 +855,7 @@ typedef struct CJCTLineVerticalLayout CJCTLineVerticalLayout;
     }
     else if (lineVerticalLayout.verticalAlignment == CJContentVerticalAlignmentCenter) {
         if (isImage) {
-            yy = y + (lineHight-imageHeight)/2.0;
+            yy = y - lineDescent + (lineHight-imageHeight)/2.0;
             if (imageHeight >= maxRunHight) {
                 yy = y - lineDescent - (lineHight-imageHeight)/2.0;
             }
@@ -893,10 +899,6 @@ typedef struct CJCTLineVerticalLayout CJCTLineVerticalLayout;
         }
     }
     
-    CGFloat maxRunHight = lineVerticalLayout.maxRunHeight;
-    CGFloat lineHight = lineVerticalLayout.lineHeight;
-    CGFloat imageHeight = 0;
-    
     CFArrayRef runs = CTLineGetGlyphRuns(line);
     for (CFIndex j = 0; j < CFArrayGetCount(runs); ++j) {
         CTRunRef run = CFArrayGetValueAtIndex(runs, j);
@@ -911,11 +913,9 @@ typedef struct CJCTLineVerticalLayout CJCTLineVerticalLayout;
         BOOL isImage = YES;
         if (CJLabelIsNull(imgInfoDic)) {
             isImage = NO;
-        }else{
-            imageHeight = runAscent + runDescent;
         }
         
-        CGFloat yy = [self yOffset:y lineVerticalLayout:lineVerticalLayout isImage:isImage lineDescent:lineDescent lineHight:lineHight maxRunHight:maxRunHight imageHeight:imageHeight];
+        CGFloat yy = [self yOffset:y lineVerticalLayout:lineVerticalLayout isImage:isImage lineDescent:lineDescent];
         
         //绘制图片
         if (imgInfoDic[kCJImageName]) {
@@ -1051,6 +1051,7 @@ typedef struct CJCTLineVerticalLayout CJCTLineVerticalLayout;
         
         CFArrayRef runs = CTLineGetGlyphRuns(line);
         CGFloat maxRunHight = 0;
+        CGFloat imageHight = 0;
         for (CFIndex j = 0; j < CFArrayGetCount(runs); ++j) {
             CTRunRef run = CFArrayGetValueAtIndex(runs, j);
             CGFloat runAscent = 0.0f, runDescent = 0.0f, runLeading = 0.0f;
@@ -1060,6 +1061,7 @@ typedef struct CJCTLineVerticalLayout CJCTLineVerticalLayout;
             if (CJLabelIsNull(imgInfoDic)) {
                 maxRunHight = MAX(maxRunHight, runAscent + runDescent + runLeading);
             }else{
+                imageHight = runAscent + runDescent + runLeading;
                 verticalAlignment = [imgInfoDic[kCJImageLineVerticalAlignment] integerValue];
             }
         }
@@ -1068,6 +1070,7 @@ typedef struct CJCTLineVerticalLayout CJCTLineVerticalLayout;
         lineVerticalLayout.lineHeight = lineHeight;
         lineVerticalLayout.maxRunHeight = maxRunHight;
         lineVerticalLayout.verticalAlignment = verticalAlignment;
+        lineVerticalLayout.imageHeight = imageHight;
         
         NSValue *value = [NSValue valueWithBytes:&lineVerticalLayout objCType:@encode(CJCTLineVerticalLayout)];
         [verticalLayoutArray addObject:value];
@@ -1245,8 +1248,7 @@ typedef struct CJCTLineVerticalLayout CJCTLineVerticalLayout;
     CGFloat runAscent = 0.0f;
     CGFloat runDescent = 0.0f;
     runBounds.size.width = (CGFloat)CTRunGetTypographicBounds((__bridge CTRunRef)glyphRun, CFRangeMake(0, 0), &runAscent, &runDescent, NULL);
-    CGFloat imageHeight = runAscent + runDescent;
-    runBounds.size.height = imageHeight;
+    runBounds.size.height = runAscent + runDescent;;
     
     CGFloat xOffset = 0.0f;
     CFRange glyphRange = CTRunGetStringRange((__bridge CTRunRef)glyphRun);
@@ -1261,10 +1263,7 @@ typedef struct CJCTLineVerticalLayout CJCTLineVerticalLayout;
     
     runBounds.origin.x = origins[lineIndex].x + rect.origin.x + xOffset;
     CGFloat y = origins[lineIndex].y;
-    CGFloat maxRunHight = lineVerticalLayout.maxRunHeight;
-    CGFloat lineHight = lineVerticalLayout.lineHeight;
-    
-    CGFloat yy = [self yOffset:y lineVerticalLayout:lineVerticalLayout isImage:isImage lineDescent:lineDescent lineHight:lineHight maxRunHight:maxRunHight imageHeight:imageHeight];
+    CGFloat yy = [self yOffset:y lineVerticalLayout:lineVerticalLayout isImage:isImage lineDescent:lineDescent];
     runBounds.origin.y = yy;
 
     if (CGRectGetWidth(runBounds) > width) {

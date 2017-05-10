@@ -116,7 +116,7 @@
     attStr = [CJLabel configureAttributedString:attStr
                                         atRange:NSMakeRange(0, 3)
                                      attributes:@{NSForegroundColorAttributeName:[UIColor blackColor],
-                                                  NSFontAttributeName:[UIFont boldSystemFontOfSize:15]
+                                                  NSFontAttributeName:[UIFont boldSystemFontOfSize:35]
                                                   }];
     switch (self.index) {
         case 0:
@@ -214,7 +214,7 @@
                                            sameStringEnable:NO
                                              linkAttributes:@{
                                                               NSForegroundColorAttributeName:[UIColor blueColor],
-                                                              NSFontAttributeName:[UIFont boldSystemFontOfSize:25],
+                                                              NSFontAttributeName:[UIFont boldSystemFontOfSize:20],
                                                               kCJBackgroundStrokeColorAttributeName:[UIColor orangeColor],
                                                               kCJBackgroundLineWidthAttributeName:@(self.index == 5?1:2),
                                                               kCJBackgroundFillColorAttributeName:[UIColor lightGrayColor]
@@ -234,9 +234,9 @@
             NSRange imageRange = [attStr.string rangeOfString:@"插入图片"];
             attStr = [CJLabel configureLinkAttributedString:attStr
                                                addImageName:@"CJLabel.png"
-                                                  imageSize:CGSizeMake(60, 43)
+                                                  imageSize:CGSizeMake(60, 8)
                                                     atIndex:imageRange.location+imageRange.length
-                                          verticalAlignment:CJContentVerticalAlignmentTop
+                                          verticalAlignment:CJContentVerticalAlignmentCenter
                                              linkAttributes:@{
                                                               kCJBackgroundStrokeColorAttributeName:[UIColor blueColor],
                                                               kCJBackgroundLineWidthAttributeName:@(self.index == 5?1:2),
