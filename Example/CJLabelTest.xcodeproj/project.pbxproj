@@ -490,7 +490,7 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				OTHER_LDFLAGS = "";
-				PRODUCT_BUNDLE_IDENTIFIER = com.bitone.allApp;
+				PRODUCT_BUNDLE_IDENTIFIER = com.bitauto.ework;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
@@ -509,7 +509,7 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				OTHER_LDFLAGS = "";
-				PRODUCT_BUNDLE_IDENTIFIER = com.bitone.allApp;
+				PRODUCT_BUNDLE_IDENTIFIER = com.bitauto.ework;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;

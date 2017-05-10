@@ -125,6 +125,7 @@ extern NSString * const kCJLinkNeedRedrawnAttributesName;
 @property (nonatomic, assign) CGRect runBounds;//描边区域在系统坐标下的rect（原点在左下角）
 @property (nonatomic, assign) CGRect locBounds;//描边区域在屏幕坐标下的rect（原点在左上角）
 @property (nonatomic, copy) NSString *imageName;//插入图片名称
+@property (nonatomic, assign) BOOL isImage;//插入图片
 @property (nonatomic, assign) NSRange range;//链点在文本中的range
 @property (nonatomic, strong) id parameter;//链点自定义参数
 @property (nonatomic, copy) CJLabelLinkModelBlock linkBlock;//点击链点回调

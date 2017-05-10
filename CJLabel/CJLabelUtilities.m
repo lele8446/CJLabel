@@ -59,7 +59,10 @@ CGFloat RunDelegateGetWidthCallback(void * refCon) {
 {
     NSParameterAssert((loc <= attrStr.length) && (!CJLabelIsNull(imageName) && imageName.length != 0));
         
-    NSDictionary *imgInfoDic = @{kCJImageName:imageName,kCJImageWidth:@(size.width),kCJImageHeight:@(size.height)};
+    NSDictionary *imgInfoDic = @{kCJImageName:imageName,
+                                 kCJImageWidth:@(size.width),
+                                 kCJImageHeight:@(size.height),
+                                 kCJImageLineVerticalAlignment:@(verticalAlignment)};
     
     //创建CTRunDelegateRef并设置回调函数
     CTRunDelegateCallbacks imageCallbacks;
@@ -77,7 +80,6 @@ CGFloat RunDelegateGetWidthCallback(void * refCon) {
     NSMutableAttributedString *imageAttributedString = [[NSMutableAttributedString alloc] initWithString:imgPlaceholderStr];
     [imageAttributedString addAttribute:(NSString *)kCTRunDelegateAttributeName value:(__bridge id)runDelegate range:imgRange];
     [imageAttributedString addAttribute:kCJImageAttributeName value:imgInfoDic range:imgRange];
-    [imageAttributedString addAttribute:kCJImageLineVerticalAlignment value:@(verticalAlignment) range:imgRange];
     
     if (!CJLabelIsNull(linkAttributes) && linkAttributes.count > 0) {
         [imageAttributedString addAttribute:kCJLinkAttributesName value:linkAttributes range:imgRange];
@@ -151,6 +153,8 @@ CGFloat RunDelegateGetWidthCallback(void * refCon) {
     //正常状态跟点击高亮状态下字体大小不同，标记需要重绘
     if ((linkFont && activeLinkFont) && (![linkFont.fontName isEqualToString:activeLinkFont.fontName] || linkFont.pointSize != activeLinkFont.pointSize)) {
         [attributedString addAttribute:kCJLinkNeedRedrawnAttributesName value:@(YES) range:range];
+    }else{
+        [attributedString addAttribute:kCJLinkNeedRedrawnAttributesName value:@(NO) range:range];
     }
     if (!CJLabelIsNull(parameter)) {
         [attributedString addAttribute:kCJLinkParameterAttributesName value:parameter range:range];
@@ -272,6 +276,7 @@ CGFloat RunDelegateGetWidthCallback(void * refCon) {
     item.activeFillColor = self.activeFillColor;
     item.activeStrokeColor = self.activeStrokeColor;
     item.imageName = self.imageName;
+    item.isImage = self.isImage;
     item.range = self.range;
     item.parameter = self.parameter;
     item.linkBlock = self.linkBlock;

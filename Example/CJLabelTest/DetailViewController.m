@@ -188,7 +188,7 @@
                                            addImageName:@"CJLabel.png"
                                               imageSize:CGSizeMake(120, 85)
                                                 atIndex:imageRange.location+imageRange.length
-                                      verticalAlignment:CJContentVerticalAlignmentBottom
+                                      verticalAlignment:CJContentVerticalAlignmentCenter
                                              attributes:@{kCJBackgroundStrokeColorAttributeName:[UIColor redColor],
                                                           kCJBackgroundLineWidthAttributeName:@(2)}];
             
@@ -214,7 +214,7 @@
                                            sameStringEnable:NO
                                              linkAttributes:@{
                                                               NSForegroundColorAttributeName:[UIColor blueColor],
-                                                              NSFontAttributeName:[UIFont boldSystemFontOfSize:15],
+                                                              NSFontAttributeName:[UIFont boldSystemFontOfSize:25],
                                                               kCJBackgroundStrokeColorAttributeName:[UIColor orangeColor],
                                                               kCJBackgroundLineWidthAttributeName:@(self.index == 5?1:2),
                                                               kCJBackgroundFillColorAttributeName:[UIColor lightGrayColor]
@@ -236,13 +236,13 @@
                                                addImageName:@"CJLabel.png"
                                                   imageSize:CGSizeMake(60, 43)
                                                     atIndex:imageRange.location+imageRange.length
-                                          verticalAlignment:CJContentVerticalAlignmentBottom
+                                          verticalAlignment:CJContentVerticalAlignmentTop
                                              linkAttributes:@{
-//                                                              kCJBackgroundStrokeColorAttributeName:[UIColor blueColor],
-//                                                              kCJBackgroundLineWidthAttributeName:@(self.index == 5?1:2),
+                                                              kCJBackgroundStrokeColorAttributeName:[UIColor blueColor],
+                                                              kCJBackgroundLineWidthAttributeName:@(self.index == 5?1:2),
                                                               }
                                        activeLinkAttributes:@{
-//                                                              kCJActiveBackgroundStrokeColorAttributeName:[UIColor redColor],
+                                                              kCJActiveBackgroundStrokeColorAttributeName:[UIColor redColor],
                                                               }
                                                   parameter:@"图片参数"
                                              clickLinkBlock:^(CJLabelLinkModel *linkModel){
@@ -311,14 +311,14 @@
     [self presentViewController:alert animated:YES completion:nil];
 }
 
-- (void)viewDidAppear:(BOOL)animated {
-    [super viewDidAppear:animated];
-    UILabel *label = self.firstLabel;
-    if (self.index == 0 || self.index == 3) {
-        label = self.secondLabel;
-    }
-    CGFloat hight = CGRectGetHeight(label.frame);
-    NSLog(@"\n");
-    NSLog(@"整体label hight = %@",@(hight));
-}
+//- (void)viewDidAppear:(BOOL)animated {
+//    [super viewDidAppear:animated];
+//    UILabel *label = self.firstLabel;
+//    if (self.index == 0 || self.index == 3) {
+//        label = self.secondLabel;
+//    }
+//    CGFloat hight = CGRectGetHeight(label.frame);
+//    NSLog(@"\n");
+//    NSLog(@"整体label hight = %@",@(hight));
+//}
 @end
