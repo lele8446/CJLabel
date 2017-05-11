@@ -1,6 +1,7 @@
 # CJLabel
 先看点击链点效果图：<br/>
 ![点击链点](http://upload-images.jianshu.io/upload_images/1429982-ad29e6db37fc95ea.gif?imageMogr2/auto-orient/strip)
+
 ![点击链点](http://upload-images.jianshu.io/upload_images/1429982-279e01b2aceba923.gif?imageMogr2/auto-orient/strip)
 
 ## 功能简介
@@ -173,7 +174,7 @@ attStr = [CJLabel configureLinkAttributedString:attStr
 
 ## 版本说明
 ### V2.1.2
-* 新增方法，可修改插入图片所在行，图文在垂直方向的对齐方式（只针对当前行），有居上、居中、居下选项，默认居下
+* 新增方法，可修改插入图片所在行图文在垂直方向的对齐方式（只针对当前行），有居上、居中、居下选项，默认居下
 ```objective-c
 + (NSMutableAttributedString *)configureAttributedString:(NSAttributedString *)attrStr
                                             addImageName:(NSString *)imageName
