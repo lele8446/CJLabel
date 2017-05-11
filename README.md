@@ -1,6 +1,7 @@
 # CJLabel
 先看点击链点效果图：<br/>
-![点击链点](https://o44fado6w.qnssl.com/CJLabel.gif)
+![点击链点](http://upload-images.jianshu.io/upload_images/1429982-ad29e6db37fc95ea.gif?imageMogr2/auto-orient/strip)
+![点击链点](http://upload-images.jianshu.io/upload_images/1429982-279e01b2aceba923.gif?imageMogr2/auto-orient/strip)
 
 ## 功能简介
 
@@ -90,6 +91,7 @@ attStr = [CJLabel configureLinkAttributedString:attStr
                                    addImageName:@"CJLabel.png"
                                       imageSize:CGSizeMake(60, 43)
                                         atIndex:3
+                              verticalAlignment:CJVerticalAlignmentBottom
                                  linkAttributes:@{
                                                   kCJBackgroundStrokeColorAttributeName:[UIColor blueColor],
                                                   kCJBackgroundLineWidthAttributeName:@(1),
@@ -170,6 +172,27 @@ attStr = [CJLabel configureLinkAttributedString:attStr
 ```
 
 ## 版本说明
+### V2.1.2
+* 新增方法，可修改插入图片所在行，图文在垂直方向的对齐方式（只针对当前行），有居上、居中、居下选项，默认居下
+```objective-c
++ (NSMutableAttributedString *)configureAttributedString:(NSAttributedString *)attrStr
+                                            addImageName:(NSString *)imageName
+                                               imageSize:(CGSize)size
+                                                 atIndex:(NSUInteger)loc
+                                       verticalAlignment:(CJLabelVerticalAlignment)verticalAlignment
+                                              attributes:(NSDictionary *)attributes;
+                                              
+ + (NSMutableAttributedString *)configureLinkAttributedString:(NSAttributedString *)attrStr
+                                                addImageName:(NSString *)imageName
+                                                   imageSize:(CGSize)size
+                                                     atIndex:(NSUInteger)loc
+                                           verticalAlignment:(CJLabelVerticalAlignment)verticalAlignment
+                                              linkAttributes:(NSDictionary *)linkAttributes
+                                        activeLinkAttributes:(NSDictionary *)activeLinkAttributes
+                                                   parameter:(id)parameter
+                                              clickLinkBlock:(CJLabelLinkModelBlock)clickLinkBlock
+                                              longPressBlock:(CJLabelLinkModelBlock)longPressBlock; 
+```
 ### V2.1.2
 * 修复单行文字时候点击链点的判断，增加delegate
 ### V2.0.0
