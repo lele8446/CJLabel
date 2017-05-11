@@ -1,6 +1,6 @@
 # CJLabel
 先看点击链点效果图：<br/>
-![点击链点](https://o44fado6w.qnssl.com/CJLabel1.gif)
+![点击链点](http://upload-images.jianshu.io/upload_images/1429982-ad29e6db37fc95ea.gif?imageMogr2/auto-orient/strip)
 ![点击链点](http://upload-images.jianshu.io/upload_images/1429982-279e01b2aceba923.gif?imageMogr2/auto-orient/strip)
 
 ## 功能简介
