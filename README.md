@@ -39,7 +39,7 @@
 ```ruby
 platform :ios, '7.0'
 target 'CJLabelDemo' do
-   pod 'CJLabel', '~> 2.1.2'
+   pod 'CJLabel', '~> 2.1.3'
 end
 ```
 
