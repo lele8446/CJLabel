@@ -12,8 +12,6 @@
         <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="DetailViewController">
             <connections>
                 <outlet property="firstLabel" destination="15A-8M-wn0" id="YV4-xn-1TM"/>
-                <outlet property="label" destination="K0d-MR-3uX" id="bxt-AN-jLB"/>
-                <outlet property="textField" destination="NJU-r9-SUi" id="7nA-HL-baD"/>
                 <outlet property="view" destination="i5M-Pr-FkT" id="sfx-zR-JGt"/>
             </connections>
         </placeholder>
@@ -29,26 +27,10 @@
                     <nil key="textColor"/>
                     <nil key="highlightedColor"/>
                 </label>
-                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="K0d-MR-3uX" customClass="CJLabel">
-                    <rect key="frame" x="10" y="222" width="42" height="21"/>
-                    <color key="backgroundColor" red="0.90984243570000001" green="0.92409893759999995" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-                    <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                    <nil key="textColor"/>
-                    <nil key="highlightedColor"/>
-                </label>
-                <textField hidden="YES" opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="NJU-r9-SUi">
-                    <rect key="frame" x="10" y="161" width="97" height="30"/>
-                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                    <nil key="textColor"/>
-                    <fontDescription key="fontDescription" type="system" pointSize="14"/>
-                    <textInputTraits key="textInputTraits"/>
-                </textField>
             </subviews>
             <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
             <constraints>
-                <constraint firstItem="K0d-MR-3uX" firstAttribute="leading" secondItem="i5M-Pr-FkT" secondAttribute="leading" constant="10" id="ON6-q4-QTq"/>
                 <constraint firstItem="15A-8M-wn0" firstAttribute="top" secondItem="i5M-Pr-FkT" secondAttribute="top" constant="100" id="Rd2-2J-i8I"/>
-                <constraint firstAttribute="bottom" secondItem="K0d-MR-3uX" secondAttribute="bottom" constant="325" id="Rg8-zN-Lre"/>
                 <constraint firstItem="15A-8M-wn0" firstAttribute="leading" secondItem="i5M-Pr-FkT" secondAttribute="leading" constant="10" id="kzh-8C-qTd"/>
                 <constraint firstAttribute="trailing" secondItem="15A-8M-wn0" secondAttribute="trailing" constant="10" id="vwI-9Z-X9t"/>
             </constraints>

@@ -149,10 +149,10 @@ static inline BOOL isSameColor(UIColor *color1, UIColor *color2){
  */
 struct CJCTLineVerticalLayout {
     CFIndex line;//第几行
-    CGFloat maxRunHeight;//当前行run的最大高度（不包括图片）
-    CGFloat lineHeight;//行高
-    CGFloat imageHeight;//行高
-    CJAttributedLabelVerticalAlignment verticalAlignment;//对齐方式（默认底部对齐）
+    CGFloat maxRunHight;//当前行run的最大高度（不包括图片）
+    CGFloat lineHight;//行高
+    CGFloat maxImageHight;//行高
+    CJLabelVerticalAlignment verticalAlignment;//对齐方式（默认底部对齐）
 };
 typedef struct CJCTLineVerticalLayout CJCTLineVerticalLayout;
 
@@ -207,7 +207,29 @@ typedef struct CJCTLineVerticalLayout CJCTLineVerticalLayout;
                                             addImageName:(NSString *)imageName
                                                imageSize:(CGSize)size
                                                  atIndex:(NSUInteger)loc
-                                       verticalAlignment:(CJAttributedLabelVerticalAlignment)verticalAlignment
+                                              attributes:(NSDictionary *)attributes
+{
+    return [self configureAttributedString:attrStr addImageName:imageName imageSize:size atIndex:loc verticalAlignment:CJVerticalAlignmentBottom attributes:attributes];
+}
+
++ (NSMutableAttributedString *)configureLinkAttributedString:(NSAttributedString *)attrStr
+                                                addImageName:(NSString *)imageName
+                                                   imageSize:(CGSize)size
+                                                     atIndex:(NSUInteger)loc
+                                              linkAttributes:(NSDictionary *)linkAttributes
+                                        activeLinkAttributes:(NSDictionary *)activeLinkAttributes
+                                                   parameter:(id)parameter
+                                              clickLinkBlock:(CJLabelLinkModelBlock)clickLinkBlock
+                                              longPressBlock:(CJLabelLinkModelBlock)longPressBlock
+{
+    return [self configureLinkAttributedString:attrStr addImageName:imageName imageSize:size atIndex:loc verticalAlignment:CJVerticalAlignmentBottom linkAttributes:linkAttributes activeLinkAttributes:activeLinkAttributes parameter:parameter clickLinkBlock:clickLinkBlock longPressBlock:longPressBlock];
+}
+
++ (NSMutableAttributedString *)configureAttributedString:(NSAttributedString *)attrStr
+                                            addImageName:(NSString *)imageName
+                                               imageSize:(CGSize)size
+                                                 atIndex:(NSUInteger)loc
+                                       verticalAlignment:(CJLabelVerticalAlignment)verticalAlignment
                                               attributes:(NSDictionary *)attributes
 {
     return [CJLabelUtilities configureLinkAttributedString:attrStr addImageName:imageName imageSize:size atIndex:loc verticalAlignment:verticalAlignment linkAttributes:attributes activeLinkAttributes:nil parameter:nil clickLinkBlock:nil longPressBlock:nil islink:NO];
@@ -217,7 +239,7 @@ typedef struct CJCTLineVerticalLayout CJCTLineVerticalLayout;
                                                 addImageName:(NSString *)imageName
                                                    imageSize:(CGSize)size
                                                      atIndex:(NSUInteger)loc
-                                           verticalAlignment:(CJAttributedLabelVerticalAlignment)verticalAlignment
+                                           verticalAlignment:(CJLabelVerticalAlignment)verticalAlignment
                                               linkAttributes:(NSDictionary *)linkAttributes
                                         activeLinkAttributes:(NSDictionary *)activeLinkAttributes
                                                    parameter:(id)parameter
@@ -292,14 +314,16 @@ typedef struct CJCTLineVerticalLayout CJCTLineVerticalLayout;
         }
     }];
     
-    _runStrokeItemArray = nil;
-    _linkStrokeItemArray = nil;
-    _CTLineVerticalLayoutArray = nil;
-    _needRedrawn = YES;
-    self.attributedText = attText;
+//    _runStrokeItemArray = nil;
+//    _linkStrokeItemArray = nil;
+//    _CTLineVerticalLayoutArray = nil;
+//    _numberOfLines = -1;
+//    _needRedrawn = YES;
+    
     
     [self setNeedsFramesetter];
-    [self setNeedsDisplay];
+    self.attributedText = attText;
+//    [self setNeedsDisplay];
     //立即刷新界面
     [CATransaction flush];
     return self.attributedText;
@@ -329,14 +353,17 @@ typedef struct CJCTLineVerticalLayout CJCTLineVerticalLayout;
         }
     }];
     
-    _runStrokeItemArray = nil;
-    _linkStrokeItemArray = nil;
-    _CTLineVerticalLayoutArray = nil;
-    _needRedrawn = YES;
-    self.attributedText = newAttributedText;
+//    _runStrokeItemArray = nil;
+//    _linkStrokeItemArray = nil;
+//    _CTLineVerticalLayoutArray = nil;
+//    _numberOfLines = -1;
+//    _needRedrawn = YES;
     
     [self setNeedsFramesetter];
-    [self setNeedsDisplay];
+    self.attributedText = newAttributedText;
+    
+    
+//    [self setNeedsDisplay];
     //立即刷新界面
     [CATransaction flush];
     return self.attributedText;
@@ -362,7 +389,7 @@ typedef struct CJCTLineVerticalLayout CJCTLineVerticalLayout;
 - (void)commonInit {
     self.userInteractionEnabled = YES;
     self.textInsets = UIEdgeInsetsZero;
-    self.verticalAlignment = CJContentVerticalAlignmentCenter;
+    self.verticalAlignment = CJVerticalAlignmentCenter;
     _numberOfLines = -1;
     _needRedrawn = YES;
     _longPress = NO;
@@ -502,6 +529,12 @@ typedef struct CJCTLineVerticalLayout CJCTLineVerticalLayout;
     self.renderedAttributedText = nil;
     _needsFramesetter = YES;
     
+    _runStrokeItemArray = nil;
+    _linkStrokeItemArray = nil;
+    _CTLineVerticalLayoutArray = nil;
+    _numberOfLines = -1;
+    _needRedrawn = YES;
+    
 }
 
 - (CTFramesetterRef)framesetter {
@@ -594,13 +627,13 @@ typedef struct CJCTLineVerticalLayout CJCTLineVerticalLayout;
     if (textSize.height < bounds.size.height) {
          _yOffset = 0.0f;
         switch (self.verticalAlignment) {
-            case CJContentVerticalAlignmentCenter:
+            case CJVerticalAlignmentCenter:
                 _yOffset = CGFloat_floor((bounds.size.height - textSize.height) / 2.0f);
                 break;
-            case CJContentVerticalAlignmentBottom:
+            case CJVerticalAlignmentBottom:
                 _yOffset = bounds.size.height - textSize.height;
                 break;
-            case CJContentVerticalAlignmentTop:
+            case CJVerticalAlignmentTop:
             default:
                 break;
         }
@@ -841,38 +874,42 @@ typedef struct CJCTLineVerticalLayout CJCTLineVerticalLayout;
     CGPathRelease(path);
 }
 
-- (CGFloat)yOffset:(CGFloat)y lineVerticalLayout:(CJCTLineVerticalLayout)lineVerticalLayout isImage:(BOOL)isImage lineDescent:(CGFloat)lineDescent  {
-    CGFloat lineHight = lineVerticalLayout.lineHeight;
-    CGFloat maxRunHight = lineVerticalLayout.maxRunHeight;
-    CGFloat imageHeight = lineVerticalLayout.imageHeight;
+- (CGFloat)yOffset:(CGFloat)y lineVerticalLayout:(CJCTLineVerticalLayout)lineVerticalLayout lineDescent:(CGFloat)lineDescent isImage:(BOOL)isImage imageHight:(CGFloat)imageHight imageVerticalAlignment:(CJLabelVerticalAlignment)imageVerticalAlignment {
+    CGFloat lineHight = lineVerticalLayout.lineHight;
+    CGFloat maxRunHight = lineVerticalLayout.maxRunHight;
+    CGFloat maxImageHight = lineVerticalLayout.maxImageHight;
+    
+    CJLabelVerticalAlignment verticalAlignment = lineVerticalLayout.verticalAlignment;
+    if (isImage) {
+        verticalAlignment = imageVerticalAlignment;
+    }
     
     CGFloat yy = y;
-    CGFloat imageY = y - lineDescent;
-    if (lineVerticalLayout.verticalAlignment == CJContentVerticalAlignmentBottom) {
+    if (verticalAlignment == CJVerticalAlignmentBottom) {
         if (isImage) {
-            yy = y - (lineHight-imageHeight)/2.0;
+            yy = y - lineDescent - self.font.descender;
+            if (imageHight >= maxRunHight && imageHight >= maxImageHight) {
+                yy = y - lineDescent + (lineHight-imageHight)/2.0;
+            }
         }
     }
-    else if (lineVerticalLayout.verticalAlignment == CJContentVerticalAlignmentCenter) {
+    else if (verticalAlignment == CJVerticalAlignmentCenter) {
         if (isImage) {
-            yy = y - lineDescent + (lineHight-imageHeight)/2.0;
-            if (imageHeight >= maxRunHight) {
-                yy = y - lineDescent - (lineHight-imageHeight)/2.0;
-            }
+            yy = y - lineDescent + (lineHight-imageHight)/2.0;
         }else{
-            if (imageHeight >= maxRunHight) {
+            if (maxImageHight >= maxRunHight) {
                 yy = y + (lineHight-maxRunHight)/2.0;
             }
         }
     }
-    else if (lineVerticalLayout.verticalAlignment == CJContentVerticalAlignmentTop) {
+    else if (verticalAlignment == CJVerticalAlignmentTop) {
         if (isImage) {
-            yy = y + (lineHight-imageHeight);
-            if (imageHeight >= maxRunHight) {
-                yy = y - (lineHight-imageHeight)/2.0;
+            yy = y - lineDescent + (lineHight-imageHight) + self.font.descender;
+            if (imageHight >= maxRunHight && imageHight >= maxImageHight) {
+                yy = y - lineDescent + (lineHight-imageHight)/2.0;
             }
         }else{
-            if (imageHeight >= maxRunHight) {
+            if (maxImageHight >= maxRunHight) {
                 yy = y + (lineHight-maxRunHight);
             }
         }
@@ -887,8 +924,8 @@ typedef struct CJCTLineVerticalLayout CJCTLineVerticalLayout;
     CTLineGetTypographicBounds(line, &lineAscent, &lineDescent, &lineLeading);
     
     lineVerticalLayout.line = lineIndex;
-    lineVerticalLayout.maxRunHeight = lineAscent + lineDescent + lineLeading;
-    lineVerticalLayout.lineHeight = lineAscent + lineDescent + lineLeading;
+    lineVerticalLayout.maxRunHight = lineAscent + lineDescent + lineLeading;
+    lineVerticalLayout.lineHight = lineAscent + lineDescent + lineLeading;
     
     for (NSValue *value in _CTLineVerticalLayoutArray) {
         CJCTLineVerticalLayout themLineVerticalLayout;
@@ -911,11 +948,16 @@ typedef struct CJCTLineVerticalLayout CJCTLineVerticalLayout;
         runRect.size.width = CTRunGetTypographicBounds(run, CFRangeMake(0,0), &runAscent, &runDescent, NULL);
         
         BOOL isImage = YES;
+        CGFloat imageHight = 0;
+        CJLabelVerticalAlignment imageVerticalAlignment = CJVerticalAlignmentBottom;
         if (CJLabelIsNull(imgInfoDic)) {
             isImage = NO;
+        }else{
+            imageHight = runAscent + runDescent;
+            imageVerticalAlignment = [imgInfoDic[kCJImageLineVerticalAlignment] integerValue];
         }
         
-        CGFloat yy = [self yOffset:y lineVerticalLayout:lineVerticalLayout isImage:isImage lineDescent:lineDescent];
+        CGFloat yy = [self yOffset:y lineVerticalLayout:lineVerticalLayout lineDescent:lineDescent isImage:isImage imageHight:imageHight imageVerticalAlignment:imageVerticalAlignment];
         
         //绘制图片
         if (imgInfoDic[kCJImageName]) {
@@ -990,52 +1032,6 @@ typedef struct CJCTLineVerticalLayout CJCTLineVerticalLayout;
     }
 }
 
-/**
- 指定位置插入图片
-
- @param line 当前绘制行
- @param c CGContextRef
- @param lineOrigins CTLine坐标原点
- @param lineIndex 第几行
- */
-- (void)drawImageLine:(CTLineRef)line
-              context:(CGContextRef)c
-          lineOrigins:(CGPoint[])lineOrigins
-            lineIndex:(CFIndex)lineIndex
-{
-    CGFloat ascent = 0.0f, descent = 0.0f, leading = 0.0f;
-    CTLineGetTypographicBounds(line, &ascent, &descent, &leading);
-    CGFloat lineHight = ascent + descent + leading;
-    
-    CFArrayRef runs = CTLineGetGlyphRuns(line);
-    for (int j = 0; j < CFArrayGetCount(runs); j++) {
-        CGFloat runAscent = 0, runDescent = 0;
-        CGPoint lineOrigin = lineOrigins[lineIndex];
-        //获取每个CTRun
-        CTRunRef run = CFArrayGetValueAtIndex(runs, j);
-        NSDictionary* attributes = (NSDictionary*)CTRunGetAttributes(run);
-        CGRect runRect;
-        //调整CTRun的rect
-        runRect.size.width = CTRunGetTypographicBounds(run, CFRangeMake(0,0), &runAscent, &runDescent, NULL);
-        
-        runRect = CGRectMake(lineOrigin.x + CTLineGetOffsetForStringIndex(line, CTRunGetStringRange(run).location, NULL), lineOrigin.y - runDescent, runRect.size.width, runAscent + runDescent);
-        
-        NSDictionary *imgInfoDic = attributes[kCJImageAttributeName];
-        if (imgInfoDic[kCJImageName]) {
-            UIImage *image = [UIImage imageNamed:imgInfoDic[kCJImageName]];
-            if (image) {
-                CGRect imageDrawRect;
-                CGFloat imageSizeWidth = runRect.size.width;
-                CGFloat imageSizeHeight = runRect.size.height;
-                imageDrawRect.size = CGSizeMake(imageSizeWidth, imageSizeHeight);
-                imageDrawRect.origin.x = runRect.origin.x + lineOrigin.x;
-                imageDrawRect.origin.y = lineOrigin.y-(lineHight-imageSizeHeight)/2.0;
-                CGContextDrawImage(c, imageDrawRect, image.CGImage);
-            }
-        }
-    }
-}
-
 - (NSArray *)allCTLineVerticalLayoutArray:(NSArray *)lines origins:(CGPoint[])origins inRect:(CGRect)rect {
     NSMutableArray *verticalLayoutArray = [NSMutableArray arrayWithCapacity:3];
     // 遍历所有行
@@ -1047,11 +1043,11 @@ typedef struct CJCTLineVerticalLayout CJCTLineVerticalLayout;
         //行高
         CGFloat lineHeight = ascent + descent + leading;
         //默认底部对齐
-        CJAttributedLabelVerticalAlignment verticalAlignment = CJContentVerticalAlignmentBottom;
+        CJLabelVerticalAlignment verticalAlignment = CJVerticalAlignmentBottom;
         
         CFArrayRef runs = CTLineGetGlyphRuns(line);
         CGFloat maxRunHight = 0;
-        CGFloat imageHight = 0;
+        CGFloat maxImageHight = 0;
         for (CFIndex j = 0; j < CFArrayGetCount(runs); ++j) {
             CTRunRef run = CFArrayGetValueAtIndex(runs, j);
             CGFloat runAscent = 0.0f, runDescent = 0.0f, runLeading = 0.0f;
@@ -1061,16 +1057,18 @@ typedef struct CJCTLineVerticalLayout CJCTLineVerticalLayout;
             if (CJLabelIsNull(imgInfoDic)) {
                 maxRunHight = MAX(maxRunHight, runAscent + runDescent + runLeading);
             }else{
-                imageHight = runAscent + runDescent + runLeading;
-                verticalAlignment = [imgInfoDic[kCJImageLineVerticalAlignment] integerValue];
+                if (maxImageHight < runAscent + runDescent) {
+                    maxImageHight = runAscent + runDescent;
+                    verticalAlignment = [imgInfoDic[kCJImageLineVerticalAlignment] integerValue];
+                }
             }
         }
         CJCTLineVerticalLayout lineVerticalLayout;
         lineVerticalLayout.line = i;
-        lineVerticalLayout.lineHeight = lineHeight;
-        lineVerticalLayout.maxRunHeight = maxRunHight;
+        lineVerticalLayout.lineHight = lineHeight;
+        lineVerticalLayout.maxRunHight = maxRunHight;
         lineVerticalLayout.verticalAlignment = verticalAlignment;
-        lineVerticalLayout.imageHeight = imageHight;
+        lineVerticalLayout.maxImageHight = maxImageHight;
         
         NSValue *value = [NSValue valueWithBytes:&lineVerticalLayout objCType:@encode(CJCTLineVerticalLayout)];
         [verticalLayoutArray addObject:value];
@@ -1093,8 +1091,8 @@ typedef struct CJCTLineVerticalLayout CJCTLineVerticalLayout;
         CGFloat ascentAndDescent = ascent + descent;
         
         lineVerticalLayout.line = i;
-        lineVerticalLayout.maxRunHeight = ascentAndDescent + leading;
-        lineVerticalLayout.lineHeight = ascentAndDescent + leading;
+        lineVerticalLayout.maxRunHight = ascentAndDescent + leading;
+        lineVerticalLayout.lineHight = ascentAndDescent + leading;
         
         for (NSValue *value in _CTLineVerticalLayoutArray) {
             CJCTLineVerticalLayout themLineVerticalLayout;
@@ -1157,6 +1155,10 @@ typedef struct CJCTLineVerticalLayout CJCTLineVerticalLayout;
             BOOL needRedrawn = [attributes[kCJLinkNeedRedrawnAttributesName] boolValue];
             
             NSDictionary *imgInfoDic = attributes[kCJImageAttributeName];
+            CJLabelVerticalAlignment imageVerticalAlignment = CJVerticalAlignmentBottom;
+            if (!CJLabelIsNull(imgInfoDic)) {
+                imageVerticalAlignment = [imgInfoDic[kCJImageLineVerticalAlignment] integerValue];
+            }
             
             // 当前glyphRun是一个可点击链点
             if (isLink) {
@@ -1169,6 +1171,7 @@ typedef struct CJCTLineVerticalLayout CJCTLineVerticalLayout;
                                                                       moreThanOneLine:(_numberOfLines > 1)
                                                                    lineVerticalLayout:lineVerticalLayout
                                                                               isImage:!CJLabelIsNull(imgInfoDic)
+                                                               imageVerticalAlignment:imageVerticalAlignment
                                                                           lineDescent:descent];
                 runStrokeItem.strokeColor = strokeColor;
                 runStrokeItem.fillColor = fillColor;
@@ -1207,6 +1210,7 @@ typedef struct CJCTLineVerticalLayout CJCTLineVerticalLayout;
                                                                           moreThanOneLine:(_numberOfLines > 1)
                                                                        lineVerticalLayout:lineVerticalLayout
                                                                                   isImage:!CJLabelIsNull(imgInfoDic)
+                                                                   imageVerticalAlignment:imageVerticalAlignment
                                                                               lineDescent:descent];
                     runStrokeItem.strokeColor = strokeColor;
                     runStrokeItem.fillColor = fillColor;
@@ -1242,13 +1246,14 @@ typedef struct CJCTLineVerticalLayout CJCTLineVerticalLayout;
                                     moreThanOneLine:(BOOL)more
                                  lineVerticalLayout:(CJCTLineVerticalLayout)lineVerticalLayout
                                             isImage:(BOOL)isImage
+                             imageVerticalAlignment:(CJLabelVerticalAlignment)imageVerticalAlignment
                                         lineDescent:(CGFloat)lineDescent
 {
     CGRect runBounds = CGRectZero;
     CGFloat runAscent = 0.0f;
     CGFloat runDescent = 0.0f;
     runBounds.size.width = (CGFloat)CTRunGetTypographicBounds((__bridge CTRunRef)glyphRun, CFRangeMake(0, 0), &runAscent, &runDescent, NULL);
-    runBounds.size.height = runAscent + runDescent;;
+    runBounds.size.height = runAscent + runDescent;
     
     CGFloat xOffset = 0.0f;
     CFRange glyphRange = CTRunGetStringRange((__bridge CTRunRef)glyphRun);
@@ -1263,7 +1268,8 @@ typedef struct CJCTLineVerticalLayout CJCTLineVerticalLayout;
     
     runBounds.origin.x = origins[lineIndex].x + rect.origin.x + xOffset;
     CGFloat y = origins[lineIndex].y;
-    CGFloat yy = [self yOffset:y lineVerticalLayout:lineVerticalLayout isImage:isImage lineDescent:lineDescent];
+    CGFloat yy = [self yOffset:y lineVerticalLayout:lineVerticalLayout lineDescent:lineDescent isImage:isImage imageHight:runAscent + runDescent imageVerticalAlignment:imageVerticalAlignment];;
+    
     runBounds.origin.y = yy;
 
     if (CGRectGetWidth(runBounds) > width) {

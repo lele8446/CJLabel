@@ -54,10 +54,10 @@ extern NSString * const kCJActiveBackgroundStrokeColorAttributeName;
 /**
  当text bounds小于label bounds时，文本的垂直对齐方式
  */
-typedef NS_ENUM(NSInteger, CJAttributedLabelVerticalAlignment) {
-    CJContentVerticalAlignmentCenter   = 0,//垂直居中
-    CJContentVerticalAlignmentTop      = 1,//居上
-    CJContentVerticalAlignmentBottom   = 2,//靠下
+typedef NS_ENUM(NSInteger, CJLabelVerticalAlignment) {
+    CJVerticalAlignmentCenter   = 0,//垂直居中
+    CJVerticalAlignmentTop      = 1,//居上
+    CJVerticalAlignmentBottom   = 2,//靠下
 };
 
 
@@ -142,9 +142,9 @@ IB_DESIGNABLE
  */
 @property (readwrite, nonatomic, assign) UIEdgeInsets textInsets;
 /**
- * 当text rect 小于 label frame 时文本在垂直方向的对齐方式，默认 CJContentVerticalAlignmentCenter
+ * 当text rect 小于 label frame 时文本在垂直方向的对齐方式，默认 CJVerticalAlignmentCenter
  */
-@property (readwrite, nonatomic, assign) CJAttributedLabelVerticalAlignment verticalAlignment;
+@property (readwrite, nonatomic, assign) CJLabelVerticalAlignment verticalAlignment;
 /**
  点击链点代理对象
  */
@@ -162,6 +162,24 @@ IB_DESIGNABLE
 + (CGSize)sizeWithAttributedString:(NSAttributedString *)attributedString
                    withConstraints:(CGSize)size
             limitedToNumberOfLines:(NSUInteger)numberOfLines;
+
+// 在指定位置插入图片，图片所在行，图文在垂直方向的对齐方式默认：底部对齐
++ (NSMutableAttributedString *)configureAttributedString:(NSAttributedString *)attrStr
+                                            addImageName:(NSString *)imageName
+                                               imageSize:(CGSize)size
+                                                 atIndex:(NSUInteger)loc
+                                              attributes:(NSDictionary *)attributes;
+
+// 在指定位置插入可点击链点图片，图片所在行，图文在垂直方向的对齐方式默认：底部对齐
++ (NSMutableAttributedString *)configureLinkAttributedString:(NSAttributedString *)attrStr
+                                                addImageName:(NSString *)imageName
+                                                   imageSize:(CGSize)size
+                                                     atIndex:(NSUInteger)loc
+                                              linkAttributes:(NSDictionary *)linkAttributes
+                                        activeLinkAttributes:(NSDictionary *)activeLinkAttributes
+                                                   parameter:(id)parameter
+                                              clickLinkBlock:(CJLabelLinkModelBlock)clickLinkBlock
+                                              longPressBlock:(CJLabelLinkModelBlock)longPressBlock;
 
 /**
  在指定位置插入图片，并返回插入图片后的NSMutableAttributedString（图片占位符所占的NSRange={loc,1}）
@@ -187,7 +205,7 @@ IB_DESIGNABLE
                                             addImageName:(NSString *)imageName
                                                imageSize:(CGSize)size
                                                  atIndex:(NSUInteger)loc
-                                       verticalAlignment:(CJAttributedLabelVerticalAlignment)verticalAlignment
+                                       verticalAlignment:(CJLabelVerticalAlignment)verticalAlignment
                                               attributes:(NSDictionary *)attributes;
 
 /**
@@ -211,7 +229,7 @@ IB_DESIGNABLE
                                                 addImageName:(NSString *)imageName
                                                    imageSize:(CGSize)size
                                                      atIndex:(NSUInteger)loc
-                                           verticalAlignment:(CJAttributedLabelVerticalAlignment)verticalAlignment
+                                           verticalAlignment:(CJLabelVerticalAlignment)verticalAlignment
                                               linkAttributes:(NSDictionary *)linkAttributes
                                         activeLinkAttributes:(NSDictionary *)activeLinkAttributes
                                                    parameter:(id)parameter

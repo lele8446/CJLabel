@@ -55,7 +55,7 @@ extern NSString * const kCJLinkNeedRedrawnAttributesName;
                                                 addImageName:(NSString *)imageName
                                                    imageSize:(CGSize)size
                                                      atIndex:(NSUInteger)loc
-                                           verticalAlignment:(CJAttributedLabelVerticalAlignment)verticalAlignment
+                                           verticalAlignment:(CJLabelVerticalAlignment)verticalAlignment
                                               linkAttributes:(NSDictionary *)linkAttributes
                                         activeLinkAttributes:(NSDictionary *)activeLinkAttributes
                                                    parameter:(id)parameter
