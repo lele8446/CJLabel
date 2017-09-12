@@ -65,7 +65,7 @@
 		B40ACCA51EB30CF3006DB787 /* AttributedTableViewCell.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = AttributedTableViewCell.xib; sourceTree = "<group>"; };
 		B40ACCA61EB30CF3006DB787 /* Example.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = Example.txt; sourceTree = "<group>"; };
 		B431D52D1D0545E700228988 /* CJLabel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CJLabel.h; sourceTree = "<group>"; };
-		B431D52E1D0545E700228988 /* CJLabel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CJLabel.m; sourceTree = "<group>"; };
+		B431D52E1D0545E700228988 /* CJLabel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; lineEnding = 0; path = CJLabel.m; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objc; };
 		B4C893181EB881EA00AC9E42 /* DetailViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = DetailViewController.h; path = CJLabelTest/DetailViewController.h; sourceTree = SOURCE_ROOT; };
 		B4C893191EB881EA00AC9E42 /* DetailViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = DetailViewController.m; path = CJLabelTest/DetailViewController.m; sourceTree = SOURCE_ROOT; };
 		B4C8931A1EB881EA00AC9E42 /* DetailViewController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; name = DetailViewController.xib; path = CJLabelTest/DetailViewController.xib; sourceTree = SOURCE_ROOT; };
@@ -490,7 +490,7 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				OTHER_LDFLAGS = "";
-				PRODUCT_BUNDLE_IDENTIFIER = com.bitauto.ework;
+				PRODUCT_BUNDLE_IDENTIFIER = com.bitone.allApp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
@@ -509,7 +509,7 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				OTHER_LDFLAGS = "";
-				PRODUCT_BUNDLE_IDENTIFIER = com.bitauto.ework;
+				PRODUCT_BUNDLE_IDENTIFIER = com.bitone.allApp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;

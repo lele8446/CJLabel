@@ -29,6 +29,7 @@
     self.automaticallyAdjustsScrollViewInsets = NO;
     
     self.firstLabel.numberOfLines = 0;
+    self.firstLabel.enableCopy = YES;
     
     NSAttributedString *content = self.content;
     [self handleContent:content];
@@ -41,7 +42,7 @@
 
 - (void)handleContent:(NSAttributedString *)content {
     
-    NSAttributedString *attStr = content;
+    NSMutableAttributedString *attStr = [[NSMutableAttributedString alloc]initWithAttributedString:content];
     attStr = [CJLabel configureAttributedString:attStr
                                         atRange:NSMakeRange(0, 3)
                                      attributes:@{NSForegroundColorAttributeName:[UIColor blackColor],
@@ -53,7 +54,8 @@
             self.firstLabel.hidden = YES;
             self.secondLabel = [[CJLabel alloc]initWithFrame:CGRectMake(10, 10, [[UIScreen mainScreen] bounds].size.width - 20, [[UIScreen mainScreen] bounds].size.height - 64 - 100)];
             self.secondLabel.backgroundColor = UIColorFromRGB(0xf0f0de);
-            self.secondLabel.numberOfLines = 10;
+            self.secondLabel.numberOfLines = 0;
+            self.secondLabel.enableCopy = YES;
             self.secondLabel.textInsets = UIEdgeInsetsMake(10, 15, 20, 0);
             self.secondLabel.verticalAlignment = CJVerticalAlignmentBottom;
             [self.view addSubview:self.secondLabel];
@@ -72,7 +74,6 @@
             break;
             
         case 1:
-        case 2:
         {
             attStr = [CJLabel configureLinkAttributedString:attStr
                                                  withString:@"CJLabel"
@@ -81,7 +82,7 @@
                                                               NSForegroundColorAttributeName:[UIColor blueColor],
                                                               NSFontAttributeName:[UIFont boldSystemFontOfSize:15],
                                                               kCJBackgroundStrokeColorAttributeName:[UIColor orangeColor],
-                                                              kCJBackgroundLineWidthAttributeName:@((self.index==1?2:1)),
+                                                              kCJBackgroundLineWidthAttributeName:@(2),
                                                               kCJBackgroundFillColorAttributeName:[UIColor lightGrayColor]
                                                               }
                                        activeLinkAttributes:@{
@@ -96,11 +97,53 @@
                                                  [self clicklongPressLink:linkModel isImage:NO];
                                              }];
             self.firstLabel.attributedText = attStr;
-            if (self.index == 2) {
-                UIBarButtonItem *item = [[UIBarButtonItem alloc]initWithTitle:@"删除首个链点" style:UIBarButtonItemStylePlain target:self action:@selector(itemClick:)];
-                item.tag = 100;
-                self.navigationItem.rightBarButtonItem = item;
+            break;
+        }
+        case 2:
+        {
+            self.firstLabel.attributedText = attStr;
+            [self.firstLabel removeAllLink];
+            attStr = [[NSMutableAttributedString alloc]initWithAttributedString:self.firstLabel.attributedText];
+            
+            CJNSAttributedString *linkStr =
+            [CJNSAttributedString initLinkAttributedString:@"CJLabel" attributes:@{NSForegroundColorAttributeName:[UIColor blackColor],
+                                                        NSFontAttributeName:[UIFont boldSystemFontOfSize:15]
+                                                        } linkTag:@"点击链点key"];
+            
+            NSArray *array = [CJLabel sameLinkStringRangeArray:@"CJLabel" inAttString:attStr];
+            for (NSInteger i = 0; i < array.count; i++) {
+                //设置第2个CJLabel不可点
+                if (i != 1) {
+                    [attStr replaceCharactersInRange:NSRangeFromString(array[i]) withAttributedString:linkStr];
+                }
             }
+            
+            attStr = [CJLabel configureLinkAttributedString:attStr
+                                              withAttString:linkStr
+                                           sameStringEnable:(self.index==1?NO:YES)
+                                             linkAttributes:@{
+                                                              NSForegroundColorAttributeName:[UIColor blueColor],
+                                                              NSFontAttributeName:[UIFont boldSystemFontOfSize:15],
+                                                              kCJBackgroundStrokeColorAttributeName:[UIColor orangeColor],
+                                                              kCJBackgroundLineWidthAttributeName:@(1),
+                                                              kCJBackgroundFillColorAttributeName:[UIColor lightGrayColor]
+                                                              }
+                                       activeLinkAttributes:@{
+                                                              NSForegroundColorAttributeName:[UIColor redColor],
+                                                              kCJActiveBackgroundStrokeColorAttributeName:[UIColor blackColor],
+                                                              kCJActiveBackgroundFillColorAttributeName:UIRGBColor(247,231,121,1)
+                                                              }
+                                                  parameter:@"参数为字符串"
+                                             clickLinkBlock:^(CJLabelLinkModel *linkModel){
+                                                 [self clickLink:linkModel isImage:NO];
+                                             }longPressBlock:^(CJLabelLinkModel *linkModel){
+                                                 [self clicklongPressLink:linkModel isImage:NO];
+                                             }];
+            
+            self.firstLabel.attributedText = attStr;
+            UIBarButtonItem *item = [[UIBarButtonItem alloc]initWithTitle:@"删除首个链点" style:UIBarButtonItemStylePlain target:self action:@selector(itemClick:)];
+            item.tag = 100;
+            self.navigationItem.rightBarButtonItem = item;
             
         }
             break;
@@ -110,6 +153,7 @@
             self.secondLabel = [[CJLabel alloc]initWithFrame:CGRectMake(10, 10, [[UIScreen mainScreen] bounds].size.width - 20, [[UIScreen mainScreen] bounds].size.height - 64 - 100)];
             self.secondLabel.backgroundColor = UIColorFromRGB(0xf0f0de);
             self.secondLabel.numberOfLines = 0;
+            self.secondLabel.enableCopy = YES;
             self.secondLabel.verticalAlignment = CJVerticalAlignmentTop;
             [self.view addSubview:self.secondLabel];
             
@@ -219,8 +263,14 @@
 - (void)itemClick:(UIBarButtonItem *)item {
     
     if (item.tag == 100) {
-        NSRange labelRange = [self.firstLabel.attributedText.string rangeOfString:@"CJLabel"];
-        [self.firstLabel removeLinkAtRange:labelRange];
+        CJNSAttributedString *linkStr =
+        [CJNSAttributedString initLinkAttributedString:@"CJLabel" attributes:@{NSForegroundColorAttributeName:[UIColor blackColor],
+                                                    NSFontAttributeName:[UIFont boldSystemFontOfSize:15]
+                                                    } linkTag:@"点击链点key"];
+        
+        NSArray *array = [CJLabel samelinkAttStringRangeArray:linkStr inAttString:self.firstLabel.attributedText];
+        NSRange range = NSRangeFromString(array[0]);
+        [self.firstLabel removeLinkAtRange:range];
         item.enabled = NO;
     }else if (item.tag == 200) {
         [self.firstLabel removeAllLink];

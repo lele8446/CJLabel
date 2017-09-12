@@ -8,8 +8,12 @@
 
 #import "CJLabel.h"
 #import "CJLabelUtilities.h"
+#import <objc/runtime.h>
 
 @class CJGlyphRunStrokeItem;
+@class CJSelectView;
+
+#define ENABLE_COPY_FILL_COLOR  [UIColor blueColor];
 
 NSString * const kCJBackgroundFillColorAttributeName         = @"kCJBackgroundFillColor";
 NSString * const kCJBackgroundStrokeColorAttributeName       = @"kCJBackgroundStrokeColor";
@@ -17,151 +21,17 @@ NSString * const kCJBackgroundLineWidthAttributeName         = @"kCJBackgroundLi
 NSString * const kCJBackgroundLineCornerRadiusAttributeName  = @"kCJBackgroundLineCornerRadius";
 NSString * const kCJActiveBackgroundFillColorAttributeName   = @"kCJActiveBackgroundFillColor";
 NSString * const kCJActiveBackgroundStrokeColorAttributeName = @"kCJActiveBackgroundStrokeColor";
-
-static CGFloat const CJFLOAT_MAX = 100000;
-
-static inline CGFLOAT_TYPE CGFloat_ceil(CGFLOAT_TYPE cgfloat) {
-#if CGFLOAT_IS_DOUBLE
-    return ceil(cgfloat);
-#else
-    return ceilf(cgfloat);
-#endif
-}
-
-static inline CGFLOAT_TYPE CGFloat_floor(CGFLOAT_TYPE cgfloat) {
-#if CGFLOAT_IS_DOUBLE
-    return floor(cgfloat);
-#else
-    return floorf(cgfloat);
-#endif
-}
-
-static inline CGFloat CJFlushFactorForTextAlignment(NSTextAlignment textAlignment) {
-    switch (textAlignment) {
-        case NSTextAlignmentCenter:
-            return 0.5f;
-        case NSTextAlignmentRight:
-            return 1.0f;
-        case NSTextAlignmentLeft:
-        default:
-            return 0.0f;
-    }
-}
-
-static inline CGColorRef CGColorRefFromColor(id color) {
-    return [color isKindOfClass:[UIColor class]] ? [color CGColor] : (__bridge CGColorRef)color;
-}
-
-static inline NSAttributedString * NSAttributedStringByScalingFontSize(NSAttributedString *attributedString, CGFloat scale) {
-    NSMutableAttributedString *mutableAttributedString = [attributedString mutableCopy];
-    [mutableAttributedString enumerateAttribute:(NSString *)kCTFontAttributeName inRange:NSMakeRange(0, [mutableAttributedString length]) options:0 usingBlock:^(id value, NSRange range, BOOL * __unused stop) {
-        UIFont *font = (UIFont *)value;
-        if (font) {
-            NSString *fontName;
-            CGFloat pointSize;
-            
-            if ([font isKindOfClass:[UIFont class]]) {
-                fontName = font.fontName;
-                pointSize = font.pointSize;
-            } else {
-                fontName = (NSString *)CFBridgingRelease(CTFontCopyName((__bridge CTFontRef)font, kCTFontPostScriptNameKey));
-                pointSize = CTFontGetSize((__bridge CTFontRef)font);
-            }
-            
-            [mutableAttributedString removeAttribute:(NSString *)kCTFontAttributeName range:range];
-            CTFontRef fontRef = CTFontCreateWithName((__bridge CFStringRef)fontName, CGFloat_floor(pointSize * scale), NULL);
-            [mutableAttributedString addAttribute:(NSString *)kCTFontAttributeName value:(__bridge id)fontRef range:range];
-            CFRelease(fontRef);
-        }
-    }];
-    
-    return mutableAttributedString;
-}
-
-static inline CGSize CTFramesetterSuggestFrameSizeForAttributedStringWithConstraints(CTFramesetterRef framesetter, NSAttributedString *attributedString, CGSize size, NSUInteger numberOfLines) {
-    CFRange rangeToSize = CFRangeMake(0, (CFIndex)[attributedString length]);
-    CGSize constraints = CGSizeMake(size.width, CJFLOAT_MAX);
-    
-    if (numberOfLines == 1) {
-        constraints = CGSizeMake(CJFLOAT_MAX, CJFLOAT_MAX);
-    } else if (numberOfLines > 0) {
-        CGMutablePathRef path = CGPathCreateMutable();
-        CGPathAddRect(path, NULL, CGRectMake(0.0f, 0.0f, constraints.width, CJFLOAT_MAX));
-        CTFrameRef frame = CTFramesetterCreateFrame(framesetter, CFRangeMake(0, 0), path, NULL);
-        CFArrayRef lines = CTFrameGetLines(frame);
-        
-        if (CFArrayGetCount(lines) > 0) {
-            NSInteger lastVisibleLineIndex = MIN((CFIndex)numberOfLines, CFArrayGetCount(lines)) - 1;
-            CTLineRef lastVisibleLine = CFArrayGetValueAtIndex(lines, lastVisibleLineIndex);
-            
-            CFRange rangeToLayout = CTLineGetStringRange(lastVisibleLine);
-            rangeToSize = CFRangeMake(0, rangeToLayout.location + rangeToLayout.length);
-        }
-        
-        CFRelease(frame);
-        CGPathRelease(path);
-    }
-    
-    CGSize suggestedSize = CTFramesetterSuggestFrameSizeWithConstraints(framesetter, rangeToSize, NULL, constraints, NULL);
-    
-    return CGSizeMake(CGFloat_ceil(suggestedSize.width), CGFloat_ceil(suggestedSize.height));
-};
-
-static inline CGFloat compareMaxNum(CGFloat firstNum, CGFloat secondNum, BOOL max){
-    CGFloat result = firstNum;
-    if (max) {
-        result = (firstNum >= secondNum)?firstNum:secondNum;
-    }else{
-        result = (firstNum <= secondNum)?firstNum:secondNum;
-    }
-    return result;
-}
-
-static inline UIColor * colorWithAttributeName(NSDictionary *dic, NSString *key){
-    UIColor *color = nil;
-    if (dic[key] && nil != dic[key]) {
-        color = dic[key];
-    }
-    return color;
-}
-
-static inline BOOL isNotClearColor(UIColor *color){
-    if (CJLabelIsNull(color)) {
-        return NO;
-    }
-    BOOL notClearColor = YES;
-    if (CGColorEqualToColor(color.CGColor, [UIColor clearColor].CGColor)) {
-        notClearColor = NO;
-    }
-    return notClearColor;
-}
-
-static inline BOOL isSameColor(UIColor *color1, UIColor *color2){
-    BOOL same = YES;
-    if (!CGColorEqualToColor(color1.CGColor, color2.CGColor)) {
-        same = NO;
-    }
-    return same;
-}
-
-/**
- 当CTLine包含插入图片时，描述当前行文字在垂直方向的对齐方式
- */
-struct CJCTLineVerticalLayout {
-    CFIndex line;//第几行
-    CGFloat maxRunHight;//当前行run的最大高度（不包括图片）
-    CGFloat lineHight;//行高
-    CGFloat maxImageHight;//行高
-    CJLabelVerticalAlignment verticalAlignment;//对齐方式（默认底部对齐）
-};
-typedef struct CJCTLineVerticalLayout CJCTLineVerticalLayout;
-
+//标记文本的index字符
+NSString * const kCJCharacterIndexAttributesName             = @"kCJCharacterIndexAttributesName";
 
 @interface CJLabel ()<UIGestureRecognizerDelegate>
 
 //当前显示的AttributedText
-@property (readwrite, nonatomic, copy) NSAttributedString *renderedAttributedText;
-@property (readonly, nonatomic, strong) UILongPressGestureRecognizer *longPressGestureRecognizer;
+@property (nonatomic, copy) NSAttributedString *renderedAttributedText;
+@property (nonatomic, strong) UILongPressGestureRecognizer *longPressGestureRecognizer;
+@property (nonatomic, strong) CJMagnifierView *magnifierView;
+@property (nonatomic, strong) CJSelectView *selectLeftView;
+@property (nonatomic, strong) CJSelectView *selectRightView;
 @end
 
 @implementation CJLabel {
@@ -179,6 +49,9 @@ typedef struct CJCTLineVerticalLayout CJCTLineVerticalLayout;
     CJGlyphRunStrokeItem *_lastGlyphRunStrokeItem;//计算StrokeItem的中间变量
     CJGlyphRunStrokeItem *_currentClickRunStrokeItem;//当前点击选中的StrokeItem
     NSArray *_CTLineVerticalLayoutArray;//记录 包含插入图片的CTLine在垂直方向的对齐方式的数组
+    CGFloat _translateCTMty;//坐标系统反转后的偏移量
+    CGRect _insetRect;//实际绘制文本区域大小
+    NSArray <CJGlyphRunStrokeItem *>*_allRunItemArray;//enableCopy=YES时，包含所有CTRun信息的数组
 }
 
 
@@ -287,6 +160,34 @@ typedef struct CJCTLineVerticalLayout CJCTLineVerticalLayout;
     return [CJLabelUtilities configureLinkAttributedString:attrStr withString:withString sameStringEnable:sameStringEnable linkAttributes:linkAttributes activeLinkAttributes:activeLinkAttributes parameter:parameter clickLinkBlock:clickLinkBlock longPressBlock:longPressBlock islink:YES];
 }
 
++ (NSMutableAttributedString *)configureAttributedString:(NSAttributedString *)attrStr
+                                           withAttString:(CJNSAttributedString *)withAttString
+                                        sameStringEnable:(BOOL)sameStringEnable
+                                              attributes:(NSDictionary *)attributes
+{
+    return [CJLabelUtilities configureLinkAttributedString:attrStr withAttString:withAttString sameStringEnable:sameStringEnable linkAttributes:attributes activeLinkAttributes:nil parameter:nil clickLinkBlock:nil longPressBlock:nil islink:NO];
+}
+
++ (NSMutableAttributedString *)configureLinkAttributedString:(NSAttributedString *)attrStr
+                                               withAttString:(CJNSAttributedString *)withAttString
+                                            sameStringEnable:(BOOL)sameStringEnable
+                                              linkAttributes:(NSDictionary *)linkAttributes
+                                        activeLinkAttributes:(NSDictionary *)activeLinkAttributes
+                                                   parameter:(id)parameter
+                                              clickLinkBlock:(CJLabelLinkModelBlock)clickLinkBlock
+                                              longPressBlock:(CJLabelLinkModelBlock)longPressBlock
+{
+    return [CJLabelUtilities configureLinkAttributedString:attrStr withAttString:withAttString sameStringEnable:sameStringEnable linkAttributes:linkAttributes activeLinkAttributes:activeLinkAttributes parameter:parameter clickLinkBlock:clickLinkBlock longPressBlock:longPressBlock islink:YES];
+}
+
++ (NSArray <NSString *>*)sameLinkStringRangeArray:(NSString *)linkString inAttString:(NSAttributedString *)attString {
+    return [CJLabelUtilities getLinkStringRangeArray:linkString inAttString:attString];
+}
+
++ (NSArray <NSString *>*)samelinkAttStringRangeArray:(CJNSAttributedString *)linkAttString inAttString:(NSAttributedString *)attString {
+    return [CJLabelUtilities getLinkAttStringRangeArray:linkAttString inAttString:attString];
+}
+
 - (NSAttributedString *)removeLinkAtRange:(NSRange)linkRange {
     NSParameterAssert((linkRange.location + linkRange.length) <= self.attributedText.length);
     
@@ -314,16 +215,9 @@ typedef struct CJCTLineVerticalLayout CJCTLineVerticalLayout;
         }
     }];
     
-//    _runStrokeItemArray = nil;
-//    _linkStrokeItemArray = nil;
-//    _CTLineVerticalLayoutArray = nil;
-//    _numberOfLines = -1;
-//    _needRedrawn = YES;
-    
-    
     [self setNeedsFramesetter];
     self.attributedText = attText;
-//    [self setNeedsDisplay];
+    
     //立即刷新界面
     [CATransaction flush];
     return self.attributedText;
@@ -353,17 +247,9 @@ typedef struct CJCTLineVerticalLayout CJCTLineVerticalLayout;
         }
     }];
     
-//    _runStrokeItemArray = nil;
-//    _linkStrokeItemArray = nil;
-//    _CTLineVerticalLayoutArray = nil;
-//    _numberOfLines = -1;
-//    _needRedrawn = YES;
-    
     [self setNeedsFramesetter];
     self.attributedText = newAttributedText;
     
-    
-//    [self setNeedsDisplay];
     //立即刷新界面
     [CATransaction flush];
     return self.attributedText;
@@ -388,6 +274,7 @@ typedef struct CJCTLineVerticalLayout CJCTLineVerticalLayout;
 
 - (void)commonInit {
     self.userInteractionEnabled = YES;
+    self.enableCopy = NO;
     self.textInsets = UIEdgeInsetsZero;
     self.verticalAlignment = CJVerticalAlignmentCenter;
     _numberOfLines = -1;
@@ -403,6 +290,16 @@ typedef struct CJCTLineVerticalLayout CJCTLineVerticalLayout;
                                                                                 action:@selector(longPressGestureDidFire:)];
     self.longPressGestureRecognizer.delegate = self;
     [self addGestureRecognizer:self.longPressGestureRecognizer];
+    
+    self.magnifierView = [[CJMagnifierView alloc] init];
+    self.magnifierView.viewToMagnify = self;
+    
+    self.selectLeftView = [[CJSelectView alloc]initWithDirection:YES];
+    self.selectLeftView.hidden = YES;
+    [self addSubview:self.selectLeftView];
+    self.selectRightView = [[CJSelectView alloc]initWithDirection:NO];
+    self.selectRightView.hidden = YES;
+    [self addSubview:self.selectRightView];
 }
 
 - (void)dealloc {
@@ -417,7 +314,7 @@ typedef struct CJCTLineVerticalLayout CJCTLineVerticalLayout;
     if (_longPressGestureRecognizer) {
         [self removeGestureRecognizer:_longPressGestureRecognizer];
     }
-    self.delegate = nil;
+    _delegate = nil;
 }
 
 - (void)setText:(id)text {
@@ -426,8 +323,8 @@ typedef struct CJCTLineVerticalLayout CJCTLineVerticalLayout;
     NSMutableAttributedString *mutableAttributedString = nil;
     if ([text isKindOfClass:[NSString class]]) {
         NSMutableDictionary *mutableAttributes = [NSMutableDictionary dictionary];
-        [mutableAttributes setObject:self.font forKey:(NSString *)kCTFontAttributeName];
-        [mutableAttributes setObject:self.textColor forKey:(NSString *)kCTForegroundColorAttributeName];
+        [mutableAttributes setObject:self.font?self.font:[UIFont systemFontOfSize:17] forKey:(NSString *)kCTFontAttributeName];
+        [mutableAttributes setObject:self.textColor?self.textColor:[UIColor blackColor] forKey:(NSString *)kCTForegroundColorAttributeName];
         
         NSMutableParagraphStyle *paragraphStyle = [[NSMutableParagraphStyle alloc] init];
         paragraphStyle.alignment = self.textAlignment;
@@ -456,27 +353,31 @@ typedef struct CJCTLineVerticalLayout CJCTLineVerticalLayout;
     _CTLineVerticalLayoutArray = nil;
     _currentClickRunStrokeItem = nil;
     
+    
     //获取点击链点的NSRange
     NSMutableAttributedString *attText = [[NSMutableAttributedString alloc]initWithAttributedString:text];
-
     [attText enumerateAttributesInRange:NSMakeRange(0, attText.length) options:NSAttributedStringEnumerationLongestEffectiveRangeNotRequired usingBlock:^(NSDictionary<NSString *, id> *attrs, NSRange range, BOOL *stop){
         BOOL isLink = [attrs[kCJIsLinkAttributesName] boolValue];
         if (isLink) {
             [attText addAttribute:kCJLinkRangeAttributesName value:NSStringFromRange(range) range:range];
         }else{
             [attText removeAttribute:kCJLinkRangeAttributesName range:range];
-            if (!_normalAttDic &&
-                CJLabelIsNull(attrs[kCJBackgroundFillColorAttributeName]) &&
-                CJLabelIsNull(attrs[kCJBackgroundStrokeColorAttributeName]) &&
-                CJLabelIsNull(attrs[kCJBackgroundLineWidthAttributeName]) &&
-                CJLabelIsNull(attrs[kCJBackgroundLineCornerRadiusAttributeName]) &&
-                CJLabelIsNull(attrs[kCJActiveBackgroundFillColorAttributeName]) &&
-                CJLabelIsNull(attrs[kCJActiveBackgroundStrokeColorAttributeName])
-                              ) {
-                _normalAttDic = attrs;
-            }
         }
     }];
+    
+    if (self.enableCopy) {
+        //给每一个字符设置index值，enableCopy=YES时用到
+        __block NSInteger index = 0;
+        NSMutableArray *dicArray = [NSMutableArray arrayWithCapacity:3];
+        [attText.string enumerateSubstringsInRange:NSMakeRange(0, [attText length]) options:NSStringEnumerationByComposedCharacterSequences usingBlock:
+         ^(NSString *substring, NSRange substringRange, NSRange enclosingRange, BOOL *stop) {
+             [dicArray addObject:@{@"index":@(index),@"substringRange":NSStringFromRange(substringRange)}];
+             index++;
+         }];
+        for (NSDictionary *dic in dicArray) {
+            [attText addAttribute:kCJCharacterIndexAttributesName value:dic[@"index"] range:NSRangeFromString(dic[@"substringRange"])];
+        }
+    }
     
     _attributedText = [attText copy];
     
@@ -606,9 +507,7 @@ typedef struct CJCTLineVerticalLayout CJCTLineVerticalLayout;
     }
 }
 
-- (CGRect)textRectForBounds:(CGRect)bounds
-     limitedToNumberOfLines:(NSInteger)numberOfLines
-{
+- (CGRect)textRectForBounds:(CGRect)bounds limitedToNumberOfLines:(NSInteger)numberOfLines {
     bounds = UIEdgeInsetsInsetRect(bounds, self.textInsets);
     if (!self.attributedText) {
         return [super textRectForBounds:bounds limitedToNumberOfLines:numberOfLines];
@@ -696,8 +595,10 @@ typedef struct CJCTLineVerticalLayout CJCTLineVerticalLayout;
         
         // 获取textRect
         CGRect textRect = [self textRectForBounds:rect limitedToNumberOfLines:self.numberOfLines];
+        _insetRect = insetRect;
         // CTM 坐标移到左下角
-        CGContextTranslateCTM(c, insetRect.origin.x, insetRect.size.height - textRect.origin.y - textRect.size.height);
+        _translateCTMty = insetRect.size.height - textRect.origin.y - textRect.size.height;
+        CGContextTranslateCTM(c, insetRect.origin.x, _translateCTMty);
         
         // 处理阴影 shadowColor
         if (self.shadowColor && !self.highlighted) {
@@ -748,18 +649,23 @@ typedef struct CJCTLineVerticalLayout CJCTLineVerticalLayout;
             _numberOfLines = self.numberOfLines > 0 ? MIN(self.numberOfLines, lines.count) : lines.count;
         }
         
-        _CTLineVerticalLayoutArray = [self allCTLineVerticalLayoutArray:lines origins:origins inRect:rect];
-        // 获取所有需要重绘背景的StrokeItem数组
-        _runStrokeItemArray = [self calculateRunStrokeItemsFrame:lines origins:origins inRect:rect];
-        _linkStrokeItemArray = [self getLinkStrokeItems:_runStrokeItemArray];
+        _CTLineVerticalLayoutArray = [self allCTLineVerticalLayoutArray:lines origins:origins inRect:rect context:c];
+        // 获取所有需要重绘背景的StrokeItem数组；支持复制，获取所有run数组
+        [self calculateRunStrokeItemsFrame:lines origins:origins inRect:rect finishBlock:^(NSArray <CJGlyphRunStrokeItem *>*runStrokeItemArray, NSArray <CJGlyphRunStrokeItem *>*allRunItemArray){
+            _runStrokeItemArray = runStrokeItemArray;
+            _allRunItemArray = allRunItemArray;
+            
+            _linkStrokeItemArray = [self getLinkStrokeItems:_runStrokeItemArray];
+        }];
+        
     }
-//    if (!_runStrokeItemArray) {
-//        _CTLineVerticalLayoutArray = [self allCTLineVerticalLayoutArray:frame inRect:rect];
-//        // 获取所有需要重绘背景的StrokeItem数组
-//        _runStrokeItemArray = [self calculateRunStrokeItemsFrame:frame inRect:rect];
-//        _linkStrokeItemArray = [self getLinkStrokeItems:_runStrokeItemArray];
-//    }
-    [self drawBackgroundColor:c runStrokeItems:_runStrokeItemArray isStrokeColor:NO];
+
+    //填充背景色
+    [self drawBackgroundColor:c runStrokeItems:_runStrokeItemArray isStrokeColor:NO isCopyFillCloor:NO];
+    if (self.enableCopy) {
+        //选择复制，填充选中字符背景色
+        [self drawBackgroundColor:c runStrokeItems:_allRunItemArray isStrokeColor:NO isCopyFillCloor:YES];
+    }
     
     
     CFArrayRef lines = CTFrameGetLines(frame);
@@ -844,8 +750,6 @@ typedef struct CJCTLineVerticalLayout CJCTLineVerticalLayout;
                 }
                 
                 CGFloat penOffset = (CGFloat)CTLineGetPenOffsetForFlush(truncatedLine, flushFactor, rect.size.width);
-//                CGContextSetTextPosition(c, penOffset, y );
-//                CTLineDraw(truncatedLine, c);
                 [self drawCTRun:c line:truncatedLine x:penOffset y:lineOrigin.y lineIndex:lineIndex lineOrigin:lineOrigin inRect:rect];
                 
                 CFRelease(truncatedLine);
@@ -853,31 +757,27 @@ typedef struct CJCTLineVerticalLayout CJCTLineVerticalLayout;
                 CFRelease(truncationToken);
             } else {
                 CGFloat penOffset = (CGFloat)CTLineGetPenOffsetForFlush(line, flushFactor, rect.size.width);
-//                CGContextSetTextPosition(c, penOffset, y );
-//                CTLineDraw(line, c);
                 [self drawCTRun:c line:line x:penOffset y:lineOrigin.y lineIndex:lineIndex lineOrigin:lineOrigin inRect:rect];
             }
         }
         else {
             CGFloat penOffset = (CGFloat)CTLineGetPenOffsetForFlush(line, flushFactor, rect.size.width);
-//            CGContextSetTextPosition(c, penOffset, y );
-//            CTLineDraw(line, c);
             [self drawCTRun:c line:line x:penOffset y:lineOrigin.y lineIndex:lineIndex lineOrigin:lineOrigin inRect:rect];
         }
         
     }
     
     // 绘制描边
-    [self drawBackgroundColor:c runStrokeItems:_runStrokeItemArray isStrokeColor:YES];
+    [self drawBackgroundColor:c runStrokeItems:_runStrokeItemArray isStrokeColor:YES isCopyFillCloor:NO];
     
     CFRelease(frame);
     CGPathRelease(path);
 }
 
-- (CGFloat)yOffset:(CGFloat)y lineVerticalLayout:(CJCTLineVerticalLayout)lineVerticalLayout lineDescent:(CGFloat)lineDescent isImage:(BOOL)isImage imageHight:(CGFloat)imageHight imageVerticalAlignment:(CJLabelVerticalAlignment)imageVerticalAlignment {
-    CGFloat lineHight = lineVerticalLayout.lineHight;
-    CGFloat maxRunHight = lineVerticalLayout.maxRunHight;
-    CGFloat maxImageHight = lineVerticalLayout.maxImageHight;
+- (CGFloat)yOffset:(CGFloat)y lineVerticalLayout:(CJCTLineVerticalLayout)lineVerticalLayout lineDescent:(CGFloat)lineDescent isImage:(BOOL)isImage imageHeight:(CGFloat)imageHeight imageVerticalAlignment:(CJLabelVerticalAlignment)imageVerticalAlignment {
+    CGFloat lineHeight = lineVerticalLayout.lineHeight;
+    CGFloat maxRunHeight = lineVerticalLayout.maxRunHeight;
+    CGFloat maxImageHeight = lineVerticalLayout.maxImageHeight;
     
     CJLabelVerticalAlignment verticalAlignment = lineVerticalLayout.verticalAlignment;
     if (isImage) {
@@ -888,35 +788,35 @@ typedef struct CJCTLineVerticalLayout CJCTLineVerticalLayout;
     if (verticalAlignment == CJVerticalAlignmentBottom) {
         if (isImage) {
             yy = y - lineDescent - self.font.descender;
-            if (imageHight >= maxRunHight && imageHight >= maxImageHight) {
-                yy = y - lineDescent + (lineHight-imageHight)/2.0;
+            if (imageHeight >= maxRunHeight && imageHeight >= maxImageHeight) {
+                yy = y - lineDescent + (lineHeight-imageHeight)/2.0;
             }
         }
     }
     else if (verticalAlignment == CJVerticalAlignmentCenter) {
         if (isImage) {
-            yy = y - lineDescent + (lineHight-imageHight)/2.0;
+            yy = y - lineDescent + (lineHeight-imageHeight)/2.0;
         }else{
-            if (maxImageHight >= maxRunHight) {
-                yy = y + (lineHight-maxRunHight)/2.0;
+            if (maxImageHeight >= maxRunHeight) {
+                yy = y + (lineHeight-maxRunHeight)/2.0;
             }
         }
     }
     else if (verticalAlignment == CJVerticalAlignmentTop) {
         if (isImage) {
-            yy = y - lineDescent + (lineHight-imageHight) + self.font.descender;
-            if (imageHight >= maxRunHight && imageHight >= maxImageHight) {
-                yy = y - lineDescent + (lineHight-imageHight)/2.0;
+            yy = y - lineDescent + (lineHeight-imageHeight) + self.font.descender;
+            if (imageHeight >= maxRunHeight && imageHeight >= maxImageHeight) {
+                yy = y - lineDescent + (lineHeight-imageHeight)/2.0;
             }
         }else{
-            if (maxImageHight >= maxRunHight) {
-                yy = y + (lineHight-maxRunHight);
+            if (maxImageHeight >= maxRunHeight) {
+                yy = y + (lineHeight-maxRunHeight);
             }
         }
     }
     return yy;
 }
-
+// 绘制单个CTRun
 - (void)drawCTRun:(CGContextRef)c line:(CTLineRef)line x:(CGFloat)x y:(CGFloat)y lineIndex:(CFIndex)lineIndex lineOrigin:(CGPoint)lineOrigin inRect:(CGRect)rect {
     
     CJCTLineVerticalLayout lineVerticalLayout = {0,0,0};
@@ -924,8 +824,8 @@ typedef struct CJCTLineVerticalLayout CJCTLineVerticalLayout;
     CTLineGetTypographicBounds(line, &lineAscent, &lineDescent, &lineLeading);
     
     lineVerticalLayout.line = lineIndex;
-    lineVerticalLayout.maxRunHight = lineAscent + lineDescent + lineLeading;
-    lineVerticalLayout.lineHight = lineAscent + lineDescent + lineLeading;
+    lineVerticalLayout.maxRunHeight = lineAscent + lineDescent + lineLeading;
+    lineVerticalLayout.lineHeight = lineAscent + lineDescent + lineLeading;
     
     for (NSValue *value in _CTLineVerticalLayoutArray) {
         CJCTLineVerticalLayout themLineVerticalLayout;
@@ -948,16 +848,16 @@ typedef struct CJCTLineVerticalLayout CJCTLineVerticalLayout;
         runRect.size.width = CTRunGetTypographicBounds(run, CFRangeMake(0,0), &runAscent, &runDescent, NULL);
         
         BOOL isImage = YES;
-        CGFloat imageHight = 0;
+        CGFloat imageHeight = 0;
         CJLabelVerticalAlignment imageVerticalAlignment = CJVerticalAlignmentBottom;
         if (CJLabelIsNull(imgInfoDic)) {
             isImage = NO;
         }else{
-            imageHight = runAscent + runDescent;
+            imageHeight = runAscent + runDescent;
             imageVerticalAlignment = [imgInfoDic[kCJImageLineVerticalAlignment] integerValue];
         }
-        
-        CGFloat yy = [self yOffset:y lineVerticalLayout:lineVerticalLayout lineDescent:lineDescent isImage:isImage imageHight:imageHight imageVerticalAlignment:imageVerticalAlignment];
+        //y轴方向的偏移
+        CGFloat yy = [self yOffset:y lineVerticalLayout:lineVerticalLayout lineDescent:lineDescent isImage:isImage imageHeight:imageHeight imageVerticalAlignment:imageVerticalAlignment];
         
         //绘制图片
         if (imgInfoDic[kCJImageName]) {
@@ -981,17 +881,28 @@ typedef struct CJCTLineVerticalLayout CJCTLineVerticalLayout;
     }
 }
 
+- (CGFloat)isnanNum:(CGFloat)num {
+    return isnan(num)?0:num;
+}
+
 - (void)drawBackgroundColor:(CGContextRef)c
              runStrokeItems:(NSArray <CJGlyphRunStrokeItem *>*)runStrokeItems
               isStrokeColor:(BOOL)isStrokeColor
+            isCopyFillCloor:(BOOL)isCopyFillCloor
 {
     if (runStrokeItems.count > 0) {
         for (CJGlyphRunStrokeItem *item in runStrokeItems) {
-            if (_currentClickRunStrokeItem && NSEqualRanges(_currentClickRunStrokeItem.range,item.range)) {
-                [self drawBackgroundColor:c runStrokeItem:item isStrokeColor:isStrokeColor active:YES];
-            }
-            else{
-                [self drawBackgroundColor:c runStrokeItem:item isStrokeColor:isStrokeColor active:NO];
+            if (isCopyFillCloor) {
+//                if (item.isSelect) {
+                    [self drawBackgroundColor:c runStrokeItem:item isStrokeColor:NO active:NO isCopyFillCloor:YES];
+//                }
+            }else{
+                if (_currentClickRunStrokeItem && NSEqualRanges(_currentClickRunStrokeItem.range,item.range)) {
+                    [self drawBackgroundColor:c runStrokeItem:item isStrokeColor:isStrokeColor active:YES isCopyFillCloor:NO];
+                }
+                else{
+                    [self drawBackgroundColor:c runStrokeItem:item isStrokeColor:isStrokeColor active:NO isCopyFillCloor:NO];
+                }
             }
         }
     }
@@ -1001,8 +912,13 @@ typedef struct CJCTLineVerticalLayout CJCTLineVerticalLayout;
               runStrokeItem:(CJGlyphRunStrokeItem *)runStrokeItem
               isStrokeColor:(BOOL)isStrokeColor
                      active:(BOOL)active
+            isCopyFillCloor:(BOOL)isCopyFillCloor
 {
-    CGContextSetLineJoin(c, kCGLineJoinRound);
+    if (isCopyFillCloor) {//尖角
+        CGContextSetLineJoin(c, kCGLineJoinMiter);
+    }else{//圆角
+        CGContextSetLineJoin(c, kCGLineJoinRound);
+    }
     CGFloat x = runStrokeItem.runBounds.origin.x-self.textInsets.left;
     CGFloat y = runStrokeItem.runBounds.origin.y+self.font.descender;
     if (runStrokeItem.isImage) {
@@ -1010,29 +926,44 @@ typedef struct CJCTLineVerticalLayout CJCTLineVerticalLayout;
     }
     
     CGRect roundedRect = CGRectMake(x,y,runStrokeItem.runBounds.size.width,runStrokeItem.runBounds.size.height);
-    CGPathRef glyphRunpath = [[UIBezierPath bezierPathWithRoundedRect:roundedRect cornerRadius:runStrokeItem.cornerRadius] CGPath];
+    if (isCopyFillCloor) {
+        CGRect lineRect = runStrokeItem.lineVerticalLayout.lineRect;
+        CGFloat y = _insetRect.size.height - lineRect.origin.y - lineRect.size.height - _translateCTMty;
+        roundedRect = CGRectMake(x,y,runStrokeItem.runBounds.size.width,lineRect.size.height);
+    }
+    CGPathRef glyphRunpath = [[UIBezierPath bezierPathWithRoundedRect:roundedRect cornerRadius:isCopyFillCloor?0:runStrokeItem.cornerRadius] CGPath];
     CGContextAddPath(c, glyphRunpath);
     
-    if (isStrokeColor) {
-        UIColor *color = (active?runStrokeItem.activeStrokeColor:runStrokeItem.strokeColor);
+    if (isCopyFillCloor) {
+        UIColor *color = runStrokeItem.fillCopyColor;
         if (CJLabelIsNull(color)) {
-            color = [UIColor clearColor];
-        }
-        CGContextSetStrokeColorWithColor(c, CGColorRefFromColor(color));
-        CGContextSetLineWidth(c, runStrokeItem.lineWidth);
-        CGContextStrokePath(c);
-    }
-    else {
-        UIColor *color = (active?runStrokeItem.activeFillColor:runStrokeItem.fillColor);
-        if (CJLabelIsNull(color)) {
-            color = [UIColor clearColor];
+            color = ENABLE_COPY_FILL_COLOR;
         }
         CGContextSetFillColorWithColor(c, CGColorRefFromColor(color));
         CGContextFillPath(c);
     }
+    else{
+        if (isStrokeColor) {
+            UIColor *color = (active?runStrokeItem.activeStrokeColor:runStrokeItem.strokeColor);
+            if (CJLabelIsNull(color)) {
+                color = [UIColor clearColor];
+            }
+            CGContextSetStrokeColorWithColor(c, CGColorRefFromColor(color));
+            CGContextSetLineWidth(c, runStrokeItem.lineWidth);
+            CGContextStrokePath(c);
+        }
+        else {
+            UIColor *color = (active?runStrokeItem.activeFillColor:runStrokeItem.fillColor);
+            if (CJLabelIsNull(color)) {
+                color = [UIColor clearColor];
+            }
+            CGContextSetFillColorWithColor(c, CGColorRefFromColor(color));
+            CGContextFillPath(c);
+        }
+    }
 }
 
-- (NSArray *)allCTLineVerticalLayoutArray:(NSArray *)lines origins:(CGPoint[])origins inRect:(CGRect)rect {
+- (NSArray *)allCTLineVerticalLayoutArray:(NSArray *)lines origins:(CGPoint[])origins inRect:(CGRect)rect context:(CGContextRef)c {
     NSMutableArray *verticalLayoutArray = [NSMutableArray arrayWithCapacity:3];
     // 遍历所有行
     for (NSInteger i = 0; i < _numberOfLines; i ++ ) {
@@ -1046,8 +977,8 @@ typedef struct CJCTLineVerticalLayout CJCTLineVerticalLayout;
         CJLabelVerticalAlignment verticalAlignment = CJVerticalAlignmentBottom;
         
         CFArrayRef runs = CTLineGetGlyphRuns(line);
-        CGFloat maxRunHight = 0;
-        CGFloat maxImageHight = 0;
+        CGFloat maxRunHeight = 0;
+        CGFloat maxImageHeight = 0;
         for (CFIndex j = 0; j < CFArrayGetCount(runs); ++j) {
             CTRunRef run = CFArrayGetValueAtIndex(runs, j);
             CGFloat runAscent = 0.0f, runDescent = 0.0f, runLeading = 0.0f;
@@ -1055,30 +986,41 @@ typedef struct CJCTLineVerticalLayout CJCTLineVerticalLayout;
             NSDictionary *attDic = (__bridge NSDictionary *)CTRunGetAttributes(run);
             NSDictionary *imgInfoDic = attDic[kCJImageAttributeName];
             if (CJLabelIsNull(imgInfoDic)) {
-                maxRunHight = MAX(maxRunHight, runAscent + runDescent + runLeading);
+                maxRunHeight = MAX(maxRunHeight, runAscent + runDescent + runLeading);
             }else{
-                if (maxImageHight < runAscent + runDescent) {
-                    maxImageHight = runAscent + runDescent;
+                if (maxImageHeight < runAscent + runDescent) {
+                    maxImageHeight = runAscent + runDescent;
                     verticalAlignment = [imgInfoDic[kCJImageLineVerticalAlignment] integerValue];
                 }
             }
         }
+        
+        CGRect lineBounds = CTLineGetImageBounds((CTLineRef)line, c);
+        //每一行的起始点（相对于context）加上相对于本身基线原点的偏移量
+        lineBounds.origin.x += origins[i].x;
+        lineBounds.origin.y += origins[i].y;
+        lineBounds.origin.y = _insetRect.size.height - lineBounds.origin.y - lineBounds.size.height - _translateCTMty;
+        lineBounds.size.width = lineBounds.size.width + self.textInsets.left + self.textInsets.right;
+        
         CJCTLineVerticalLayout lineVerticalLayout;
         lineVerticalLayout.line = i;
-        lineVerticalLayout.lineHight = lineHeight;
-        lineVerticalLayout.maxRunHight = maxRunHight;
+        lineVerticalLayout.lineHeight = lineHeight;
+        lineVerticalLayout.maxRunHeight = maxRunHeight;
         lineVerticalLayout.verticalAlignment = verticalAlignment;
-        lineVerticalLayout.maxImageHight = maxImageHight;
+        lineVerticalLayout.maxImageHeight = maxImageHeight;
+        lineVerticalLayout.lineRect = lineBounds;
         
         NSValue *value = [NSValue valueWithBytes:&lineVerticalLayout objCType:@encode(CJCTLineVerticalLayout)];
         [verticalLayoutArray addObject:value];
     }
+    
     return verticalLayoutArray;
 }
 
-// 计算可点击链点，以及需要填充背景或边框线的run数组
-- (NSArray <CJGlyphRunStrokeItem *>*)calculateRunStrokeItemsFrame:(NSArray *)lines origins:(CGPoint[])origins inRect:(CGRect)rect {
+// 计算可点击链点，以及需要填充背景或边框线的run数组；如果支持复制，则同时计算所有run数组
+- (void)calculateRunStrokeItemsFrame:(NSArray *)lines origins:(CGPoint[])origins inRect:(CGRect)rect finishBlock:(void (^)(NSArray <CJGlyphRunStrokeItem *>*runStrokeItemArray, NSArray <CJGlyphRunStrokeItem *>*allRunItemArray))finishBlock {
     NSMutableArray *allStrokePathItems = [NSMutableArray arrayWithCapacity:3];
+    NSMutableArray *allRunItemArray = [NSMutableArray arrayWithCapacity:3];
     
     CJCTLineVerticalLayout lineVerticalLayout = {0,0,0};
     // 遍历所有行
@@ -1091,8 +1033,8 @@ typedef struct CJCTLineVerticalLayout CJCTLineVerticalLayout;
         CGFloat ascentAndDescent = ascent + descent;
         
         lineVerticalLayout.line = i;
-        lineVerticalLayout.maxRunHight = ascentAndDescent + leading;
-        lineVerticalLayout.lineHight = ascentAndDescent + leading;
+        lineVerticalLayout.maxRunHeight = ascentAndDescent + leading;
+        lineVerticalLayout.lineHeight = ascentAndDescent + leading;
         
         for (NSValue *value in _CTLineVerticalLayoutArray) {
             CJCTLineVerticalLayout themLineVerticalLayout;
@@ -1159,20 +1101,34 @@ typedef struct CJCTLineVerticalLayout CJCTLineVerticalLayout;
             if (!CJLabelIsNull(imgInfoDic)) {
                 imageVerticalAlignment = [imgInfoDic[kCJImageLineVerticalAlignment] integerValue];
             }
+            //当前run相对于self的CGRect
+            CGRect runBounds = [self getRunStrokeItemlocRunBoundsFromGlyphRun:glyphRun
+                                                                         line:line
+                                                                      origins:origins
+                                                                    lineIndex:i
+                                                                       inRect:rect
+                                                                        width:width
+                                                              moreThanOneLine:(_numberOfLines > 1)
+                                                           lineVerticalLayout:lineVerticalLayout
+                                                                      isImage:!CJLabelIsNull(imgInfoDic)
+                                                       imageVerticalAlignment:imageVerticalAlignment
+                                                                  lineDescent:descent];
+            //转换为UIKit坐标系统
+            CGRect locBounds = [self convertRectFromLoc:runBounds moreThanOneLine:(_numberOfLines > 1)];
+            
+            CJGlyphRunStrokeItem *runStrokeItem = [[CJGlyphRunStrokeItem alloc]init];
+            runStrokeItem.runBounds = runBounds;
+            runStrokeItem.locBounds = locBounds;
+            runStrokeItem.lineVerticalLayout = lineVerticalLayout;
+            runStrokeItem.fillCopyColor = ENABLE_COPY_FILL_COLOR;
+            
+            if (self.enableCopy) {
+                [allRunItemArray addObject:runStrokeItem];
+            }
             
             // 当前glyphRun是一个可点击链点
             if (isLink) {
-                CJGlyphRunStrokeItem *runStrokeItem = [self runStrokeItemFromGlyphRun:glyphRun
-                                                                                 line:line
-                                                                              origins:origins
-                                                                            lineIndex:i
-                                                                               inRect:rect
-                                                                                width:width
-                                                                      moreThanOneLine:(_numberOfLines > 1)
-                                                                   lineVerticalLayout:lineVerticalLayout
-                                                                              isImage:!CJLabelIsNull(imgInfoDic)
-                                                               imageVerticalAlignment:imageVerticalAlignment
-                                                                          lineDescent:descent];
+                
                 runStrokeItem.strokeColor = strokeColor;
                 runStrokeItem.fillColor = fillColor;
                 runStrokeItem.lineWidth = lineWidth;
@@ -1198,20 +1154,11 @@ typedef struct CJCTLineVerticalLayout CJCTLineVerticalLayout;
                 }
                 
                 [strokePathItems addObject:runStrokeItem];
-            }else{
+            }
+            else{
                 //不是可点击链点。但存在自定义边框线或背景色
                 if (isNotClearColor(strokeColor) || isNotClearColor(fillColor) || isNotClearColor(activeStrokeColor) || isNotClearColor(activeFillColor)) {
-                    CJGlyphRunStrokeItem *runStrokeItem = [self runStrokeItemFromGlyphRun:glyphRun
-                                                                                     line:line
-                                                                                  origins:origins
-                                                                                lineIndex:i
-                                                                                   inRect:rect
-                                                                                    width:width
-                                                                          moreThanOneLine:(_numberOfLines > 1)
-                                                                       lineVerticalLayout:lineVerticalLayout
-                                                                                  isImage:!CJLabelIsNull(imgInfoDic)
-                                                                   imageVerticalAlignment:imageVerticalAlignment
-                                                                              lineDescent:descent];
+                    
                     runStrokeItem.strokeColor = strokeColor;
                     runStrokeItem.fillColor = fillColor;
                     runStrokeItem.lineWidth = lineWidth;
@@ -1234,10 +1181,10 @@ typedef struct CJCTLineVerticalLayout CJCTLineVerticalLayout;
         [allStrokePathItems addObjectsFromArray:[self mergeLineSameStrokePathItems:strokePathItems ascentAndDescent:ascentAndDescent moreThanOneLine:(_numberOfLines > 1)]];
     }
     
-    return allStrokePathItems;
+    finishBlock(allStrokePathItems,allRunItemArray);
 }
 
-- (CJGlyphRunStrokeItem *)runStrokeItemFromGlyphRun:(id)glyphRun
+- (CGRect )getRunStrokeItemlocRunBoundsFromGlyphRun:(id)glyphRun
                                                line:(id)line
                                             origins:(CGPoint[])origins
                                           lineIndex:(CFIndex)lineIndex
@@ -1268,21 +1215,15 @@ typedef struct CJCTLineVerticalLayout CJCTLineVerticalLayout;
     
     runBounds.origin.x = origins[lineIndex].x + rect.origin.x + xOffset;
     CGFloat y = origins[lineIndex].y;
-    CGFloat yy = [self yOffset:y lineVerticalLayout:lineVerticalLayout lineDescent:lineDescent isImage:isImage imageHight:runAscent + runDescent imageVerticalAlignment:imageVerticalAlignment];;
+    CGFloat yy = [self yOffset:y lineVerticalLayout:lineVerticalLayout lineDescent:lineDescent isImage:isImage imageHeight:runAscent + runDescent imageVerticalAlignment:imageVerticalAlignment];;
     
     runBounds.origin.y = yy;
 
     if (CGRectGetWidth(runBounds) > width) {
         runBounds.size.width = width;
     }
-
-    //转换为UIKit坐标系统
-    CGRect locBounds = [self convertRectFromLoc:runBounds moreThanOneLine:more];
-    CJGlyphRunStrokeItem *runStrokeItem = [[CJGlyphRunStrokeItem alloc]init];
-    runStrokeItem.runBounds = runBounds;
-    runStrokeItem.locBounds = locBounds;
     
-    return runStrokeItem;
+    return runBounds;
 }
 //判断是否有需要合并的runStrokeItems
 - (NSMutableArray <CJGlyphRunStrokeItem *>*)mergeLineSameStrokePathItems:(NSArray <CJGlyphRunStrokeItem *>*)lineStrokePathItems
@@ -1518,6 +1459,37 @@ typedef struct CJCTLineVerticalLayout CJCTLineVerticalLayout;
     return resultItem;
 }
 
+
+- (void)showCJSelectViewWithTouch:(UITouch *)touch {
+    CGPoint point = [touch locationInView:self];
+    
+    [self.magnifierView makeKeyAndVisible];
+    self.magnifierView.hidden = NO;
+    
+    CJCTLineVerticalLayout lineVerticalLayout;
+    BOOL needUpdate = NO;
+    for (NSValue *value in _CTLineVerticalLayoutArray) {
+        [value getValue:&lineVerticalLayout];
+        if (CGRectContainsPoint(lineVerticalLayout.lineRect, point)) {
+            needUpdate = YES;
+            break;
+        }
+    }
+    if (needUpdate) {
+        self.selectLeftView.hidden = self.selectRightView.hidden = NO;
+        [self bringSubviewToFront:self.selectLeftView];
+        [self bringSubviewToFront:self.selectRightView];
+        CGPoint showSclcetViewPoint = CGPointMake(point.x, lineVerticalLayout.lineRect.origin.y);
+        [self.selectLeftView updateCJSelectViewHeight:lineVerticalLayout.lineRect.size.height showCJSelectViewIn:showSclcetViewPoint];
+        [self.selectRightView updateCJSelectViewHeight:lineVerticalLayout.lineRect.size.height showCJSelectViewIn:showSclcetViewPoint];
+        
+        CGPoint pointToMagnify = CGPointMake(point.x, lineVerticalLayout.lineRect.origin.y + lineVerticalLayout.lineRect.size.height/2);
+        CGPoint showMagnifierViewPoint = [self convertPoint:showSclcetViewPoint toView:self.window];
+        [self.magnifierView updateMagnifyPoint:pointToMagnify showMagnifyViewIn:showMagnifierViewPoint];
+    }
+    
+}
+
 - (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event {
     UITouch *touch = [touches anyObject];
     _currentClickRunStrokeItem = nil;
@@ -1538,6 +1510,13 @@ typedef struct CJCTLineVerticalLayout CJCTLineVerticalLayout;
 
 - (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event {
     [super touchesMoved:touches withEvent:event];
+//    if (self.magnifierView.hidden == NO) {
+//        CGPoint pointToMagnify = [[touches anyObject] locationInView:self];
+//        if (CGRectContainsPoint(CGRectInset(self.bounds, 1.1, 1.1), pointToMagnify)) {
+//            CGPoint showPoint = [[touches anyObject] locationInView:self.window];
+//            [self.magnifierView updateMagnifyPoint:pointToMagnify showMagnifyViewIn:showPoint];
+//        }
+//    }
 }
 
 - (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event {
@@ -1569,6 +1548,8 @@ typedef struct CJCTLineVerticalLayout CJCTLineVerticalLayout;
             [super touchesEnded:touches withEvent:event];
         }
     }
+    
+    [self.magnifierView setHidden:YES];
 }
 
 - (void)touchesCancelled:(NSSet *)touches withEvent:(UIEvent *)event {
@@ -1582,58 +1563,77 @@ typedef struct CJCTLineVerticalLayout CJCTLineVerticalLayout;
             [super touchesCancelled:touches withEvent:event];
         }
     }
+    [self.magnifierView setHidden:YES];
 }
 
 #pragma mark - UIGestureRecognizerDelegate
 - (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldReceiveTouch:(UITouch *)touch {
-    return [self containslinkAtPoint:[touch locationInView:self]];
+    objc_setAssociatedObject(self.longPressGestureRecognizer, "UITouch", touch, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+    return YES;
 }
 
 #pragma mark - UILongPressGestureRecognizer
 - (void)longPressGestureDidFire:(UILongPressGestureRecognizer *)sender {
+    
+    UITouch *touch = objc_getAssociatedObject(self.longPressGestureRecognizer, "UITouch");
+    BOOL isLinkItem = [self containslinkAtPoint:[touch locationInView:self]];
     switch (sender.state) {
         case UIGestureRecognizerStateBegan: {
-            _longPress = YES;
-            if (_currentClickRunStrokeItem) {
-                
-                NSAttributedString *attributedString = [self.attributedText attributedSubstringFromRange:_currentClickRunStrokeItem.range];
-                CJLabelLinkModel *linkModel =
-                [[CJLabelLinkModel alloc]initWithAttributedString:attributedString
-                                                        imageName:_currentClickRunStrokeItem.imageName
-                                                        imageRect:_currentClickRunStrokeItem.locBounds
-                                                        parameter:_currentClickRunStrokeItem.parameter
-                                                        linkRange:_currentClickRunStrokeItem.range];
-
-                
-                if (_currentClickRunStrokeItem.longPressBlock) {
-                    _currentClickRunStrokeItem.longPressBlock(linkModel);
+            if (isLinkItem) {
+                _longPress = YES;
+                if (_currentClickRunStrokeItem) {
+                    
+                    NSAttributedString *attributedString = [self.attributedText attributedSubstringFromRange:_currentClickRunStrokeItem.range];
+                    CJLabelLinkModel *linkModel =
+                    [[CJLabelLinkModel alloc]initWithAttributedString:attributedString
+                                                            imageName:_currentClickRunStrokeItem.imageName
+                                                            imageRect:_currentClickRunStrokeItem.locBounds
+                                                            parameter:_currentClickRunStrokeItem.parameter
+                                                            linkRange:_currentClickRunStrokeItem.range];
+                    
+                    
+                    if (_currentClickRunStrokeItem.longPressBlock) {
+                        _currentClickRunStrokeItem.longPressBlock(linkModel);
+                    }
+                    if (self.delegate && [self.delegate respondsToSelector:@selector(CJLable:didLongPressLink:)]) {
+                        [self.delegate CJLable:self didLongPressLink:linkModel];
+                    }
                 }
-                if (self.delegate && [self.delegate respondsToSelector:@selector(CJLable:didLongPressLink:)]) {
-                    [self.delegate CJLable:self didLongPressLink:linkModel];
+                
+                _longPress = NO;
+                if (_currentClickRunStrokeItem) {
+                    _needRedrawn = _currentClickRunStrokeItem.needRedrawn;
+                    _currentClickRunStrokeItem = nil;
+                    [self setNeedsFramesetter];
+                    [self setNeedsDisplay];
+                    [CATransaction flush];
                 }
             }
-            
-            _longPress = NO;
-            if (_currentClickRunStrokeItem) {
-                _needRedrawn = _currentClickRunStrokeItem.needRedrawn;
-                _currentClickRunStrokeItem = nil;
-                [self setNeedsFramesetter];
-                [self setNeedsDisplay];
-                [CATransaction flush];
+            else{
+
+            }
+            break;
+        }
+        case UIGestureRecognizerStateEnded:{
+            if (isLinkItem) {
+                _longPress = NO;
+                if (_currentClickRunStrokeItem) {
+                    _needRedrawn = _currentClickRunStrokeItem.needRedrawn;
+                    _currentClickRunStrokeItem = nil;
+                    [self setNeedsFramesetter];
+                    [self setNeedsDisplay];
+                    [CATransaction flush];
+                }
+            }else {
+                [self.magnifierView setHidden:YES];
             }
             
             break;
         }
-        case UIGestureRecognizerStateEnded:{
-            _longPress = NO;
-            if (_currentClickRunStrokeItem) {
-                _needRedrawn = _currentClickRunStrokeItem.needRedrawn;
-                _currentClickRunStrokeItem = nil;
-                [self setNeedsFramesetter];
-                [self setNeedsDisplay];
-                [CATransaction flush];
+        case UIGestureRecognizerStateChanged:{
+            if (!isLinkItem) {
+                [self showCJSelectViewWithTouch:touch];
             }
-            break;
         }
         default:
             break;
@@ -1661,3 +1661,153 @@ typedef struct CJCTLineVerticalLayout CJCTLineVerticalLayout;
     return self;
 }
 @end
+
+
+@implementation CJNSAttributedString
++ (CJNSAttributedString *)initLinkAttributedString:(NSString *)string
+                                        attributes:(NSDictionary <NSString *,id>*)attrs
+                                           linkTag:(NSString *)linkTag
+{
+    CJNSAttributedString *linkAttributedString = (CJNSAttributedString *)[CJLabelUtilities linkAttStr:string attributes:attrs tag:linkTag];
+    return linkAttributedString;
+}
+@end
+
+@interface CJMagnifierView ()
+@property (strong, nonatomic) CALayer *contentLayer;
+@end
+
+@implementation CJMagnifierView
+
+- (id)init {
+    self = [super init];
+    if (self) {
+        self.frame = CGRectMake(0, 0, 120, 65);
+        self.backgroundColor = [UIColor clearColor];
+        self.windowLevel = UIWindowLevelAlert;
+        
+        //白色背景
+        CALayer *backLayer = [CALayer layer];
+        backLayer.frame = CGRectMake(0, 0, 120, 30);
+        backLayer.backgroundColor = [UIColor whiteColor].CGColor;
+        backLayer.cornerRadius = 5;
+        backLayer.borderWidth = 1/[[UIScreen mainScreen] scale];
+        backLayer.borderColor = [[UIColor lightGrayColor] CGColor];
+        //masksToBounds开启会影响阴影效果
+//        backLayer.masksToBounds = YES;
+        backLayer.shadowColor = [UIColor lightGrayColor].CGColor;
+        backLayer.shadowOffset = CGSizeMake(0,0.5);
+        backLayer.shadowOpacity = 0.75;
+        backLayer.shadowRadius = 0.75;
+        [self.layer addSublayer:backLayer];
+        
+        //底部白色小三角
+        CALayer *whiteLayer = [CALayer layer];
+        whiteLayer.frame = CGRectMake(51, 21.5, 18, 18);
+        whiteLayer.backgroundColor = [UIColor whiteColor].CGColor;
+        whiteLayer.contentsScale = [[UIScreen mainScreen] scale];
+        whiteLayer.shadowColor = [UIColor lightGrayColor].CGColor;
+        whiteLayer.shadowOffset = CGSizeMake(0.6,0.6);
+        whiteLayer.shadowOpacity = 0.85;
+        whiteLayer.shadowRadius = 0.85;
+        [self.layer addSublayer:whiteLayer];
+        CATransform3D transform = CATransform3DMakeRotation(M_PI/4, 0, 0, 1);
+        whiteLayer.transform = transform;
+        CALayer *whiteTriangleLayer = [CALayer layer];
+        whiteTriangleLayer.frame = CGRectMake(50, 20, 20, 20);
+        whiteTriangleLayer.backgroundColor = [UIColor whiteColor].CGColor;
+        whiteTriangleLayer.contentsScale = [[UIScreen mainScreen] scale];
+        [self.layer addSublayer:whiteTriangleLayer];
+        whiteTriangleLayer.transform = transform;
+        
+        //放大绘制layer
+        self.contentLayer = [CALayer layer];
+        self.contentLayer.frame = CGRectMake(0, 0, 120, 30);
+        self.contentLayer.cornerRadius = 5;
+        self.contentLayer.masksToBounds = YES;
+        self.contentLayer.delegate = self;
+        self.contentLayer.contentsScale = [[UIScreen mainScreen] scale];
+        [self.layer addSublayer:self.contentLayer];
+        
+    }
+    
+    return self;
+}
+
+- (void)setPointToMagnify:(CGPoint)pointToMagnify {
+    _pointToMagnify = pointToMagnify;
+    [self.contentLayer setNeedsDisplay];
+}
+
+- (void)updateMagnifyPoint:(CGPoint)pointToMagnify showMagnifyViewIn:(CGPoint)showPoint {
+    CGPoint center = CGPointMake(showPoint.x, self.center.y);
+    if (showPoint.y > CGRectGetHeight(self.bounds) * 0.5) {
+        center.y = showPoint.y -  CGRectGetHeight(self.bounds) / 2;
+    }
+    self.center = CGPointMake(center.x, center.y);
+    self.pointToMagnify = pointToMagnify;
+}
+
+- (void)drawLayer:(CALayer *)layer inContext:(CGContextRef)ctx {
+    CGContextTranslateCTM(ctx, self.frame.size.width * 0.5, self.frame.size.height * 0.5-17);
+    CGContextScaleCTM(ctx, 1.35, 1.35);
+    CGContextTranslateCTM(ctx, -1 * self.pointToMagnify.x, -1 * self.pointToMagnify.y);
+    [self.viewToMagnify.layer renderInContext:ctx];
+    
+}
+
+@end
+
+@interface CJSelectView ()
+@property (nonatomic, assign) BOOL isLeft;
+@property (nonatomic, strong) CALayer *lineLayer;
+@property (nonatomic, strong) CALayer *roundLayer;
+
+@end
+@implementation CJSelectView
+
+- (CJSelectView *)initWithDirection:(BOOL)isLeft {
+    self = [super init];
+    if (self) {
+        self.frame = CGRectMake(0, 0, 10, 40);
+        self.autoresizingMask = UIViewAutoresizingNone;
+        self.backgroundColor = [UIColor clearColor];
+        self.clipsToBounds = NO;
+        
+        UIColor *color = [UIColor colorWithRed:0/255.0
+                                         green:128/255.0
+                                          blue:255/255.0
+                                         alpha:1.0];
+        
+        self.lineLayer = [CALayer layer];
+        self.lineLayer.frame = CGRectMake(4, isLeft?10:0, 2, 20);
+        self.lineLayer.backgroundColor = color.CGColor;
+        self.lineLayer.contentsScale = [[UIScreen mainScreen] scale];
+        [self.layer addSublayer:self.lineLayer];
+        
+        self.roundLayer = [CALayer layer];
+        self.roundLayer.frame = CGRectMake(0, isLeft?0:20, 10, 10);
+        self.roundLayer.backgroundColor = color.CGColor;
+        self.roundLayer.contentsScale = [[UIScreen mainScreen] scale];
+        self.roundLayer.cornerRadius = 5;
+        self.roundLayer.masksToBounds = YES;
+        [self.layer addSublayer:self.roundLayer];
+        self.isLeft = isLeft;
+    }
+    return self;
+}
+
+- (void)updateCJSelectViewHeight:(CGFloat)height showCJSelectViewIn:(CGPoint)showPoint {
+    if (self.isLeft) {
+        self.frame = CGRectMake(showPoint.x, showPoint.y-10-2, 10, height+10);
+        self.lineLayer.frame = CGRectMake(4, 10, 2, 20);
+        self.roundLayer.frame = CGRectMake(0, 0, 10, 10);
+    }else{
+        self.frame = CGRectMake(showPoint.x, showPoint.y-2, 10, height+10);
+        self.lineLayer.frame = CGRectMake(4, 0, 2, 20);
+        self.roundLayer.frame = CGRectMake(0, 20, 10, 10);
+    }
+}
+
+@end
+

@@ -11,6 +11,8 @@
 
 @class CJLabel;
 @class CJLabelLinkModel;
+@class CJNSAttributedString;
+
 /**
  点击链点回调block
 
@@ -98,7 +100,7 @@ IB_DESIGNABLE
  
    4. 新增`extendsLinkTouchArea`， 设置是否加大点击响应范围，类似于UIWebView的链点点击效果
  
-   5. 新增`shadowRadius`， 设置文本阴影模糊半径，可与 `shadowColor`、`shadowOffset` 配合设置，注意改设置将对全局文本起效
+   5. 新增`shadowRadius`， 设置文本阴影模糊半径，可与 `shadowColor`、`shadowOffset` 配合设置，注意该设置将对全局文本起效
  
    6. 新增`textInsets` 设置文本内边距
  
@@ -149,7 +151,10 @@ IB_DESIGNABLE
  点击链点代理对象
  */
 @property (readwrite, nonatomic, weak) id<CJLabelLinkDelegate> delegate;
-
+/**
+ 是否支持复制，默认NO
+ */
+@property (readwrite, nonatomic, assign) IBInspectable BOOL enableCopy;
 /**
  *  return 计算NSAttributedString字符串的size大小
  *
@@ -270,8 +275,25 @@ IB_DESIGNABLE
                                               clickLinkBlock:(CJLabelLinkModelBlock)clickLinkBlock
                                               longPressBlock:(CJLabelLinkModelBlock)longPressBlock;
 
+
+// 配置NSString 富文本
++ (NSMutableAttributedString *)configureAttributedString:(NSAttributedString *)attrStr
+                                              withString:(NSString *)withString
+                                        sameStringEnable:(BOOL)sameStringEnable
+                                              attributes:(NSDictionary *)attributes;
+// 设置NSString为可点击链点
++ (NSMutableAttributedString *)configureLinkAttributedString:(NSAttributedString *)attrStr
+                                                  withString:(NSString *)withString
+                                            sameStringEnable:(BOOL)sameStringEnable
+                                              linkAttributes:(NSDictionary *)linkAttributes
+                                        activeLinkAttributes:(NSDictionary *)activeLinkAttributes
+                                                   parameter:(id)parameter
+                                              clickLinkBlock:(CJLabelLinkModelBlock)clickLinkBlock
+                                              longPressBlock:(CJLabelLinkModelBlock)longPressBlock;
 /**
- 对文本中跟withString相同的文字配置富文本
+ 对文本中跟withAttString相同的文字配置富文本，设置的是NSAttributedString
+ 
+ `withAttString` 请调用 CJNSAttributedString类方法初始化
  
  @param attrStr NSAttributedString源
  @param withString 需要设置的文本
@@ -281,12 +303,14 @@ IB_DESIGNABLE
  @return 返回新的NSMutableAttributedString
  */
 + (NSMutableAttributedString *)configureAttributedString:(NSAttributedString *)attrStr
-                                              withString:(NSString *)withString
+                                           withAttString:(CJNSAttributedString *)withAttString
                                         sameStringEnable:(BOOL)sameStringEnable
                                               attributes:(NSDictionary *)attributes;
 
 /**
- 对文本中跟withString相同的文字配置富文本，指定的文字为可点击链点！！！
+ 对文本中跟withAttString相同的文字配置富文本，指定的文字为可点击链点！！！设置的是CJNSAttributedString类型
+ 
+ `withAttString` 请调用 CJNSAttributedString类方法初始化
  
  @param attrStr NSAttributedString源
  @param withString 需要设置的文本
@@ -300,7 +324,7 @@ IB_DESIGNABLE
  @return 返回新的NSMutableAttributedString
  */
 + (NSMutableAttributedString *)configureLinkAttributedString:(NSAttributedString *)attrStr
-                                                  withString:(NSString *)withString
+                                               withAttString:(CJNSAttributedString *)withAttString
                                             sameStringEnable:(BOOL)sameStringEnable
                                               linkAttributes:(NSDictionary *)linkAttributes
                                         activeLinkAttributes:(NSDictionary *)activeLinkAttributes
@@ -309,7 +333,25 @@ IB_DESIGNABLE
                                               longPressBlock:(CJLabelLinkModelBlock)longPressBlock;
 
 /**
- *  移除制定range的点击链点
+ 获取指定NSAttributedString中跟linkString相同的NSRange数组
+
+ @param linkString 需要寻找的string
+ @param attString 指定NSAttributedString
+ @return NSRange的数组
+ */
++ (NSArray <NSString *>*)sameLinkStringRangeArray:(NSString *)linkString inAttString:(NSAttributedString *)attString;
+
+/**
+ 获取指定NSAttributedString中跟linkAttString相同的NSRange数组
+ 
+ @param linkAttString 需要寻找的CJNSAttributedString
+ @param attString 指定NSAttributedString
+ @return NSRange的数组
+ */
++ (NSArray <NSString *>*)samelinkAttStringRangeArray:(CJNSAttributedString *)linkAttString inAttString:(NSAttributedString *)attString;
+
+/**
+ *  移除指定range的点击链点
  *
  *  @param range 移除链点位置
  *
@@ -328,13 +370,29 @@ IB_DESIGNABLE
 
 /**
  点击链点model
+ 包含链点的NSAttributedString、NSRange值、自定义参数，如果链点是图片则还包含图片名称imageName、以及图片Rect
  */
 @interface CJLabelLinkModel : NSObject
-@property (readonly, nonatomic, strong) NSAttributedString *attributedString;//链点文本
-@property (readonly, nonatomic, copy) NSString *imageName;//链点图片名称
-@property (readonly, nonatomic, assign) CGRect imageRect;//链点图片Rect（相对于CJLabel坐标的rect）
-@property (readonly, nonatomic, strong) id parameter;//链点自定义参数
-@property (readonly, nonatomic, assign) NSRange linkRange;//链点在整体文本中的range
+/**
+ 链点文本
+ */
+@property (readonly, nonatomic, strong) NSAttributedString *attributedString;
+/**
+ 链点图片名称
+ */
+@property (readonly, nonatomic, copy) NSString *imageName;
+/**
+ 链点图片Rect（相对于CJLabel坐标的rect）
+ */
+@property (readonly, nonatomic, assign) CGRect imageRect;
+/**
+ 链点自定义参数
+ */
+@property (readonly, nonatomic, strong) id parameter;
+/**
+ 链点在整体文本中的range
+ */
+@property (readonly, nonatomic, assign) NSRange linkRange;
 
 - (instancetype)initWithAttributedString:(NSAttributedString *)attributedString
                                imageName:(NSString *)imageName
@@ -343,6 +401,40 @@ IB_DESIGNABLE
                                linkRange:(NSRange)linkRange;
 @end
 
+/**
+ 富文本点击扩展类
+ 用于区分NSAttributedString可点击链点
+ */
+@interface CJNSAttributedString: NSAttributedString
 
+/**
+ 生成NSAttributedString类型的可点击链点（请保证linkTag的唯一性！！！)
+
+ @param string   点击链点的string
+ @param attrs    链点属性
+ @param linkTag  点击链点的唯一标识
+ @return         CJNSAttributedString
+ */
++ (CJNSAttributedString *)initLinkAttributedString:(NSString *)string
+                                        attributes:(NSDictionary <NSString *,id>*)attrs
+                                           linkTag:(NSString *)linkTag;
+@end
+
+/**
+ 长按时候显示的放大镜视图
+ */
+@interface CJMagnifierView : UIWindow
+@property (nonatomic, strong) UIView *viewToMagnify;//需要放大的view
+@property (nonatomic, assign) CGPoint pointToMagnify;//放大点
+
+- (void)updateMagnifyPoint:(CGPoint)pointToMagnify showMagnifyViewIn:(CGPoint)showPoint;
+
+@end
+
+@interface CJSelectView : UIView
+
+- (CJSelectView *)initWithDirection:(BOOL)isLeft;
+- (void)updateCJSelectViewHeight:(CGFloat)height showCJSelectViewIn:(CGPoint)showPoint;
+@end
 
 

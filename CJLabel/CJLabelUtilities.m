@@ -14,6 +14,8 @@ NSString * const kCJImageHeight                              = @"kCJImageHeight"
 NSString * const kCJImageWidth                               = @"kCJImageWidth";
 NSString * const kCJImageLineVerticalAlignment               = @"kCJImageLineVerticalAlignment";
 
+NSString * const kCJLinkStringKeyAttributesName              = @"kCJLinkStringKeyAttributesName";
+
 NSString * const kCJLinkAttributesName                       = @"kCJLinkAttributesName";
 NSString * const kCJActiveLinkAttributesName                 = @"kCJActiveLinkAttributesName";
 NSString * const kCJIsLinkAttributesName                     = @"kCJIsLinkAttributesName";
@@ -25,6 +27,7 @@ NSString * const kCJLinkNeedRedrawnAttributesName            = @"kCJLinkNeedRedr
 
 //插入图片 占位符
 NSString * const kAddImagePlaceholderString                  = @" ";
+
 
 void RunDelegateDeallocCallback(void * refCon) {
     
@@ -190,7 +193,7 @@ CGFloat RunDelegateGetWidthCallback(void * refCon) {
             attributedString = [self configureLinkAttributedString:attributedString atRange:range linkAttributes:linkAttributes activeLinkAttributes:activeLinkAttributes parameter:parameter clickLinkBlock:clickLinkBlock longPressBlock:longPressBlock islink:isLink];
         }
     }else{
-        NSArray *rangeAry = [self getRangeArrayWithString:withString inAttString:attrStr];
+        NSArray *rangeAry = [self getLinkStringRangeArray:withString inAttString:attrStr];
         if (rangeAry.count > 0) {
             for (NSString *strRange in rangeAry) {
                 attributedString = [self configureLinkAttributedString:attributedString atRange:NSRangeFromString(strRange) linkAttributes:linkAttributes activeLinkAttributes:activeLinkAttributes parameter:parameter clickLinkBlock:clickLinkBlock longPressBlock:longPressBlock islink:isLink];
@@ -200,6 +203,44 @@ CGFloat RunDelegateGetWidthCallback(void * refCon) {
     return attributedString;
 }
 
++ (NSMutableAttributedString *)configureLinkAttributedString:(NSAttributedString *)attrStr
+                                               withAttString:(NSAttributedString *)withAttString
+                                            sameStringEnable:(BOOL)sameStringEnable
+                                              linkAttributes:(NSDictionary *)linkAttributes
+                                        activeLinkAttributes:(NSDictionary *)activeLinkAttributes
+                                                   parameter:(id)parameter
+                                              clickLinkBlock:(CJLabelLinkModelBlock)clickLinkBlock
+                                              longPressBlock:(CJLabelLinkModelBlock)longPressBlock
+                                                      islink:(BOOL)isLink
+{
+    NSMutableAttributedString *attributedString = [[NSMutableAttributedString alloc]initWithAttributedString:attrStr];
+    if (!sameStringEnable) {
+        NSRange range = [self getFirstRangeWithAttString:withAttString inAttString:attrStr];
+        if (range.location != NSNotFound) {
+            attributedString = [self configureLinkAttributedString:attributedString atRange:range linkAttributes:linkAttributes activeLinkAttributes:activeLinkAttributes parameter:parameter clickLinkBlock:clickLinkBlock longPressBlock:longPressBlock islink:isLink];
+        }
+    }else{
+        NSArray *rangeAry = [self getLinkAttStringRangeArray:withAttString inAttString:attrStr];
+        if (rangeAry.count > 0) {
+            for (NSString *strRange in rangeAry) {
+                attributedString = [self configureLinkAttributedString:attributedString atRange:NSRangeFromString(strRange) linkAttributes:linkAttributes activeLinkAttributes:activeLinkAttributes parameter:parameter clickLinkBlock:clickLinkBlock longPressBlock:longPressBlock islink:isLink];
+            }
+        }
+    }
+    return attributedString;
+}
+
++ (NSMutableAttributedString *)linkAttStr:(NSString *)string attributes:(NSDictionary <NSString *,id>*)attrs tag:(NSString *)tag {
+    NSParameterAssert(string);
+    NSParameterAssert(tag);
+    
+    NSDictionary *dic = CJLabelIsNull(attrs)?[[NSDictionary alloc] init]:[[NSDictionary alloc]initWithDictionary:attrs];
+    NSMutableAttributedString *attStr = [[NSMutableAttributedString alloc]initWithString:string attributes:dic];
+    [attStr addAttribute:kCJLinkStringKeyAttributesName value:tag range:NSMakeRange(0, attStr.length)];
+    
+    return attStr;
+}
+
 #pragma mark -
 
 + (NSRange)getFirstRangeWithString:(NSString *)withString inAttString:(NSAttributedString *)attString {
@@ -207,27 +248,71 @@ CGFloat RunDelegateGetWidthCallback(void * refCon) {
     if (range.location == NSNotFound) {
         return range;
     }
-//    NSAttributedString *str = [attString attributedSubstringFromRange:range];
-//    if (![withAttString isEqualToAttributedString:str]) {
-//        range = NSMakeRange(NSNotFound, 0);
-//    }
     return range;
 }
 
-+ (NSArray <NSString *>*)getRangeArrayWithString:(NSString *)withString inAttString:(NSAttributedString *)attString {
-    NSMutableArray *array = [[NSMutableArray alloc] initWithCapacity:3];
-    NSArray *strRanges = [self getRangeArrayWithString:withString inString:attString.string lastRange:NSMakeRange(0, 0) rangeArray:[NSMutableArray array]];
++ (NSArray <NSString *>*)getLinkStringRangeArray:(NSString *)linkString inAttString:(NSAttributedString *)attString {
+    NSArray *strRanges = [self getRangeArrayWithString:linkString inString:attString.string lastRange:NSMakeRange(0, 0) rangeArray:[NSMutableArray array]];
+    return strRanges;
+}
+
++ (NSRange)getFirstRangeWithAttString:(NSAttributedString *)withAttString inAttString:(NSAttributedString *)attString {
+    NSRange range = [attString.string rangeOfString:withAttString.string];
+    if (range.location == NSNotFound) {
+        return range;
+    }
     
-//    if (strRanges.count > 0) {
-//        for (NSString *rangeStr in strRanges) {
-//            NSRange range = NSRangeFromString(rangeStr);
-//            NSAttributedString *str = [attString attributedSubstringFromRange:range];
-//            if ([withAttString isEqualToAttributedString:str]) {
-//                [array addObject:rangeStr];
-//            }
-//        }
-//    }
-    [array addObjectsFromArray:strRanges];
+    NSAttributedString *str = [attString attributedSubstringFromRange:range];
+    NSRange strRange = NSMakeRange(0, str.length);
+    NSDictionary *strDic = nil;
+    if (strRange.length > 0) {
+        strDic = [str attributesAtIndex:0 effectiveRange:&strRange];
+    }
+    NSString *key = strDic[kCJLinkStringKeyAttributesName];
+    
+    NSRange withStrRange = NSMakeRange(0, withAttString.length);
+    NSDictionary *withStrDic = nil;
+    if (withStrRange.length > 0) {
+        withStrDic = [withAttString attributesAtIndex:0 effectiveRange:&withStrRange];
+    }
+    NSString *withKey = withStrDic[kCJLinkStringKeyAttributesName];
+    
+    if (!key || !withKey || ![key isEqualToString:withKey]) {
+        range = NSMakeRange(NSNotFound, 0);
+    }
+    return range;
+}
+
++ (NSArray <NSString *>*)getLinkAttStringRangeArray:(NSAttributedString *)linkAttString inAttString:(NSAttributedString *)attString {
+    NSMutableArray *array = [[NSMutableArray alloc] initWithCapacity:3];
+    NSArray *strRanges = [self getRangeArrayWithString:linkAttString.string inString:attString.string lastRange:NSMakeRange(0, 0) rangeArray:[NSMutableArray array]];
+    
+    if (strRanges.count > 0) {
+        
+        NSRange withStrRange = NSMakeRange(0, linkAttString.length);
+        NSDictionary *withStrDic = nil;
+        if (withStrRange.length > 0) {
+            withStrDic = [linkAttString attributesAtIndex:0 effectiveRange:&withStrRange];
+        }
+        NSString *withKey = withStrDic[kCJLinkStringKeyAttributesName];
+        
+        for (NSString *rangeStr in strRanges) {
+            
+            NSRange range = NSRangeFromString(rangeStr);
+            NSAttributedString *str = [attString attributedSubstringFromRange:range];
+            NSRange strRange = NSMakeRange(0, str.length);
+            NSDictionary *strDic = nil;
+            if (strRange.length > 0) {
+                strDic = [str attributesAtIndex:0 effectiveRange:&strRange];
+            }
+            NSString *key = strDic[kCJLinkStringKeyAttributesName];
+            
+            
+            if (key && withKey && [key isEqualToString:withKey]) {
+                [array addObject:rangeStr];
+            }
+        }
+    }
     
     return array;
 }
@@ -267,7 +352,8 @@ CGFloat RunDelegateGetWidthCallback(void * refCon) {
 
 - (id)copyWithZone:(NSZone *)zone {
     CJGlyphRunStrokeItem *item = [[[self class] allocWithZone:zone] init];
-    item.strokeColor = [self.strokeColor copyWithZone:zone];
+    item.fillCopyColor = self.fillCopyColor;
+    item.strokeColor = self.strokeColor;
     item.fillColor = self.fillColor;
     item.lineWidth = self.lineWidth;
     item.runBounds = self.runBounds;
@@ -279,6 +365,8 @@ CGFloat RunDelegateGetWidthCallback(void * refCon) {
     item.isImage = self.isImage;
     item.range = self.range;
     item.parameter = self.parameter;
+    item.lineVerticalLayout = self.lineVerticalLayout;
+    item.isSelect = self.isSelect;
     item.linkBlock = self.linkBlock;
     item.longPressBlock = self.longPressBlock;
     item.isLink = self.isLink;
