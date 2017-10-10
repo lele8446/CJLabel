@@ -44,8 +44,8 @@ end
 ```
 
 ## API介绍
-* + sizeWithAttributedString:withConstraints:limitedToNumberOfLines:
-  计算指定NSAttributedString的size大小
+* `+ sizeWithAttributedString:withConstraints:limitedToNumberOfLines:`
+  计算指定NSAttributedString的size大小
 ```objective-c
 CGSize size = [CJLabel sizeWithAttributedString:str withConstraints:CGSizeMake(320, CGFLOAT_MAX) limitedToNumberOfLines:0]
   ```
