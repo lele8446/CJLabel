@@ -9,8 +9,8 @@ V3.0.0版本引入CJLabelConfigure类，优化了NSAttributedString的设置，�
 
 
 先看点击链点效果图：<br/>
-![点击链点](http://upload-images.jianshu.io/upload_images/1429982-ad29e6db37fc95ea.gif?imageMogr2/auto-orient/strip)
-![点击链点](http://upload-images.jianshu.io/upload_images/1429982-279e01b2aceba923.gif?imageMogr2/auto-orient/strip)
+![点击链点](http://7xnrwl.com1.z0.glb.clouddn.com/CJLabel1.gif)
+![点击链点](http://7xnrwl.com1.z0.glb.clouddn.com/CJLabel2.gif)
 
 ## 功能简介
 
