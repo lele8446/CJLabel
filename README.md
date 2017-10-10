@@ -1,10 +1,12 @@
 # CJLabel
 ***
-#注意 V3.0.0版本引入CJLabelConfigure类，优化了NSAttributedString的设置，旧的配置API不再支持。相关调用请参照
+***注意***
+
+V3.0.0版本引入CJLabelConfigure类，优化了NSAttributedString的设置，旧的配置API不再支持。相关调用请参照以下相关方法
 `+ initWithImageName:imageSize:imagelineAlignment:configure:`
 `+ initWithString:configure:`
 `+ initWithAttributedString:strIdentifier:configure:`
-等相关方法#
+
 ***
 先看点击链点效果图：<br/>
 ![点击链点](http://upload-images.jianshu.io/upload_images/1429982-ad29e6db37fc95ea.gif?imageMogr2/auto-orient/strip)
