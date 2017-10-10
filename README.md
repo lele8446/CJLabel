@@ -14,8 +14,8 @@
    2. `attributedText` 与 `text` 均可设置文本，注意 [self setText:text]中 text类型只能是NSAttributedString或NSString
  
    3. `NSAttributedString`不再通过`NSTextAttachment`显示图片（使用`NSTextAttachment`不会起效），请调用
-      `- configureAttributedString: addImageName: imageSize: atIndex: attributes:`或者
-      `- configureLinkAttributedString: addImageName: imageSize: atIndex: linkAttributes: activeLinkAttributes: parameter: clickLinkBlock: longPressBlock:`方法添加图片
+      `- initWithImageName:imageSize:imagelineAlignment:configure:`或者
+      `- insertImageAtAttrString:imageName:imageSize:imagelineAlignment:atIndex:configure:`方法添加图片
  
    4. 新增`extendsLinkTouchArea`， 设置是否加大点击响应范围，类似于UIWebView的链点点击效果
  
@@ -39,47 +39,13 @@
 ```ruby
 platform :ios, '7.0'
 target 'CJLabelDemo' do
-   pod 'CJLabel', '~> 2.1.3'
+   pod 'CJLabel', '~> 3.0.0'
 end
 ```
 
 ## API介绍
-### 1、NSMutableAttributedString 增加若干属性<br/>
-
-   /**
-    背景填充颜色。值为UIColor。默认 `nil`。
-    该属性优先级低于NSBackgroundColorAttributeName，如果设置NSBackgroundColorAttributeName会覆盖kCJBackgroundFillColorAttributeName
-    */<br/>
-   `extern NSString * const kCJBackgroundFillColorAttributeName;`
-
-   /**
-    背景边框线颜色。值为UIColor。默认 `nil`
-    */<br/>
-   `extern NSString * const kCJBackgroundStrokeColorAttributeName;`
-
-   /**
-    背景边框线宽度。值为NSNumber。默认 `1.0f`
-    */<br/>
-   `extern NSString * const kCJBackgroundLineWidthAttributeName;`
-
-   /**
-    背景边框线圆角角度。值为NSNumber。默认 `5.0f`
-    */<br/>
-   `extern NSString * const kCJBackgroundLineCornerRadiusAttributeName;`
-
-   /**
-    点击时候的背景填充颜色。值为UIColor。默认 `nil`。
-    该属性优先级低于NSBackgroundColorAttributeName，如果设置NSBackgroundColorAttributeName会覆盖kCJActiveBackgroundFillColorAttributeName
-    */<br/>
-   `extern NSString * const kCJActiveBackgroundFillColorAttributeName;`
-
-   /**
-    点击时候的背景边框线颜色。值为UIColor。默认 `nil`
-    */<br/>
-   `extern NSString * const kCJActiveBackgroundStrokeColorAttributeName;`
-
-### 2、CJLabel API<br/>
-* 计算指定NSAttributedString的size大小
+* + sizeWithAttributedString:withConstraints:limitedToNumberOfLines:
+  计算指定NSAttributedString的size大小
 ```objective-c
 CGSize size = [CJLabel sizeWithAttributedString:str withConstraints:CGSizeMake(320, CGFLOAT_MAX) limitedToNumberOfLines:0]
   ```
