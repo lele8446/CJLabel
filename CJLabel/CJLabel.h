@@ -8,67 +8,17 @@
 
 #import <UIKit/UIKit.h>
 #import <CoreText/CoreText.h>
+#import "CJLabelConfigure.h"
 
 @class CJLabel;
 @class CJLabelLinkModel;
-@class CJNSAttributedString;
-
-/**
- 点击链点回调block
-
- @param linkModel 链点对应model
- */
-typedef void (^CJLabelLinkModelBlock)(CJLabelLinkModel *linkModel);
-
-
-/**
- 背景填充颜色。值为UIColor。默认 `nil`。
- 该属性优先级低于NSBackgroundColorAttributeName，如果设置NSBackgroundColorAttributeName会覆盖kCJBackgroundFillColorAttributeName
- */
-extern NSString * const kCJBackgroundFillColorAttributeName;
-
-/**
- 背景边框线颜色。值为UIColor。默认 `nil`
- */
-extern NSString * const kCJBackgroundStrokeColorAttributeName;
-
-/**
- 背景边框线宽度。值为NSNumber。默认 `1.0f`
- */
-extern NSString * const kCJBackgroundLineWidthAttributeName;
-
-/**
- 背景边框线圆角角度。值为NSNumber。默认 `5.0f`
- */
-extern NSString * const kCJBackgroundLineCornerRadiusAttributeName;
-
-/**
- 点击时候的背景填充颜色。值为UIColor。默认 `nil`。
- 该属性优先级低于NSBackgroundColorAttributeName，如果设置NSBackgroundColorAttributeName会覆盖kCJActiveBackgroundFillColorAttributeName
- */
-extern NSString * const kCJActiveBackgroundFillColorAttributeName;
-
-/**
- 点击时候的背景边框线颜色。值为UIColor。默认 `nil`
- */
-extern NSString * const kCJActiveBackgroundStrokeColorAttributeName;
-
-/**
- 当text bounds小于label bounds时，文本的垂直对齐方式
- */
-typedef NS_ENUM(NSInteger, CJLabelVerticalAlignment) {
-    CJVerticalAlignmentCenter   = 0,//垂直居中
-    CJVerticalAlignmentTop      = 1,//居上
-    CJVerticalAlignmentBottom   = 2,//靠下
-};
-
 
 @protocol CJLabelLinkDelegate <NSObject>
 @optional
 /**
  点击链点回调
 
- @param label 点击label
+ @param label     CJLabel
  @param linkModel 链点model
  */
 - (void)CJLable:(CJLabel *)label didClickLink:(CJLabelLinkModel *)linkModel;
@@ -76,14 +26,13 @@ typedef NS_ENUM(NSInteger, CJLabelVerticalAlignment) {
 /**
  长按点击链点回调
 
- @param label 点击label
+ @param label     CJLabel
  @param linkModel 链点model
  */
 - (void)CJLable:(CJLabel *)label didLongPressLink:(CJLabelLinkModel *)linkModel;
 @end
 
 
-IB_DESIGNABLE
 /**
  * CJLabel 继承自 UILabel，其文本绘制基于NSAttributedString实现，同时增加了图文混排、富文本展示以及添加自定义点击链点并设置点击链点文本属性的功能。
  *
@@ -100,7 +49,7 @@ IB_DESIGNABLE
  
    4. 新增`extendsLinkTouchArea`， 设置是否加大点击响应范围，类似于UIWebView的链点点击效果
  
-   5. 新增`shadowRadius`， 设置文本阴影模糊半径，可与 `shadowColor`、`shadowOffset` 配合设置，注意该设置将对全局文本起效
+   5. 新增`shadowRadius`， 设置文本阴影模糊半径，可与 `shadowColor`、`shadowOffset` 配合设置，注意改设置将对全局文本起效
  
    6. 新增`textInsets` 设置文本内边距
  
@@ -151,190 +100,106 @@ IB_DESIGNABLE
  点击链点代理对象
  */
 @property (readwrite, nonatomic, weak) id<CJLabelLinkDelegate> delegate;
+
 /**
- 是否支持复制，默认NO
- */
-@property (readwrite, nonatomic, assign) IBInspectable BOOL enableCopy;
-/**
- *  return 计算NSAttributedString字符串的size大小
- *
- *  @param attributedString NSAttributedString字符串
- *  @param size   预计大小（比如：CGSizeMake(320, CGFLOAT_MAX)）
- *  @param numberOfLines  指定行数（0表示不限制）
- *
- *  @return 结果size
+ 计算NSAttributedString字符串的size大小
+
+ @param attributedString NSAttributedString字符串
+ @param size             预计大小（比如：CGSizeMake(320, CGFLOAT_MAX)）
+ @param numberOfLines    指定行数（0表示不限制）
+ @return                 结果size
  */
 + (CGSize)sizeWithAttributedString:(NSAttributedString *)attributedString
                    withConstraints:(CGSize)size
             limitedToNumberOfLines:(NSUInteger)numberOfLines;
 
-// 在指定位置插入图片，图片所在行，图文在垂直方向的对齐方式默认：底部对齐
-+ (NSMutableAttributedString *)configureAttributedString:(NSAttributedString *)attrStr
-                                            addImageName:(NSString *)imageName
-                                               imageSize:(CGSize)size
-                                                 atIndex:(NSUInteger)loc
-                                              attributes:(NSDictionary *)attributes;
+/**
+ 根据图片名初始化NSAttributedString
 
-// 在指定位置插入可点击链点图片，图片所在行，图文在垂直方向的对齐方式默认：底部对齐
-+ (NSMutableAttributedString *)configureLinkAttributedString:(NSAttributedString *)attrStr
-                                                addImageName:(NSString *)imageName
-                                                   imageSize:(CGSize)size
-                                                     atIndex:(NSUInteger)loc
-                                              linkAttributes:(NSDictionary *)linkAttributes
-                                        activeLinkAttributes:(NSDictionary *)activeLinkAttributes
-                                                   parameter:(id)parameter
-                                              clickLinkBlock:(CJLabelLinkModelBlock)clickLinkBlock
-                                              longPressBlock:(CJLabelLinkModelBlock)longPressBlock;
+ @param imageName     图片名称
+ @param size          图片大小（这里是指显示图片等区域大小）
+ @param lineAlignment 图片所在行，图片与文字在垂直方向的对齐方式（只针对当前行）
+ @param configure     链点配置
+ @return              NSAttributedString
+ */
++ (NSMutableAttributedString *)initWithImageName:(NSString *)imageName
+                                       imageSize:(CGSize)size
+                              imagelineAlignment:(CJLabelVerticalAlignment)lineAlignment
+                                       configure:(CJLabelConfigure *)configure;
 
 /**
- 在指定位置插入图片，并返回插入图片后的NSMutableAttributedString（图片占位符所占的NSRange={loc,1}）
- 
- 注意！！！插入图片， 如果设置 NSParagraphStyleAttributeName 属性，例如:
- NSMutableParagraphStyle *paragraph = [[NSMutableParagraphStyle alloc] init];
- paragraph.lineBreakMode = NSLineBreakByCharWrapping;
- [attrStr addAttribute:NSParagraphStyleAttributeName value:paragraph range:range];
+ 在指定位置插入图片，并设置图片链点属性
+ 注意！！！插入图片， 如果设置 NSParagraphStyleAttributeName 属性，
  请保证 paragraph.lineBreakMode = NSLineBreakByCharWrapping，不然当Label的宽度不够显示内容或图片时，不会自动换行, 部分图片将会看不见
-    
  默认 paragraph.lineBreakMode = NSLineBreakByCharWrapping
- 
- @param attrStr 需要插入图片的NSAttributedString
- @param imageName 图片名称
- @param size 图片大小
- @param loc 图片插入位置
- @param verticalAlignment 图片所在行，图片与文字在垂直方向的对齐方式（只针对当前行）
- @param attributes 图片文本属性
- 
- @return 插入图片后的NSMutableAttributedString
  */
-+ (NSMutableAttributedString *)configureAttributedString:(NSAttributedString *)attrStr
-                                            addImageName:(NSString *)imageName
-                                               imageSize:(CGSize)size
-                                                 atIndex:(NSUInteger)loc
-                                       verticalAlignment:(CJLabelVerticalAlignment)verticalAlignment
-                                              attributes:(NSDictionary *)attributes;
++ (NSMutableAttributedString *)insertImageAtAttrString:(NSAttributedString *)attrStr
+                                      imageName:(NSString *)imageName
+                                      imageSize:(CGSize)size
+                                        atIndex:(NSUInteger)loc
+                             imagelineAlignment:(CJLabelVerticalAlignment)lineAlignment
+                                      configure:(CJLabelConfigure *)configure;
 
 /**
- 在指定位置插入图片，插入图片为可点击的链点！！！
- 返回插入图片后的NSMutableAttributedString（图片占位符所占的NSRange={loc,1}）
+ 设置指定NSRange属性
  
- @param attrStr 需要插入图片的NSAttributedString
- @param imageName 图片名称
- @param size 图片大小
- @param loc 图片插入位置
- @param verticalAlignment 图片所在行，图片与文字在垂直方向的对齐方式（只针对当前行）
- @param linkAttributes 图片链点属性
- @param activeLinkAttributes 点击状态下的图片链点属性
- @param parameter 链点自定义参数
- @param clickLinkBlock 链点点击回调
- @param longPressBlock 长按点击链点回调
- 
- @return 插入图片后的NSMutableAttributedString
+ @param attrStr       需要设置的源NSAttributedString
+ @param range         指定NSRange
+ @param configure     链点配置
+ @return              NSAttributedString
  */
-+ (NSMutableAttributedString *)configureLinkAttributedString:(NSAttributedString *)attrStr
-                                                addImageName:(NSString *)imageName
-                                                   imageSize:(CGSize)size
-                                                     atIndex:(NSUInteger)loc
-                                           verticalAlignment:(CJLabelVerticalAlignment)verticalAlignment
-                                              linkAttributes:(NSDictionary *)linkAttributes
-                                        activeLinkAttributes:(NSDictionary *)activeLinkAttributes
-                                                   parameter:(id)parameter
-                                              clickLinkBlock:(CJLabelLinkModelBlock)clickLinkBlock
-                                              longPressBlock:(CJLabelLinkModelBlock)longPressBlock;
++ (NSMutableAttributedString *)configureAttrString:(NSAttributedString *)attrStr
+                                    atRange:(NSRange)range
+                                  configure:(CJLabelConfigure *)configure;
 
 /**
- 根据指定NSRange配置富文本
- 
- @param attrStr NSAttributedString源
- @param range 指定NSRange
- @param attributes 文本属性
- 
- @return 返回新的NSMutableAttributedString
+ 根据NSString初始化NSAttributedString
  */
-+ (NSMutableAttributedString *)configureAttributedString:(NSAttributedString *)attrStr
-                                                 atRange:(NSRange)range
-                                              attributes:(NSDictionary *)attributes;
++ (NSMutableAttributedString *)initWithString:(NSString *)string configure:(CJLabelConfigure *)configure;
 
 /**
- 根据指定NSRange配置富文本，指定NSRange文本为可点击链点！！！
- 
- @param attrStr NSAttributedString源
- @param range 指定NSRange
- @param linkAttributes 链点文本属性
- @param activeLinkAttributes 点击状态下的链点文本属性
- @param parameter 链点自定义参数
- @param clickLinkBlock 链点点击回调
- @param longPressBlock 长按点击链点回调
- 
- @return 返回新的NSMutableAttributedString
+ 对跟string相同的文本设置链点属性
+
+ @param attrStr          需要设置的源NSAttributedString
+ @param string           指定字符串
+ @param configure        链点配置
+ @param sameStringEnable 文本中所有与string相同的文本是否同步设置属性，sameStringEnable=NO 时取文本中首次匹配的NSAttributedString
+ @return                 NSAttributedString
  */
-+ (NSMutableAttributedString *)configureLinkAttributedString:(NSAttributedString *)attrStr
-                                                     atRange:(NSRange)range
-                                              linkAttributes:(NSDictionary *)linkAttributes
-                                        activeLinkAttributes:(NSDictionary *)activeLinkAttributes
-                                                   parameter:(id)parameter
-                                              clickLinkBlock:(CJLabelLinkModelBlock)clickLinkBlock
-                                              longPressBlock:(CJLabelLinkModelBlock)longPressBlock;
-
-
-// 配置NSString 富文本
-+ (NSMutableAttributedString *)configureAttributedString:(NSAttributedString *)attrStr
-                                              withString:(NSString *)withString
-                                        sameStringEnable:(BOOL)sameStringEnable
-                                              attributes:(NSDictionary *)attributes;
-// 设置NSString为可点击链点
-+ (NSMutableAttributedString *)configureLinkAttributedString:(NSAttributedString *)attrStr
-                                                  withString:(NSString *)withString
-                                            sameStringEnable:(BOOL)sameStringEnable
-                                              linkAttributes:(NSDictionary *)linkAttributes
-                                        activeLinkAttributes:(NSDictionary *)activeLinkAttributes
-                                                   parameter:(id)parameter
-                                              clickLinkBlock:(CJLabelLinkModelBlock)clickLinkBlock
-                                              longPressBlock:(CJLabelLinkModelBlock)longPressBlock;
++ (NSMutableAttributedString *)configureAttrString:(NSAttributedString *)attrStr
+                                 withString:(NSString *)string
+                           sameStringEnable:(BOOL)sameStringEnable
+                                  configure:(CJLabelConfigure *)configure;
 /**
- 对文本中跟withAttString相同的文字配置富文本，设置的是NSAttributedString
+ 根据NSAttributedString初始化NSAttributedString
  
- `withAttString` 请调用 CJNSAttributedString类方法初始化
- 
- @param attrStr NSAttributedString源
- @param withString 需要设置的文本
- @param sameStringEnable 文本中所有与withAttString相同的文字是否同步设置属性，sameStringEnable=NO 时取文本中首次匹配的NSAttributedString
- @param attributes 文本属性
- 
- @return 返回新的NSMutableAttributedString
+ @param attributedString    指定的NSAttributedString
+ @param configure           链点配置
+ @param strIdentifier       设置链点的唯一标识（用来区分不同的NSAttributedString，比如重名的 "@王小明" ,此时代表了不同的用户，不应该设置相同属性）
+ @return                    NSAttributedString
  */
-+ (NSMutableAttributedString *)configureAttributedString:(NSAttributedString *)attrStr
-                                           withAttString:(CJNSAttributedString *)withAttString
-                                        sameStringEnable:(BOOL)sameStringEnable
-                                              attributes:(NSDictionary *)attributes;
++ (NSMutableAttributedString *)initWithAttributedString:(NSAttributedString *)attributedString
+                                   strIdentifier:(NSString *)strIdentifier
+                                       configure:(CJLabelConfigure *)configure;
 
 /**
- 对文本中跟withAttString相同的文字配置富文本，指定的文字为可点击链点！！！设置的是CJNSAttributedString类型
+ 对跟attributedString相同的文本设置链点属性
  
- `withAttString` 请调用 CJNSAttributedString类方法初始化
- 
- @param attrStr NSAttributedString源
- @param withString 需要设置的文本
- @param sameStringEnable 文本中所有与withAttString相同的文字是否同步设置属性，sameStringEnable=NO 时取文本中首次匹配的NSAttributedString
- @param linkAttributes 链点文本属性
- @param activeLinkAttributes 点击状态下的链点文本属性
- @param parameter 链点自定义参数
- @param clickLinkBlock 链点点击回调
- @param longPressBlock 长按点击链点回调
- 
- @return 返回新的NSMutableAttributedString
+ @param attrString          需要设置的源NSAttributedString
+ @param attributedString    指定的NSAttributedString
+ @param strIdentifier       设置链点的唯一标识（用来区分不同的NSAttributedString，比如重名的 "@王小明" ,此时代表了不同的用户，不应该设置相同属性）
+ @param sameStringEnable    文本中相同的NSAttributedString是否同步设置属性，sameStringEnable=NO 时取文本中首次匹配的NSAttributedString
+ @return                    NSAttributedString
  */
-+ (NSMutableAttributedString *)configureLinkAttributedString:(NSAttributedString *)attrStr
-                                               withAttString:(CJNSAttributedString *)withAttString
-                                            sameStringEnable:(BOOL)sameStringEnable
-                                              linkAttributes:(NSDictionary *)linkAttributes
-                                        activeLinkAttributes:(NSDictionary *)activeLinkAttributes
-                                                   parameter:(id)parameter
-                                              clickLinkBlock:(CJLabelLinkModelBlock)clickLinkBlock
-                                              longPressBlock:(CJLabelLinkModelBlock)longPressBlock;
++ (NSMutableAttributedString *)configureAttrString:(NSAttributedString *)attrString
+                       withAttributedString:(NSAttributedString *)attributedString
+                              strIdentifier:(NSString *)strIdentifier
+                           sameStringEnable:(BOOL)sameStringEnable
+                                  configure:(CJLabelConfigure *)configure;
 
 /**
  获取指定NSAttributedString中跟linkString相同的NSRange数组
-
+ 
  @param linkString 需要寻找的string
  @param attString 指定NSAttributedString
  @return NSRange的数组
@@ -344,11 +209,13 @@ IB_DESIGNABLE
 /**
  获取指定NSAttributedString中跟linkAttString相同的NSRange数组
  
- @param linkAttString 需要寻找的CJNSAttributedString
+ @param linkAttString 需要寻找的NSAttributedString
+ @param strIdentifier 链点标识
  @param attString 指定NSAttributedString
  @return NSRange的数组
  */
-+ (NSArray <NSString *>*)samelinkAttStringRangeArray:(CJNSAttributedString *)linkAttString inAttString:(NSAttributedString *)attString;
++ (NSArray <NSString *>*)samelinkAttStringRangeArray:(NSAttributedString *)linkAttString strIdentifier:(NSString *)strIdentifier inAttString:(NSAttributedString *)attString;
+
 
 /**
  *  移除指定range的点击链点
@@ -368,73 +235,36 @@ IB_DESIGNABLE
 
 @end
 
-/**
- 点击链点model
- 包含链点的NSAttributedString、NSRange值、自定义参数，如果链点是图片则还包含图片名称imageName、以及图片Rect
- */
-@interface CJLabelLinkModel : NSObject
-/**
- 链点文本
- */
-@property (readonly, nonatomic, strong) NSAttributedString *attributedString;
-/**
- 链点图片名称
- */
-@property (readonly, nonatomic, copy) NSString *imageName;
-/**
- 链点图片Rect（相对于CJLabel坐标的rect）
- */
-@property (readonly, nonatomic, assign) CGRect imageRect;
-/**
- 链点自定义参数
- */
-@property (readonly, nonatomic, strong) id parameter;
-/**
- 链点在整体文本中的range
- */
-@property (readonly, nonatomic, assign) NSRange linkRange;
 
-- (instancetype)initWithAttributedString:(NSAttributedString *)attributedString
-                               imageName:(NSString *)imageName
-                               imageRect:(CGRect )imageRect
-                               parameter:(id)parameter
-                               linkRange:(NSRange)linkRange;
-@end
 
 /**
- 富文本点击扩展类
- 用于区分NSAttributedString可点击链点
+ 背景填充颜色。值为UIColor。默认 `nil`。
+ 该属性优先级低于NSBackgroundColorAttributeName，如果设置NSBackgroundColorAttributeName会覆盖kCJBackgroundFillColorAttributeName
  */
-@interface CJNSAttributedString: NSAttributedString
+extern NSString * const kCJBackgroundFillColorAttributeName;
 
 /**
- 生成NSAttributedString类型的可点击链点（请保证linkTag的唯一性！！！)
-
- @param string   点击链点的string
- @param attrs    链点属性
- @param linkTag  点击链点的唯一标识
- @return         CJNSAttributedString
+ 背景边框线颜色。值为UIColor。默认 `nil`
  */
-+ (CJNSAttributedString *)initLinkAttributedString:(NSString *)string
-                                        attributes:(NSDictionary <NSString *,id>*)attrs
-                                           linkTag:(NSString *)linkTag;
-@end
+extern NSString * const kCJBackgroundStrokeColorAttributeName;
 
 /**
- 长按时候显示的放大镜视图
+ 背景边框线宽度。值为NSNumber。默认 `1.0f`
  */
-@interface CJMagnifierView : UIWindow
-@property (nonatomic, strong) UIView *viewToMagnify;//需要放大的view
-@property (nonatomic, assign) CGPoint pointToMagnify;//放大点
+extern NSString * const kCJBackgroundLineWidthAttributeName;
 
-- (void)updateMagnifyPoint:(CGPoint)pointToMagnify showMagnifyViewIn:(CGPoint)showPoint;
+/**
+ 背景边框线圆角角度。值为NSNumber。默认 `5.0f`
+ */
+extern NSString * const kCJBackgroundLineCornerRadiusAttributeName;
 
-@end
+/**
+ 点击时候的背景填充颜色。值为UIColor。默认 `nil`。
+ 该属性优先级低于NSBackgroundColorAttributeName，如果设置NSBackgroundColorAttributeName会覆盖kCJActiveBackgroundFillColorAttributeName
+ */
+extern NSString * const kCJActiveBackgroundFillColorAttributeName;
 
-@interface CJSelectView : UIView
-
-- (CJSelectView *)initWithDirection:(BOOL)isLeft;
-- (void)updateCJSelectViewHeight:(CGFloat)height showCJSelectViewIn:(CGPoint)showPoint;
-@end
-
-
+/**
+ 点击时候的背景边框线颜色。值为UIColor。默认 `nil`
+ */
+extern NSString * const kCJActiveBackgroundStrokeColorAttributeName;

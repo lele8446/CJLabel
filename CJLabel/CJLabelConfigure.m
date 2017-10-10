@@ -1,12 +1,12 @@
 //
-//  CJLabelUtilities.m
+//  CJLabelConfigure.m
 //  CJLabelTest
 //
 //  Created by ChiJinLian on 2017/4/13.
 //  Copyright © 2017年 ChiJinLian. All rights reserved.
 //
 
-#import "CJLabelUtilities.h"
+#import "CJLabelConfigure.h"
 
 NSString * const kCJImageAttributeName                       = @"kCJImageAttributeName";
 NSString * const kCJImageName                                = @"kCJImageName";
@@ -46,7 +46,25 @@ CGFloat RunDelegateGetWidthCallback(void * refCon) {
     return [(NSNumber *)[(__bridge NSDictionary *)refCon objectForKey:kCJImageWidth] floatValue];
 }
 
-@implementation CJLabelUtilities
+@implementation CJLabelConfigure
++ (instancetype)configureAttributes:(NSDictionary<NSAttributedStringKey, id> *)attributes
+                             isLink:(BOOL)isLink
+               activeLinkAttributes:(NSDictionary<NSAttributedStringKey, id> *)activeLinkAttributes
+                          parameter:(id)parameter
+                     clickLinkBlock:(CJLabelLinkModelBlock)clickLinkBlock
+                     longPressBlock:(CJLabelLinkModelBlock)longPressBlock
+{
+    CJLabelConfigure *configure = [[CJLabelConfigure alloc]init];
+    if (configure) {
+        configure.attributes = attributes;
+        configure.isLink = isLink;
+        configure.activeLinkAttributes = activeLinkAttributes;
+        configure.parameter = parameter;
+        configure.clickLinkBlock = clickLinkBlock;
+        configure.longPressBlock = longPressBlock;
+    }
+    return configure;
+}
 
 + (NSMutableAttributedString *)configureLinkAttributedString:(NSAttributedString *)attrStr
                                                 addImageName:(NSString *)imageName
@@ -61,7 +79,7 @@ CGFloat RunDelegateGetWidthCallback(void * refCon) {
                                                       islink:(BOOL)isLink
 {
     NSParameterAssert((loc <= attrStr.length) && (!CJLabelIsNull(imageName) && imageName.length != 0));
-        
+    
     NSDictionary *imgInfoDic = @{kCJImageName:imageName,
                                  kCJImageWidth:@(size.width),
                                  kCJImageHeight:@(size.height),
@@ -230,13 +248,16 @@ CGFloat RunDelegateGetWidthCallback(void * refCon) {
     return attributedString;
 }
 
-+ (NSMutableAttributedString *)linkAttStr:(NSString *)string attributes:(NSDictionary <NSString *,id>*)attrs tag:(NSString *)tag {
++ (NSMutableAttributedString *)linkAttStr:(NSString *)string
+                               attributes:(NSDictionary <NSString *,id>*)attrs
+                               identifier:(NSString *)identifier
+{
     NSParameterAssert(string);
-    NSParameterAssert(tag);
+    NSParameterAssert(identifier);
     
     NSDictionary *dic = CJLabelIsNull(attrs)?[[NSDictionary alloc] init]:[[NSDictionary alloc]initWithDictionary:attrs];
     NSMutableAttributedString *attStr = [[NSMutableAttributedString alloc]initWithString:string attributes:dic];
-    [attStr addAttribute:kCJLinkStringKeyAttributesName value:tag range:NSMakeRange(0, attStr.length)];
+    [attStr addAttribute:kCJLinkStringKeyAttributesName value:identifier range:NSMakeRange(0, attStr.length)];
     
     return attStr;
 }
@@ -347,6 +368,24 @@ CGFloat RunDelegateGetWidthCallback(void * refCon) {
 @end
 
 
+@implementation CJLabelLinkModel
+- (instancetype)initWithAttributedString:(NSAttributedString *)attributedString
+                               imageName:(NSString *)imageName
+                               imageRect:(CGRect )imageRect
+                               parameter:(id)parameter
+                               linkRange:(NSRange)linkRange
+{
+    self = [super init];
+    if (self) {
+        _attributedString = attributedString;
+        _imageName = imageName;
+        _imageRect = imageRect;
+        _parameter = parameter;
+        _linkRange = linkRange;
+    }
+    return self;
+}
+@end
 
 @implementation CJGlyphRunStrokeItem
 

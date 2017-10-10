@@ -29,7 +29,6 @@
     self.automaticallyAdjustsScrollViewInsets = NO;
     
     self.firstLabel.numberOfLines = 0;
-    self.firstLabel.enableCopy = YES;
     
     NSAttributedString *content = self.content;
     [self handleContent:content];
@@ -42,141 +41,113 @@
 
 - (void)handleContent:(NSAttributedString *)content {
     
-    NSMutableAttributedString *attStr = [[NSMutableAttributedString alloc]initWithAttributedString:content];
-    attStr = [CJLabel configureAttributedString:attStr
-                                        atRange:NSMakeRange(0, 3)
-                                     attributes:@{NSForegroundColorAttributeName:[UIColor blackColor],
-                                                  NSFontAttributeName:[UIFont boldSystemFontOfSize:15]
-                                                  }];
+    CJLabelConfigure *configure =
+    [CJLabelConfigure configureAttributes:@{NSForegroundColorAttributeName:[UIColor blackColor],
+                                            NSFontAttributeName:[UIFont boldSystemFontOfSize:15]
+                                            }
+                                   isLink:NO
+                     activeLinkAttributes:nil
+                                parameter:nil
+                           clickLinkBlock:nil
+                           longPressBlock:nil];
+    
+    NSAttributedString *attStr = content;
+    attStr = [CJLabel configureAttrString:attStr atRange:NSMakeRange(0, 3) configure:configure];
     self.attStr = attStr;
     switch (self.index) {
         case 0:
             self.firstLabel.hidden = YES;
             self.secondLabel = [[CJLabel alloc]initWithFrame:CGRectMake(10, 10, [[UIScreen mainScreen] bounds].size.width - 20, [[UIScreen mainScreen] bounds].size.height - 64 - 100)];
             self.secondLabel.backgroundColor = UIColorFromRGB(0xf0f0de);
-            self.secondLabel.numberOfLines = 0;
-            self.secondLabel.enableCopy = YES;
+            self.secondLabel.numberOfLines = 10;
             self.secondLabel.textInsets = UIEdgeInsetsMake(10, 15, 20, 0);
             self.secondLabel.verticalAlignment = CJVerticalAlignmentBottom;
             [self.view addSubview:self.secondLabel];
             
-            attStr = [CJLabel configureAttributedString:attStr
-                                             withString:@"CJLabel"
-                                       sameStringEnable:NO
-                                             attributes:@{
-                                                          NSForegroundColorAttributeName:[UIColor blueColor],
-                                                          NSFontAttributeName:[UIFont boldSystemFontOfSize:15],
-                                                          kCJBackgroundStrokeColorAttributeName:[UIColor orangeColor],
-                                                          kCJBackgroundLineWidthAttributeName:@(2),
-                                                          kCJBackgroundFillColorAttributeName:[UIColor lightGrayColor]
-                                                          }];
+            configure.attributes = @{
+                                     NSForegroundColorAttributeName:[UIColor blueColor],
+                                     NSFontAttributeName:[UIFont boldSystemFontOfSize:15],
+                                     kCJBackgroundStrokeColorAttributeName:[UIColor orangeColor],
+                                     kCJBackgroundLineWidthAttributeName:@(2),
+                                     kCJBackgroundFillColorAttributeName:[UIColor lightGrayColor]
+                                     };
+            attStr = [CJLabel configureAttrString:attStr withString:@"CJLabel" sameStringEnable:NO configure:configure];
+            
             self.secondLabel.attributedText = attStr;
             break;
             
         case 1:
-        {
-            attStr = [CJLabel configureLinkAttributedString:attStr
-                                                 withString:@"CJLabel"
-                                           sameStringEnable:(self.index==1?NO:YES)
-                                             linkAttributes:@{
-                                                              NSForegroundColorAttributeName:[UIColor blueColor],
-                                                              NSFontAttributeName:[UIFont boldSystemFontOfSize:15],
-                                                              kCJBackgroundStrokeColorAttributeName:[UIColor orangeColor],
-                                                              kCJBackgroundLineWidthAttributeName:@(2),
-                                                              kCJBackgroundFillColorAttributeName:[UIColor lightGrayColor]
-                                                              }
-                                       activeLinkAttributes:@{
-                                                              NSForegroundColorAttributeName:[UIColor redColor],
-                                                              kCJActiveBackgroundStrokeColorAttributeName:[UIColor blackColor],
-                                                              kCJActiveBackgroundFillColorAttributeName:UIRGBColor(247,231,121,1)
-                                                              }
-                                                  parameter:@"参数为字符串"
-                                             clickLinkBlock:^(CJLabelLinkModel *linkModel){
-                                                 [self clickLink:linkModel isImage:NO];
-                                             }longPressBlock:^(CJLabelLinkModel *linkModel){
-                                                 [self clicklongPressLink:linkModel isImage:NO];
-                                             }];
-            self.firstLabel.attributedText = attStr;
-            break;
-        }
         case 2:
         {
+            configure.attributes = @{
+                                     NSForegroundColorAttributeName:[UIColor blueColor],
+                                     NSFontAttributeName:[UIFont boldSystemFontOfSize:15],
+                                     kCJBackgroundStrokeColorAttributeName:[UIColor orangeColor],
+                                     kCJBackgroundLineWidthAttributeName:@((self.index==1?2:1)),
+                                     kCJBackgroundFillColorAttributeName:[UIColor lightGrayColor]
+                                     };
+            configure.activeLinkAttributes = @{
+                                               NSForegroundColorAttributeName:[UIColor redColor],
+                                               kCJActiveBackgroundStrokeColorAttributeName:[UIColor blackColor],
+                                               kCJActiveBackgroundFillColorAttributeName:UIRGBColor(247,231,121,1)
+                                               };
+            configure.parameter = @"参数为字符串";
+            configure.clickLinkBlock = ^(CJLabelLinkModel *linkModel) {
+                [self clickLink:linkModel isImage:NO];
+            };
+            configure.longPressBlock = ^(CJLabelLinkModel *linkModel) {
+                [self clicklongPressLink:linkModel isImage:NO];
+            };
+            configure.isLink = YES;
+            attStr = [CJLabel configureAttrString:attStr
+                                       withString:@"CJLabel"
+                                 sameStringEnable:(self.index==1?NO:YES)
+                                        configure:configure];
+            
             self.firstLabel.attributedText = attStr;
-            [self.firstLabel removeAllLink];
-            attStr = [[NSMutableAttributedString alloc]initWithAttributedString:self.firstLabel.attributedText];
-            
-            CJNSAttributedString *linkStr =
-            [CJNSAttributedString initLinkAttributedString:@"CJLabel" attributes:@{NSForegroundColorAttributeName:[UIColor blackColor],
-                                                        NSFontAttributeName:[UIFont boldSystemFontOfSize:15]
-                                                        } linkTag:@"点击链点key"];
-            
-            NSArray *array = [CJLabel sameLinkStringRangeArray:@"CJLabel" inAttString:attStr];
-            for (NSInteger i = 0; i < array.count; i++) {
-                //设置第2个CJLabel不可点
-                if (i != 1) {
-                    [attStr replaceCharactersInRange:NSRangeFromString(array[i]) withAttributedString:linkStr];
-                }
+            if (self.index == 2) {
+                UIBarButtonItem *item = [[UIBarButtonItem alloc]initWithTitle:@"删除首个链点" style:UIBarButtonItemStylePlain target:self action:@selector(itemClick:)];
+                item.tag = 100;
+                self.navigationItem.rightBarButtonItem = item;
             }
-            
-            attStr = [CJLabel configureLinkAttributedString:attStr
-                                              withAttString:linkStr
-                                           sameStringEnable:(self.index==1?NO:YES)
-                                             linkAttributes:@{
-                                                              NSForegroundColorAttributeName:[UIColor blueColor],
-                                                              NSFontAttributeName:[UIFont boldSystemFontOfSize:15],
-                                                              kCJBackgroundStrokeColorAttributeName:[UIColor orangeColor],
-                                                              kCJBackgroundLineWidthAttributeName:@(1),
-                                                              kCJBackgroundFillColorAttributeName:[UIColor lightGrayColor]
-                                                              }
-                                       activeLinkAttributes:@{
-                                                              NSForegroundColorAttributeName:[UIColor redColor],
-                                                              kCJActiveBackgroundStrokeColorAttributeName:[UIColor blackColor],
-                                                              kCJActiveBackgroundFillColorAttributeName:UIRGBColor(247,231,121,1)
-                                                              }
-                                                  parameter:@"参数为字符串"
-                                             clickLinkBlock:^(CJLabelLinkModel *linkModel){
-                                                 [self clickLink:linkModel isImage:NO];
-                                             }longPressBlock:^(CJLabelLinkModel *linkModel){
-                                                 [self clicklongPressLink:linkModel isImage:NO];
-                                             }];
-            
-            self.firstLabel.attributedText = attStr;
-            UIBarButtonItem *item = [[UIBarButtonItem alloc]initWithTitle:@"删除首个链点" style:UIBarButtonItemStylePlain target:self action:@selector(itemClick:)];
-            item.tag = 100;
-            self.navigationItem.rightBarButtonItem = item;
             
         }
             break;
             
         case 3:
+        {
             self.firstLabel.hidden = YES;
             self.secondLabel = [[CJLabel alloc]initWithFrame:CGRectMake(10, 10, [[UIScreen mainScreen] bounds].size.width - 20, [[UIScreen mainScreen] bounds].size.height - 64 - 100)];
             self.secondLabel.backgroundColor = UIColorFromRGB(0xf0f0de);
             self.secondLabel.numberOfLines = 0;
-            self.secondLabel.enableCopy = YES;
             self.secondLabel.verticalAlignment = CJVerticalAlignmentTop;
             [self.view addSubview:self.secondLabel];
             
             NSRange imageRange = [attStr.string rangeOfString:@"插入图片"];
-            attStr = [CJLabel configureAttributedString:attStr
-                                           addImageName:@"CJLabel.png"
-                                              imageSize:CGSizeMake(120, 85)
-                                                atIndex:imageRange.location+imageRange.length
-                                             attributes:@{kCJBackgroundStrokeColorAttributeName:[UIColor redColor],
-                                                          kCJBackgroundLineWidthAttributeName:@(2)}];
+            CJLabelConfigure *imgConfigure =
+            [CJLabelConfigure configureAttributes:@{kCJBackgroundStrokeColorAttributeName:[UIColor redColor],                                                         kCJBackgroundLineWidthAttributeName:@(2)} isLink:NO activeLinkAttributes:nil parameter:nil clickLinkBlock:nil longPressBlock:nil];
             
-            attStr = [CJLabel configureAttributedString:attStr
-                                             withString:@"CJLabel"
-                                       sameStringEnable:NO
-                                             attributes:@{
-                                                          NSForegroundColorAttributeName:[UIColor blueColor],
-                                                          NSFontAttributeName:[UIFont boldSystemFontOfSize:15],
-                                                          kCJBackgroundStrokeColorAttributeName:[UIColor orangeColor],
-                                                          kCJBackgroundLineWidthAttributeName:@(2),
-                                                          kCJBackgroundFillColorAttributeName:[UIColor lightGrayColor]
-                                                          }];
+            attStr = [CJLabel insertImageAtAttrString:attStr
+                                            imageName:@"CJLabel.png"
+                                            imageSize:CGSizeMake(120, 85)
+                                              atIndex:(imageRange.location+imageRange.length)
+                                   imagelineAlignment:CJVerticalAlignmentBottom
+                                            configure:imgConfigure];
+            
+            configure.attributes = @{
+                                     NSForegroundColorAttributeName:[UIColor blueColor],
+                                     NSFontAttributeName:[UIFont boldSystemFontOfSize:15],
+                                     kCJBackgroundStrokeColorAttributeName:[UIColor orangeColor],
+                                     kCJBackgroundLineWidthAttributeName:@(2),
+                                     kCJBackgroundFillColorAttributeName:[UIColor lightGrayColor]
+                                     };
+            attStr = [CJLabel configureAttrString:attStr
+                                       withString:@"CJLabel"
+                                 sameStringEnable:NO
+                                        configure:configure];
+            
             self.secondLabel.attributedText = attStr;
-            
+        }
             break;
             
         case 4:
@@ -206,48 +177,51 @@
 }
 
 - (void)configureLabelContent:(NSAttributedString *)attStr verticalAlignment:(CJLabelVerticalAlignment)verticalAlignment {
-    attStr = [CJLabel configureLinkAttributedString:attStr
-                                         withString:@"CJLabel"
-                                   sameStringEnable:NO
-                                     linkAttributes:@{
-                                                      NSForegroundColorAttributeName:[UIColor blueColor],
-                                                      NSFontAttributeName:[UIFont boldSystemFontOfSize:15],
-                                                      kCJBackgroundStrokeColorAttributeName:[UIColor orangeColor],
-                                                      kCJBackgroundLineWidthAttributeName:@(self.index == 5?1:2),
-                                                      kCJBackgroundFillColorAttributeName:[UIColor lightGrayColor]
-                                                      }
-                               activeLinkAttributes:@{
-                                                      NSForegroundColorAttributeName:[UIColor redColor],
-                                                      NSFontAttributeName:[UIFont boldSystemFontOfSize:15],
-                                                      kCJActiveBackgroundStrokeColorAttributeName:[UIColor blackColor],
-                                                      kCJActiveBackgroundFillColorAttributeName:UIRGBColor(247,231,121,1)
-                                                      }
-                                          parameter:@"参数为字符串"
-                                     clickLinkBlock:^(CJLabelLinkModel *linkModel){
-                                         [self clickLink:linkModel isImage:NO];
-                                     }longPressBlock:^(CJLabelLinkModel *linkModel){
-                                         [self clicklongPressLink:linkModel isImage:NO];
-                                     }];
+    CJLabelConfigure *configure =
+    [CJLabelConfigure configureAttributes:@{
+                                            NSForegroundColorAttributeName:[UIColor blueColor],
+                                            NSFontAttributeName:[UIFont boldSystemFontOfSize:15],
+                                            kCJBackgroundStrokeColorAttributeName:[UIColor orangeColor],
+                                            kCJBackgroundLineWidthAttributeName:@(self.index == 5?1:2),
+                                            kCJBackgroundFillColorAttributeName:[UIColor lightGrayColor]
+                                            }
+                                   isLink:YES
+                     activeLinkAttributes:@{
+                                            NSForegroundColorAttributeName:[UIColor redColor],
+                                            NSFontAttributeName:[UIFont boldSystemFontOfSize:15],
+                                            kCJActiveBackgroundStrokeColorAttributeName:[UIColor blackColor],
+                                            kCJActiveBackgroundFillColorAttributeName:UIRGBColor(247,231,121,1)
+                                            }
+                                parameter:@"字符串参数"
+                           clickLinkBlock:^(CJLabelLinkModel *linkModel){
+                               [self clickLink:linkModel isImage:NO];
+                           }
+                           longPressBlock:^(CJLabelLinkModel *linkModel){
+                               [self clicklongPressLink:linkModel isImage:NO];
+                           }];
     
+    attStr = [CJLabel configureAttrString:attStr
+                               withString:@"CJLabel"
+                         sameStringEnable:NO
+                                configure:configure];
+
     NSRange imageRange = [attStr.string rangeOfString:@"图片"];
-    attStr = [CJLabel configureLinkAttributedString:attStr
-                                       addImageName:@"CJLabel.png"
-                                          imageSize:CGSizeMake(60, 48)
-                                            atIndex:imageRange.location+imageRange.length
-                                  verticalAlignment:verticalAlignment
-                                     linkAttributes:@{
-                                                      kCJBackgroundStrokeColorAttributeName:[UIColor blueColor],
-                                                      kCJBackgroundLineWidthAttributeName:@(self.index == 5?1:2),
-                                                      }
-                               activeLinkAttributes:@{
-                                                      kCJActiveBackgroundStrokeColorAttributeName:[UIColor redColor],
-                                                      }
-                                          parameter:@"图片参数"
-                                     clickLinkBlock:^(CJLabelLinkModel *linkModel){
-                                         [self clickLink:linkModel isImage:YES];
-                                     }longPressBlock:^(CJLabelLinkModel *linkModel){
-                                         [self clicklongPressLink:linkModel isImage:YES];
-                                     }];
+    CJLabelConfigure *imgConfigure =
+    [CJLabelConfigure configureAttributes:@{
+                                            kCJBackgroundStrokeColorAttributeName:[UIColor blueColor],
+                                            kCJBackgroundLineWidthAttributeName:@(self.index == 5?1:2),
+                                            }
+                                   isLink:YES
+                     activeLinkAttributes:@{kCJActiveBackgroundStrokeColorAttributeName:[UIColor redColor]}
+                                parameter:@"图片参数"
+                           clickLinkBlock:^(CJLabelLinkModel *linkModel){
+                               [self clickLink:linkModel isImage:YES];
+                           }
+                           longPressBlock:^(CJLabelLinkModel *linkModel){
+                               [self clicklongPressLink:linkModel isImage:YES];
+                           }];
+    attStr = [CJLabel insertImageAtAttrString:attStr imageName:@"CJLabel.png" imageSize:CGSizeMake(60, 48) atIndex:(imageRange.location+imageRange.length) imagelineAlignment:verticalAlignment configure:imgConfigure];
+
     /* 设置默认换行模式为：NSLineBreakByCharWrapping
      * 当Label的宽度不够显示内容或图片的时候就自动换行, 不自动换行, 部分图片将会看不见
      */
@@ -263,14 +237,8 @@
 - (void)itemClick:(UIBarButtonItem *)item {
     
     if (item.tag == 100) {
-        CJNSAttributedString *linkStr =
-        [CJNSAttributedString initLinkAttributedString:@"CJLabel" attributes:@{NSForegroundColorAttributeName:[UIColor blackColor],
-                                                    NSFontAttributeName:[UIFont boldSystemFontOfSize:15]
-                                                    } linkTag:@"点击链点key"];
-        
-        NSArray *array = [CJLabel samelinkAttStringRangeArray:linkStr inAttString:self.firstLabel.attributedText];
-        NSRange range = NSRangeFromString(array[0]);
-        [self.firstLabel removeLinkAtRange:range];
+        NSRange labelRange = [self.firstLabel.attributedText.string rangeOfString:@"CJLabel"];
+        [self.firstLabel removeLinkAtRange:labelRange];
         item.enabled = NO;
     }else if (item.tag == 200) {
         [self.firstLabel removeAllLink];

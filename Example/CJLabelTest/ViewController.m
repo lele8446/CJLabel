@@ -63,17 +63,15 @@
         NSMutableAttributedString *attStr = [[NSMutableAttributedString alloc]initWithString:str];
         [attStr addAttribute:NSFontAttributeName value:[UIFont systemFontOfSize:14] range:NSMakeRange(0, str.length)];
         
-        attStr = [CJLabel configureLinkAttributedString:attStr
-                                             withString:@"CJLabel"
-                                       sameStringEnable:YES
-                                         linkAttributes:@{
-                                                          NSForegroundColorAttributeName:[UIColor blueColor],
-                                                          NSFontAttributeName:[UIFont boldSystemFontOfSize:15]
-                                                          }
-                                   activeLinkAttributes:@{NSForegroundColorAttributeName:[UIColor redColor]}
-                                              parameter:nil
-                                         clickLinkBlock:nil
-                                         longPressBlock:nil];
+        CJLabelConfigure *configure =
+        [CJLabelConfigure configureAttributes:@{NSForegroundColorAttributeName:[UIColor blueColor],
+                                                NSFontAttributeName:[UIFont boldSystemFontOfSize:15]}
+                                       isLink:YES
+                         activeLinkAttributes:@{NSForegroundColorAttributeName:[UIColor redColor]}
+                                    parameter:nil
+                               clickLinkBlock:nil
+                               longPressBlock:nil];
+        attStr = [CJLabel configureAttrString:attStr withString:@"CJLabel" sameStringEnable:YES configure:configure];
         
         [self.espressos addObject:attStr];
     }
