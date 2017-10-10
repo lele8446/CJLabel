@@ -8,7 +8,7 @@
 `+ initWithAttributedString:strIdentifier:configure:`<br/>
 
 
-先看点击链点效果图：<br/>
+点击链点效果图：<br/>
 ![点击链点](http://7xnrwl.com1.z0.glb.clouddn.com/CJLabel1.gif)
 ![点击链点](http://7xnrwl.com1.z0.glb.clouddn.com/CJLabel2.gif)
 
