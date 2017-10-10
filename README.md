@@ -1,4 +1,11 @@
 # CJLabel
+***
+#注意 V3.0.0版本引入CJLabelConfigure类，优化了NSAttributedString的设置，旧的配置API不再支持。相关调用请参照
+`+ initWithImageName:imageSize:imagelineAlignment:configure:`
+`+ initWithString:configure:`
+`+ initWithAttributedString:strIdentifier:configure:`
+等相关方法#
+***
 先看点击链点效果图：<br/>
 ![点击链点](http://upload-images.jianshu.io/upload_images/1429982-ad29e6db37fc95ea.gif?imageMogr2/auto-orient/strip)
 ![点击链点](http://upload-images.jianshu.io/upload_images/1429982-279e01b2aceba923.gif?imageMogr2/auto-orient/strip)
@@ -14,8 +21,8 @@
    2. `attributedText` 与 `text` 均可设置文本，注意 [self setText:text]中 text类型只能是NSAttributedString或NSString
  
    3. `NSAttributedString`不再通过`NSTextAttachment`显示图片（使用`NSTextAttachment`不会起效），请调用
-      `- initWithImageName:imageSize:imagelineAlignment:configure:`或者
-      `- insertImageAtAttrString:imageName:imageSize:imagelineAlignment:atIndex:configure:`方法添加图片
+      `+ initWithImageName:imageSize:imagelineAlignment:configure:`或者
+      `+ insertImageAtAttrString:imageName:imageSize:imagelineAlignment:atIndex:configure:`方法添加图片
  
    4. 新增`extendsLinkTouchArea`， 设置是否加大点击响应范围，类似于UIWebView的链点点击效果
  
@@ -43,122 +50,54 @@ target 'CJLabelDemo' do
 end
 ```
 
-## API介绍
+## 若干API介绍
 * `+ sizeWithAttributedString:withConstraints:limitedToNumberOfLines:`
   计算指定NSAttributedString的size大小
 ```objective-c
 CGSize size = [CJLabel sizeWithAttributedString:str withConstraints:CGSizeMake(320, CGFLOAT_MAX) limitedToNumberOfLines:0]
   ```
   
-* 插入图片链点<br/>
+* `+ insertImageAtAttrString:imageName:imageSize:imagelineAlignment:atIndex:configure:` 
+插入图片链点
 在指定位置插入图片，插入图片为可点击的链点！！！返回插入图片后的NSMutableAttributedString（图片占位符所占的NSRange={loc,1}）
 ```objective-c
-attStr = [CJLabel configureLinkAttributedString:attStr
-                                   addImageName:@"CJLabel.png"
-                                      imageSize:CGSizeMake(60, 43)
-                                        atIndex:3
-                              verticalAlignment:CJVerticalAlignmentBottom
-                                 linkAttributes:@{
-                                                  kCJBackgroundStrokeColorAttributeName:[UIColor blueColor],
-                                                  kCJBackgroundLineWidthAttributeName:@(1),
-                                                  }
-                           activeLinkAttributes:@{
-                                                  kCJActiveBackgroundStrokeColorAttributeName:[UIColor redColor],
-                                                  }
-                                      parameter:@"图片参数"
-                                 clickLinkBlock:^(CJLabelLinkModel *linkModel){
-                                 
-                                }longPressBlock:^(CJLabelLinkModel *linkModel){
-
-                                             }];
+attStr = [CJLabel insertImageAtAttrString:attStr
+                                            imageName:@"CJLabel.png"
+                                            imageSize:CGSizeMake(120, 85)
+                                              atIndex:3
+                                   imagelineAlignment:CJVerticalAlignmentBottom
+                                            configure:imgConfigure];
   ```
   
-* 根据指定NSRange配置富文本，指定NSRange文本为可点击链点！！！<br/>
+* `+ configureAttrString:atRange:configure:`
+根据指定NSRange配置富文本，可设置指定NSRange文本为可点击链点！！！<br/>
 ```objective-c
-attStr = [CJLabel configureLinkAttributedString:attStr
-                                        atRange:NSMakeRange(3, 4)
-                                 linkAttributes:@{
-                                                  NSForegroundColorAttributeName:[UIColor blueColor],
-                                                  NSFontAttributeName:[UIFont boldSystemFontOfSize:15],
-                                                  kCJBackgroundStrokeColorAttributeName:[UIColor orangeColor],
-                                                  kCJBackgroundLineWidthAttributeName:@(1),
-                                                  kCJBackgroundFillColorAttributeName:[UIColor lightGrayColor]
-                                                  }
-                           activeLinkAttributes:@{
-                                                  NSForegroundColorAttributeName:[UIColor redColor],
-                                                  kCJActiveBackgroundStrokeColorAttributeName:[UIColor blackColor],
-                                                  kCJActiveBackgroundFillColorAttributeName:[UIColor brownColor]
-                                                  }
-                                      parameter:nil
-                                 clickLinkBlock:^(CJLabelLinkModel *linkModel){
-
-                                 }longPressBlock:^(CJLabelLinkModel *linkModel){
-
-                                 }];
+attStr = [CJLabel configureAttrString:attStr atRange:NSMakeRange(0, 3) configure:configure];
 ```
 
-* 对文本中跟withString相同的文字配置富文本，指定的文字为可点击链点！！！<br/>
+* `+ configureAttrString:withString:sameStringEnable:configure:`
+对文本中跟withString相同的文字配置富文本，可设置指定的文字为可点击链点！！！<br/>
 ```objective-c
-attStr = [CJLabel configureLinkAttributedString:attStr
-                                     withString:@"CJLabel"
-                               sameStringEnable:YES
-                                 linkAttributes:@{
-                                                  NSForegroundColorAttributeName:[UIColor blueColor],
-                                                  NSFontAttributeName:[UIFont boldSystemFontOfSize:15],
-                                                  kCJBackgroundStrokeColorAttributeName:[UIColor orangeColor],
-                                                  kCJBackgroundLineWidthAttributeName:@(1),
-                                                  kCJBackgroundFillColorAttributeName:[UIColor lightGrayColor]
-                                                  }
-                           activeLinkAttributes:@{
-                                                  NSForegroundColorAttributeName:[UIColor redColor],
-                                                  kCJActiveBackgroundStrokeColorAttributeName:[UIColor blackColor],
-                                                  kCJActiveBackgroundFillColorAttributeName:[UIColor brownColor]
-                                                  }
-                                      parameter:@"参数为字符串"
-                                 clickLinkBlock:^(CJLabelLinkModel *linkModel){
-
-                                 }longPressBlock:^(CJLabelLinkModel *linkModel){
-
-                                 }];
+attStr = [CJLabel configureAttrString:attStr
+                                       withString:@"CJLabel"
+                                 sameStringEnable:NO
+                                        configure:configure];
 ```
 
 * 移除点击链点<br/>
 ```objective-c
-/**
- *  移除制定range的点击链点
- *
- *  @param range 移除链点位置
- */
 - (void)removeLinkAtRange:(NSRange)range;
 
-/**
- *  移除所有点击链点
- */
 - (void)removeAllLink;
 ```
 
 ## 版本说明
+### V3.0.0
+* 优化富文本配置方法，新增CJLabelConfigure类，简化方法调用，增加对NSAttributedString点击链点的判断（比如对于两个重名用户：@lele 和 @lele，可以分别设置不同的点击响应事件）
+
 ### V2.1.2
 * 新增方法，可修改插入图片所在行图文在垂直方向的对齐方式（只针对当前行），有居上、居中、居下选项，默认居下
-```objective-c
-+ (NSMutableAttributedString *)configureAttributedString:(NSAttributedString *)attrStr
-                                            addImageName:(NSString *)imageName
-                                               imageSize:(CGSize)size
-                                                 atIndex:(NSUInteger)loc
-                                       verticalAlignment:(CJLabelVerticalAlignment)verticalAlignment
-                                              attributes:(NSDictionary *)attributes;
-                                              
- + (NSMutableAttributedString *)configureLinkAttributedString:(NSAttributedString *)attrStr
-                                                addImageName:(NSString *)imageName
-                                                   imageSize:(CGSize)size
-                                                     atIndex:(NSUInteger)loc
-                                           verticalAlignment:(CJLabelVerticalAlignment)verticalAlignment
-                                              linkAttributes:(NSDictionary *)linkAttributes
-                                        activeLinkAttributes:(NSDictionary *)activeLinkAttributes
-                                                   parameter:(id)parameter
-                                              clickLinkBlock:(CJLabelLinkModelBlock)clickLinkBlock
-                                              longPressBlock:(CJLabelLinkModelBlock)longPressBlock; 
-```
+
 ### V2.1.2
 * 修复单行文字时候点击链点的判断，增加delegate
 ### V2.0.0
