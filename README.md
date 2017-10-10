@@ -94,26 +94,29 @@ attStr = [CJLabel configureAttrString:attStr
 ```
 
 ## 版本说明
-### V3.0.0
-* 优化富文本配置方法，新增CJLabelConfigure类，简化方法调用，增加对NSAttributedString点击链点的判断（比如对于两个重名用户：@lele 和 @lele，可以分别设置不同的点击响应事件）
+* ***V3.0.0***
+ 优化富文本配置方法，新增CJLabelConfigure类，简化方法调用，增加对NSAttributedString点击链点的判断（比如对于两个重名用户：@lele 和 @lele，可以分别设置不同的点击响应事件）
 
-### V2.1.2
-* 新增方法，可修改插入图片所在行图文在垂直方向的对齐方式（只针对当前行），有居上、居中、居下选项，默认居下
+* ***V2.1.2***
+ 新增方法，可修改插入图片所在行图文在垂直方向的对齐方式（只针对当前行），有居上、居中、居下选项，默认居下
 
-### V2.1.2
-* 修复单行文字时候点击链点的判断，增加delegate
-### V2.0.0
-* 重构了底层对点击链点响应的判断，增加插入图片、插入图片链点、点击链点背景色填充、点击链点边框线描边等功能
-* v2.0.0之后版本与v1.x.x版本差别较大，基本上重写了增加以及移除点击链点的API
-***
-### V1.0.2
-* 点击链点增加扩展属性parameter<br/>
-* 增加方法`- addLinkString: linkAddAttribute: linkParameter: block:`<br/>
-### V1.0.1
-*  增加文本中内容相同的链点能够响应点击属性sameLinkEnable，必须在设置self.attributedText前赋值，默认值为NO，只取文本中首次出现的链点。<br/>
-*  CJLinkLabelModel的linkString改为NSString类型<br/>
-### V1.0.0
-*  v1.0.0版本注意：文本内存在相同链点时只有首次出现的链点能够响应点击
+* ***V2.1.2***
+ 修复单行文字时候点击链点的判断，增加delegate
+ 
+* ***V2.0.0***
+ 重构了底层对点击链点响应的判断，增加插入图片、插入图片链点、点击链点背景色填充、点击链点边框线描边等功能
+ v2.0.0之后版本与v1.x.x版本差别较大，基本上重写了增加以及移除点击链点的API
+
+* ***V1.0.2***
+ 点击链点增加扩展属性parameter
+ 增加方法`- addLinkString: linkAddAttribute: linkParameter: block:`
+ 
+* ***V1.0.1***
+  增加文本中内容相同的链点能够响应点击属性sameLinkEnable，必须在设置self.attributedText前赋值，默认值为NO，只取文本中首次出现的链点。<br/>
+  CJLinkLabelModel的linkString改为NSString类型
+  
+* ***V1.0.0***
+  v1.0.0版本注意：文本内存在相同链点时只有首次出现的链点能够响应点击
 
 ## 相关介绍
 [CJLabel图文混排二 —— UILabel插入图片以及精确链点点击](http://www.jianshu.com/p/9a70533d217e)
