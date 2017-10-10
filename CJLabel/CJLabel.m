@@ -29,9 +29,9 @@ NSString * const kCJCharacterIndexAttributesName             = @"kCJCharacterInd
 //当前显示的AttributedText
 @property (nonatomic, copy) NSAttributedString *renderedAttributedText;
 @property (nonatomic, strong) UILongPressGestureRecognizer *longPressGestureRecognizer;
-@property (nonatomic, strong) CJMagnifierView *magnifierView;
-@property (nonatomic, strong) CJSelectView *selectLeftView;
-@property (nonatomic, strong) CJSelectView *selectRightView;
+@property (nonatomic, strong) CJMagnifierView *magnifierView;//放大镜
+@property (nonatomic, strong) CJSelectView *selectLeftView;//复制时候左侧选中标签
+@property (nonatomic, strong) CJSelectView *selectRightView;//复制时候右侧选中标签
 @end
 
 @implementation CJLabel {
@@ -626,6 +626,7 @@ NSString * const kCJCharacterIndexAttributesName             = @"kCJCharacterInd
         }
     }
     CGContextRestoreGState(c);
+    _needRedrawn = NO;
 }
 
 #pragma mark - Draw Method
@@ -667,7 +668,6 @@ NSString * const kCJCharacterIndexAttributesName             = @"kCJCharacterInd
         [self drawBackgroundColor:c runStrokeItems:_allRunItemArray isStrokeColor:NO isCopyFillCloor:YES];
     }
     
-    
     CFArrayRef lines = CTFrameGetLines(frame);
     if (_numberOfLines == -1) {
         _numberOfLines = self.numberOfLines > 0 ? MIN(self.numberOfLines, CFArrayGetCount(lines)) : CFArrayGetCount(lines);
@@ -678,7 +678,7 @@ NSString * const kCJCharacterIndexAttributesName             = @"kCJCharacterInd
     CGPoint lineOrigins[_numberOfLines];
     CTFrameGetLineOrigins(frame, CFRangeMake(0, _numberOfLines), lineOrigins);
 
-    for (CFIndex lineIndex = 0; lineIndex < _numberOfLines; lineIndex++) {
+    for (CFIndex lineIndex = 0; lineIndex < MIN(_numberOfLines, CFArrayGetCount(lines)); lineIndex++) {
         CGPoint lineOrigin = lineOrigins[lineIndex];
         CGContextSetTextPosition(c, lineOrigin.x, lineOrigin.y);
         CTLineRef line = CFArrayGetValueAtIndex(lines, lineIndex);
@@ -893,9 +893,9 @@ NSString * const kCJCharacterIndexAttributesName             = @"kCJCharacterInd
     if (runStrokeItems.count > 0) {
         for (CJGlyphRunStrokeItem *item in runStrokeItems) {
             if (isCopyFillCloor) {
-//                if (item.isSelect) {
+                if (item.isSelect) {
                     [self drawBackgroundColor:c runStrokeItem:item isStrokeColor:NO active:NO isCopyFillCloor:YES];
-//                }
+                }
             }else{
                 if (_currentClickRunStrokeItem && NSEqualRanges(_currentClickRunStrokeItem.range,item.range)) {
                     [self drawBackgroundColor:c runStrokeItem:item isStrokeColor:isStrokeColor active:YES isCopyFillCloor:NO];
@@ -966,7 +966,7 @@ NSString * const kCJCharacterIndexAttributesName             = @"kCJCharacterInd
 - (NSArray *)allCTLineVerticalLayoutArray:(NSArray *)lines origins:(CGPoint[])origins inRect:(CGRect)rect context:(CGContextRef)c {
     NSMutableArray *verticalLayoutArray = [NSMutableArray arrayWithCapacity:3];
     // 遍历所有行
-    for (NSInteger i = 0; i < _numberOfLines; i ++ ) {
+    for (NSInteger i = 0; i < MIN(_numberOfLines, lines.count); i ++ ) {
         CTLineRef line = (__bridge CTLineRef)lines[i];
         
         CGFloat ascent = 0.0f, descent = 0.0f, leading = 0.0f;
@@ -1024,7 +1024,7 @@ NSString * const kCJCharacterIndexAttributesName             = @"kCJCharacterInd
     
     CJCTLineVerticalLayout lineVerticalLayout = {0,0,0};
     // 遍历所有行
-    for (NSInteger i = 0; i < _numberOfLines; i ++ ) {
+    for (NSInteger i = 0; i < MIN(_numberOfLines, lines.count); i ++ ) {
         id line = lines[i];
         _lastGlyphRunStrokeItem = nil;
         
@@ -1123,6 +1123,7 @@ NSString * const kCJCharacterIndexAttributesName             = @"kCJCharacterInd
             runStrokeItem.fillCopyColor = ENABLE_COPY_FILL_COLOR;
             
             if (self.enableCopy) {
+                runStrokeItem.isSelect = NO;
                 [allRunItemArray addObject:runStrokeItem];
             }
             
@@ -1460,34 +1461,44 @@ NSString * const kCJCharacterIndexAttributesName             = @"kCJCharacterInd
 }
 
 
-- (void)showCJSelectViewWithTouch:(UITouch *)touch {
-    CGPoint point = [touch locationInView:self];
+- (void)showCJSelectViewWithPoint:(CGPoint)point selectType:(NSInteger)type {
     
-    [self.magnifierView makeKeyAndVisible];
-    self.magnifierView.hidden = NO;
-    
+    BOOL needUpdateCopyFrame = NO;
     CJCTLineVerticalLayout lineVerticalLayout;
-    BOOL needUpdate = NO;
-    for (NSValue *value in _CTLineVerticalLayoutArray) {
-        [value getValue:&lineVerticalLayout];
-        if (CGRectContainsPoint(lineVerticalLayout.lineRect, point)) {
-            needUpdate = YES;
+    CGRect itemRect = CGRectZero;
+    for (CJGlyphRunStrokeItem *item in _allRunItemArray) {
+        if (CGRectContainsPoint(item.locBounds, point)) {
+            item.isSelect = YES;
+            lineVerticalLayout = item.lineVerticalLayout;
+            needUpdateCopyFrame = YES;
+            itemRect = item.locBounds;
             break;
         }
     }
-    if (needUpdate) {
+    if (needUpdateCopyFrame) {
+        CGPoint selectPoint = CGPointMake(point.x, lineVerticalLayout.lineRect.origin.y);
+        CGPoint pointToMagnify = CGPointMake(point.x, lineVerticalLayout.lineRect.origin.y + lineVerticalLayout.lineRect.size.height/2);
+        CGPoint showMagnifierViewPoint = [self convertPoint:selectPoint toView:self.window];
+        [self.magnifierView makeKeyAndVisible];
+        self.magnifierView.hidden = NO;
+        [self.magnifierView updateMagnifyPoint:pointToMagnify showMagnifyViewIn:showMagnifierViewPoint];
+        
         self.selectLeftView.hidden = self.selectRightView.hidden = NO;
         [self bringSubviewToFront:self.selectLeftView];
         [self bringSubviewToFront:self.selectRightView];
-        CGPoint showSclcetViewPoint = CGPointMake(point.x, lineVerticalLayout.lineRect.origin.y);
-        [self.selectLeftView updateCJSelectViewHeight:lineVerticalLayout.lineRect.size.height showCJSelectViewIn:showSclcetViewPoint];
-        [self.selectRightView updateCJSelectViewHeight:lineVerticalLayout.lineRect.size.height showCJSelectViewIn:showSclcetViewPoint];
+
+        if (type == 0 || type == 1) {
+            [self.selectLeftView updateCJSelectViewHeight:lineVerticalLayout.lineRect.size.height showCJSelectViewIn:CGPointMake(itemRect.origin.x, selectPoint.y)];
+        }
+        if (type == 0 || type == 2) {
+            [self.selectRightView updateCJSelectViewHeight:lineVerticalLayout.lineRect.size.height showCJSelectViewIn:CGPointMake(itemRect.origin.x+itemRect.size.width, selectPoint.y)];
+        }
         
-        CGPoint pointToMagnify = CGPointMake(point.x, lineVerticalLayout.lineRect.origin.y + lineVerticalLayout.lineRect.size.height/2);
-        CGPoint showMagnifierViewPoint = [self convertPoint:showSclcetViewPoint toView:self.window];
-        [self.magnifierView updateMagnifyPoint:pointToMagnify showMagnifyViewIn:showMagnifierViewPoint];
+        [self setNeedsDisplay];
+        //立即刷新界面
+        [CATransaction flush];
+
     }
-    
 }
 
 - (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event {
@@ -1510,13 +1521,20 @@ NSString * const kCJCharacterIndexAttributesName             = @"kCJCharacterInd
 
 - (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event {
     [super touchesMoved:touches withEvent:event];
-//    if (self.magnifierView.hidden == NO) {
-//        CGPoint pointToMagnify = [[touches anyObject] locationInView:self];
-//        if (CGRectContainsPoint(CGRectInset(self.bounds, 1.1, 1.1), pointToMagnify)) {
-//            CGPoint showPoint = [[touches anyObject] locationInView:self.window];
-//            [self.magnifierView updateMagnifyPoint:pointToMagnify showMagnifyViewIn:showPoint];
-//        }
-//    }
+    if (self.enableCopy && self.selectLeftView.hidden == NO && self.selectRightView.hidden == NO) {
+        CGPoint point = [[touches anyObject] locationInView:self];
+        //点击拖动selectLeftView
+        if (CGRectContainsPoint(CGRectInset(self.selectLeftView.frame, -2.f, -2.f), point)) {
+            CGPoint selectPoint = CGPointMake(point.x, (self.selectLeftView.frame.size.height/2)+self.selectLeftView.frame.origin.y);
+            [self showCJSelectViewWithPoint:selectPoint selectType:1];
+        }
+        //点击拖动selectRightView
+        if (CGRectContainsPoint(CGRectInset(self.selectRightView.frame, -2.f, -2.f), point)) {
+            CGPoint selectPoint = CGPointMake(point.x, (self.selectRightView.frame.size.height)/2+self.selectRightView.frame.origin.y);
+            [self showCJSelectViewWithPoint:selectPoint selectType:2];
+        }
+
+    }
 }
 
 - (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event {
@@ -1631,8 +1649,12 @@ NSString * const kCJCharacterIndexAttributesName             = @"kCJCharacterInd
             break;
         }
         case UIGestureRecognizerStateChanged:{
-            if (!isLinkItem) {
-                [self showCJSelectViewWithTouch:touch];
+            if (self.enableCopy) {
+                for (CJGlyphRunStrokeItem *item in _allRunItemArray) {
+                    item.isSelect = NO;
+                }
+                CGPoint point = [touch locationInView:self];
+                [self showCJSelectViewWithPoint:point selectType:0];
             }
         }
         default:
@@ -1799,11 +1821,11 @@ NSString * const kCJCharacterIndexAttributesName             = @"kCJCharacterInd
 
 - (void)updateCJSelectViewHeight:(CGFloat)height showCJSelectViewIn:(CGPoint)showPoint {
     if (self.isLeft) {
-        self.frame = CGRectMake(showPoint.x, showPoint.y-10-2, 10, height+10);
+        self.frame = CGRectMake(showPoint.x-5, showPoint.y-10-2, 10, height+10);
         self.lineLayer.frame = CGRectMake(4, 10, 2, 20);
         self.roundLayer.frame = CGRectMake(0, 0, 10, 10);
     }else{
-        self.frame = CGRectMake(showPoint.x, showPoint.y-2, 10, height+10);
+        self.frame = CGRectMake(showPoint.x-5, showPoint.y-2, 10, height+10);
         self.lineLayer.frame = CGRectMake(4, 0, 2, 20);
         self.roundLayer.frame = CGRectMake(0, 20, 10, 10);
     }
