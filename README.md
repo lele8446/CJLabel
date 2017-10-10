@@ -2,7 +2,7 @@
 
 ***注意***
 
-V3.0.0版本引入CJLabelConfigure类，优化了NSAttributedString的设置，旧的配置API不再支持。相关调用请参照以下相关方法<br/>
+**V3.0.0** 版本引入CJLabelConfigure类，优化了NSAttributedString的设置，旧的配置API不再支持。相关调用请参照以下相关方法<br/>
 `+ initWithImageName:imageSize:imagelineAlignment:configure:`<br/>
 `+ initWithString:configure:`<br/>
 `+ initWithAttributedString:strIdentifier:configure:`<br/>
