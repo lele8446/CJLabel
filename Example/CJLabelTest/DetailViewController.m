@@ -29,8 +29,9 @@
     self.automaticallyAdjustsScrollViewInsets = NO;
     
     self.firstLabel.numberOfLines = 0;
+    self.firstLabel.enableCopy = YES;
     
-    NSAttributedString *content = self.content;
+    NSMutableAttributedString *content = self.content;
     [self handleContent:content];
 
 }
@@ -39,11 +40,17 @@
     [super didReceiveMemoryWarning];
 }
 
-- (void)handleContent:(NSAttributedString *)content {
+- (void)handleContent:(NSMutableAttributedString *)content {
+    /* 设置默认换行模式为：NSLineBreakByCharWrapping
+     * 当Label的宽度不够显示内容或图片的时候就自动换行, 不自动换行, 部分图片将会看不见
+     */
+    NSMutableParagraphStyle *paragraph = [[NSMutableParagraphStyle alloc] init];
+    paragraph.lineBreakMode = NSLineBreakByCharWrapping;
+    paragraph.lineSpacing = 6;
     
     CJLabelConfigure *configure =
     [CJLabelConfigure configureAttributes:@{NSForegroundColorAttributeName:[UIColor blackColor],
-                                            NSFontAttributeName:[UIFont boldSystemFontOfSize:15]
+                                            NSFontAttributeName:[UIFont boldSystemFontOfSize:15],
                                             }
                                    isLink:NO
                      activeLinkAttributes:nil
@@ -51,7 +58,8 @@
                            clickLinkBlock:nil
                            longPressBlock:nil];
     
-    NSAttributedString *attStr = content;
+    NSMutableAttributedString *attStr = content;
+    [attStr addAttribute:NSParagraphStyleAttributeName value:paragraph range:NSMakeRange(0, attStr.length)];
     attStr = [CJLabel configureAttrString:attStr atRange:NSMakeRange(0, 3) configure:configure];
     self.attStr = attStr;
     switch (self.index) {
@@ -180,7 +188,7 @@
     CJLabelConfigure *configure =
     [CJLabelConfigure configureAttributes:@{
                                             NSForegroundColorAttributeName:[UIColor blueColor],
-                                            NSFontAttributeName:[UIFont boldSystemFontOfSize:15],
+                                            NSFontAttributeName:[UIFont boldSystemFontOfSize:self.index == 5?16:15],
                                             kCJBackgroundStrokeColorAttributeName:[UIColor orangeColor],
                                             kCJBackgroundLineWidthAttributeName:@(self.index == 5?1:2),
                                             kCJBackgroundFillColorAttributeName:[UIColor lightGrayColor]
@@ -222,15 +230,7 @@
                            }];
     attStr = [CJLabel insertImageAtAttrString:attStr imageName:@"CJLabel.png" imageSize:CGSizeMake(60, 48) atIndex:(imageRange.location+imageRange.length) imagelineAlignment:verticalAlignment configure:imgConfigure];
 
-    /* 设置默认换行模式为：NSLineBreakByCharWrapping
-     * 当Label的宽度不够显示内容或图片的时候就自动换行, 不自动换行, 部分图片将会看不见
-     */
-    NSMutableAttributedString *str = [[NSMutableAttributedString alloc]initWithAttributedString:attStr];
-    NSMutableParagraphStyle *paragraph = [[NSMutableParagraphStyle alloc] init];
-    paragraph.lineBreakMode = NSLineBreakByCharWrapping;
-    [str addAttribute:NSParagraphStyleAttributeName value:paragraph range:NSMakeRange(0, str.length)];
-    
-    self.firstLabel.attributedText = str;
+    self.firstLabel.attributedText = attStr;
     self.firstLabel.extendsLinkTouchArea = YES;
 }
 

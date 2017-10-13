@@ -133,7 +133,13 @@ CGFloat RunDelegateGetWidthCallback(void * refCon) {
     if (attributedStringRange.length > 0) {
         dic = [attributedString attributesAtIndex:0 effectiveRange:&attributedStringRange];
     }
+    //判断是否有设置NSParagraphStyleAttributeName属性
     NSMutableParagraphStyle *paragraph = dic[NSParagraphStyleAttributeName];
+    //判断linkAttributes中是否有设置NSParagraphStyleAttributeName属性
+    if (CJLabelIsNull(paragraph)) {
+        paragraph = linkAttributes[NSParagraphStyleAttributeName];
+    }
+    //都没有设置，取默认值
     if (CJLabelIsNull(paragraph)) {
         paragraph = [[NSMutableParagraphStyle alloc] init];
         paragraph.lineBreakMode = NSLineBreakByCharWrapping;
@@ -414,3 +420,141 @@ CGFloat RunDelegateGetWidthCallback(void * refCon) {
 }
 
 @end
+
+@interface CJMagnifierView ()
+@property (strong, nonatomic) CALayer *contentLayer;
+@end
+@implementation CJMagnifierView
+
+- (id)init {
+    self = [super init];
+    if (self) {
+        self.frame = CGRectMake(0, 0, 120, 65);
+        self.backgroundColor = [UIColor clearColor];
+        self.windowLevel = UIWindowLevelAlert;
+        
+        //白色背景
+        CALayer *backLayer = [CALayer layer];
+        backLayer.frame = CGRectMake(0, 0, 120, 30);
+        backLayer.backgroundColor = [UIColor whiteColor].CGColor;
+        backLayer.cornerRadius = 5;
+        backLayer.borderWidth = 1/[[UIScreen mainScreen] scale];
+        backLayer.borderColor = [[UIColor lightGrayColor] CGColor];
+        //masksToBounds开启会影响阴影效果
+        //        backLayer.masksToBounds = YES;
+        backLayer.shadowColor = [UIColor lightGrayColor].CGColor;
+        backLayer.shadowOffset = CGSizeMake(0,0.5);
+        backLayer.shadowOpacity = 0.75;
+        backLayer.shadowRadius = 0.75;
+        [self.layer addSublayer:backLayer];
+        
+        //底部白色小三角
+        CALayer *whiteLayer = [CALayer layer];
+        whiteLayer.frame = CGRectMake(51, 21.5, 18, 18);
+        whiteLayer.backgroundColor = [UIColor whiteColor].CGColor;
+        whiteLayer.contentsScale = [[UIScreen mainScreen] scale];
+        whiteLayer.shadowColor = [UIColor lightGrayColor].CGColor;
+        whiteLayer.shadowOffset = CGSizeMake(0.6,0.6);
+        whiteLayer.shadowOpacity = 0.85;
+        whiteLayer.shadowRadius = 0.85;
+        [self.layer addSublayer:whiteLayer];
+        CATransform3D transform = CATransform3DMakeRotation(M_PI/4, 0, 0, 1);
+        whiteLayer.transform = transform;
+        CALayer *whiteTriangleLayer = [CALayer layer];
+        whiteTriangleLayer.frame = CGRectMake(50, 20, 20, 20);
+        whiteTriangleLayer.backgroundColor = [UIColor whiteColor].CGColor;
+        whiteTriangleLayer.contentsScale = [[UIScreen mainScreen] scale];
+        [self.layer addSublayer:whiteTriangleLayer];
+        whiteTriangleLayer.transform = transform;
+        
+        //放大绘制layer
+        self.contentLayer = [CALayer layer];
+        self.contentLayer.frame = CGRectMake(0, 0, 120, 30);
+        self.contentLayer.cornerRadius = 5;
+        self.contentLayer.masksToBounds = YES;
+        self.contentLayer.delegate = self;
+        self.contentLayer.contentsScale = [[UIScreen mainScreen] scale];
+        [self.layer addSublayer:self.contentLayer];
+        
+    }
+    
+    return self;
+}
+
+- (void)setPointToMagnify:(CGPoint)pointToMagnify {
+    _pointToMagnify = pointToMagnify;
+    [self.contentLayer setNeedsDisplay];
+}
+
+- (void)updateMagnifyPoint:(CGPoint)pointToMagnify showMagnifyViewIn:(CGPoint)showPoint {
+    CGPoint center = CGPointMake(showPoint.x, self.center.y);
+    if (showPoint.y > CGRectGetHeight(self.bounds) * 0.5) {
+        center.y = showPoint.y -  CGRectGetHeight(self.bounds) / 2;
+    }
+    self.center = CGPointMake(center.x, center.y);
+    self.pointToMagnify = pointToMagnify;
+}
+
+- (void)drawLayer:(CALayer *)layer inContext:(CGContextRef)ctx {
+    CGContextTranslateCTM(ctx, self.frame.size.width * 0.5, self.frame.size.height * 0.5-17);
+    CGContextScaleCTM(ctx, 1.35, 1.35);
+    CGContextTranslateCTM(ctx, -1 * self.pointToMagnify.x, -1 * self.pointToMagnify.y);
+    [self.viewToMagnify.layer renderInContext:ctx];
+    
+}
+
+@end
+
+@interface CJSelectView ()
+@property (nonatomic, assign) BOOL isLeft;
+@property (nonatomic, strong) CALayer *lineLayer;
+@property (nonatomic, strong) CALayer *roundLayer;
+
+@end
+@implementation CJSelectView
+
+- (CJSelectView *)initWithDirection:(BOOL)isLeft {
+    self = [super init];
+    if (self) {
+        self.frame = CGRectMake(0, 0, 10, 40);
+        self.autoresizingMask = UIViewAutoresizingNone;
+        self.backgroundColor = [UIColor clearColor];
+        self.clipsToBounds = NO;
+        
+        UIColor *color = [UIColor colorWithRed:0/255.0
+                                         green:128/255.0
+                                          blue:255/255.0
+                                         alpha:1.0];
+        
+        self.lineLayer = [CALayer layer];
+        self.lineLayer.frame = CGRectMake(4, isLeft?10:0, 2, 20);
+        self.lineLayer.backgroundColor = color.CGColor;
+        self.lineLayer.contentsScale = [[UIScreen mainScreen] scale];
+        [self.layer addSublayer:self.lineLayer];
+        
+        self.roundLayer = [CALayer layer];
+        self.roundLayer.frame = CGRectMake(0, isLeft?0:20, 10, 10);
+        self.roundLayer.backgroundColor = color.CGColor;
+        self.roundLayer.contentsScale = [[UIScreen mainScreen] scale];
+        self.roundLayer.cornerRadius = 5;
+        self.roundLayer.masksToBounds = YES;
+        [self.layer addSublayer:self.roundLayer];
+        self.isLeft = isLeft;
+    }
+    return self;
+}
+
+- (void)updateCJSelectViewHeight:(CGFloat)height showCJSelectViewIn:(CGPoint)showPoint {
+    if (self.isLeft) {
+        self.frame = CGRectMake(showPoint.x-5, showPoint.y-10-2, 10, height+10);
+        self.lineLayer.frame = CGRectMake(4, 10, 2, 20);
+        self.roundLayer.frame = CGRectMake(0, 0, 10, 10);
+    }else{
+        self.frame = CGRectMake(showPoint.x-5, showPoint.y-2, 10, height+10);
+        self.lineLayer.frame = CGRectMake(4, 0, 2, 20);
+        self.roundLayer.frame = CGRectMake(0, 20, 10, 10);
+    }
+}
+
+@end
+

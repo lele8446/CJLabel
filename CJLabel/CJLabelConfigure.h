@@ -201,15 +201,28 @@ typedef struct CJCTLineVerticalLayout CJCTLineVerticalLayout;
 @property (nonatomic, assign) BOOL isSelect;//是否被选中复制
 @property (nonatomic, copy) CJLabelLinkModelBlock linkBlock;//点击链点回调
 @property (nonatomic, copy) CJLabelLinkModelBlock longPressBlock;//长按点击链点回调
-
-
-//判断是否为点击链点
-@property (nonatomic, assign) BOOL isLink;
-//标记点击该链点是否需要重绘文本
-@property (nonatomic, assign) BOOL needRedrawn;
-
+@property (nonatomic, assign) BOOL isLink;//判断是否为点击链点
+@property (nonatomic, assign) BOOL needRedrawn;//标记点击该链点是否需要重绘文本
 
 @end
+
+/**
+ 长按时候显示的放大镜视图
+ */
+@interface CJMagnifierView : UIWindow
+@property (nonatomic, strong) UIView *viewToMagnify;//需要放大的view
+@property (nonatomic, assign) CGPoint pointToMagnify;//放大点
+
+- (void)updateMagnifyPoint:(CGPoint)pointToMagnify showMagnifyViewIn:(CGPoint)showPoint;
+
+@end
+
+@interface CJSelectView : UIView
+
+- (CJSelectView *)initWithDirection:(BOOL)isLeft;
+- (void)updateCJSelectViewHeight:(CGFloat)height showCJSelectViewIn:(CGPoint)showPoint;
+@end
+
 
 extern NSString * const kCJImageAttributeName;
 extern NSString * const kCJImageName;

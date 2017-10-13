@@ -100,6 +100,10 @@
  点击链点代理对象
  */
 @property (readwrite, nonatomic, weak) id<CJLabelLinkDelegate> delegate;
+/**
+ 是否支持复制，默认NO
+ */
+@property (readwrite, nonatomic, assign) IBInspectable BOOL enableCopy;
 
 /**
  计算NSAttributedString字符串的size大小
