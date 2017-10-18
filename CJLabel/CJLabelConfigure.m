@@ -623,6 +623,7 @@ UIWindow * keyWindow(){
     CJGlyphRunStrokeItem *_startCopyRunItem;//选中复制的第一个StrokeItem
     CGFloat _startCopyRunItemY;//_startCopyRunItem Y坐标 显示Menu（选择、全选、复制菜单时用到）
     CJGlyphRunStrokeItem *_endCopyRunItem;//选中复制的最后一个StrokeItem
+    BOOL _haveMove;
 }
 @property (nonatomic, strong) UITapGestureRecognizer *singleTapGes;//单击手势
 @property (nonatomic, strong) UITapGestureRecognizer *doubleTapGes;//双击手势
@@ -895,18 +896,50 @@ UIWindow * keyWindow(){
     if (self.selectLeftView.hidden && self.selectRightView.hidden) {
         return nil;
     }
-    CJSelectView *selectView = [self choseSelectView:point inset:1];
+    
+    //leftRect 坐标
+    CGFloat startCopyRunItemY = _startCopyRunItem.lineVerticalLayout.lineRect.origin.y;
+    CGFloat startCopyLintHeight = _startCopyRunItem.lineVerticalLayout.lineRect.size.height;
+    CGFloat headHeight = ({
+        CGFloat height = _startCopyRunItem.lineVerticalLayout.lineRect.size.height;
+        height = MAX(height, _startCopyRunItem.lineVerticalLayout.maxRunHeight);
+        height = MAX(height, _startCopyRunItem.lineVerticalLayout.maxImageHeight);
+        height;
+    });
+    startCopyRunItemY = startCopyRunItemY - (headHeight - startCopyLintHeight);
+    CGRect leftRect = CGRectMake(_startCopyRunItem.withOutMergeBounds.origin.x-5, startCopyRunItemY-10, 10, headHeight+10);
+    
+    //rightRect 坐标
+    CGFloat tailWidth = _endCopyRunItem.withOutMergeBounds.origin.x+_endCopyRunItem.withOutMergeBounds.size.width;
+    CGFloat tailHeight = _endCopyRunItem.lineVerticalLayout.lineRect.size.height - self.label.font.descender;
+    CGFloat endCopyRunItemY = _endCopyRunItem.lineVerticalLayout.lineRect.origin.y;
+    CGFloat tailY = ({
+        CGFloat yy = _endCopyRunItem.lineVerticalLayout.lineRect.origin.y;
+        for (NSValue *value in _CTLineVerticalLayoutArray) {
+            CJCTLineVerticalLayout themLineVerticalLayout;
+            [value getValue:&themLineVerticalLayout];
+            if (themLineVerticalLayout.line+1 == _endCopyRunItem.lineVerticalLayout.line) {
+                yy = themLineVerticalLayout.lineRect.origin.y + themLineVerticalLayout.lineRect.size.height;
+                break;
+            }
+        }
+        yy;
+    });
+    tailHeight = tailHeight + (endCopyRunItemY - tailY);
+    CGRect rightRect = CGRectMake(tailWidth-5, tailY, 10, tailHeight+10);
+    
+    CJSelectView *selectView = [self choseSelectView:point inset:1 leftRect:leftRect rightRect:rightRect];
     return selectView;
 }
 
-- (CJSelectView *)choseSelectView:(CGPoint)point inset:(CGFloat)inset {
+- (CJSelectView *)choseSelectView:(CGPoint)point inset:(CGFloat)inset leftRect:(CGRect)leftRect rightRect:(CGRect)rightRect {
     CJSelectView *selectView = nil;
     
-    BOOL inLeftView = CGRectContainsPoint(CGRectInset(self.selectLeftView.frame, inset, inset), point);
-    BOOL inRightView = CGRectContainsPoint(CGRectInset(self.selectRightView.frame, inset, inset), point);
+    BOOL inLeftView = CGRectContainsPoint(CGRectInset(leftRect, inset, inset), point);
+    BOOL inRightView = CGRectContainsPoint(CGRectInset(rightRect, inset, inset), point);
     
     if (!inLeftView && !inRightView) {
-        return [self choseSelectView:point inset:inset+(-0.15)];
+        return [self choseSelectView:point inset:inset+(-0.15) leftRect:leftRect rightRect:rightRect];
     }
     else if (inLeftView && !inRightView) {
         selectView = self.selectLeftView;
@@ -917,7 +950,7 @@ UIWindow * keyWindow(){
         return selectView;
     }
     else if (inLeftView && inRightView) {
-        return [self choseSelectView:point inset:inset+(0.25)];
+        return [self choseSelectView:point inset:inset+(0.25) leftRect:leftRect rightRect:rightRect];
     }else{
         return selectView;
     }
@@ -967,7 +1000,9 @@ UIWindow * keyWindow(){
 }
 
 - (void)tapOneAct:(UITapGestureRecognizer *)sender {
-    [self hideView];
+    if (!_haveMove) {
+        [self hideView];
+    }
 }
 
 - (void)tapTwoAct:(UITapGestureRecognizer *)sender {
@@ -1026,6 +1061,7 @@ UIWindow * keyWindow(){
 }
 
 - (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event {
+    _haveMove = NO;
     CGPoint point = [[touches anyObject] locationInView:self];
     //复制选择正在移动的大头针(用来判断selectLeftView还是selectRightView的临时视图)
     self.selectView = [self choseSelectView:point];
@@ -1035,9 +1071,11 @@ UIWindow * keyWindow(){
     if (!self.selectLeftView.hidden && !self.selectRightView.hidden) {
         [self showMenuView];
     }
+    _haveMove = NO;
 }
 
 - (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event {
+    _haveMove = YES;
     CGPoint point = [[touches anyObject] locationInView:self];
     
     CJGlyphRunStrokeItem *currentItem = nil;
