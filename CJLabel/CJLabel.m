@@ -27,11 +27,6 @@ NSString * const kCJCharacterIndexInfoAttributesName         = @"kCJCharacterInd
 @property (nonatomic, copy) NSAttributedString *renderedAttributedText;
 @property (nonatomic, strong) UILongPressGestureRecognizer *longPressGestureRecognizer;//长按手势
 @property (nonatomic, strong) UITapGestureRecognizer *doubleTapGes;//双击手势
-//@property (nonatomic, strong) CJMagnifierView *magnifierView;//放大镜
-//@property (nonatomic, strong) CJSelectView *selectLeftView;//复制时候左侧选中大头针
-//@property (nonatomic, strong) CJSelectView *selectRightView;//复制时候右侧选中大头针
-//@property (nonatomic, strong) CJSelectView *selectView;//复制选择正在移动的大头针(用来判断selectLeftView还是selectRightView的临时视图)
-//@property (nonatomic, strong) CJSelectTextRangeView *textRangeView;//选中复制填充背景色的view
 @end
 
 @implementation CJLabel {
@@ -93,12 +88,6 @@ NSString * const kCJCharacterIndexInfoAttributesName         = @"kCJCharacterInd
     _longPressGestureRecognizer.delegate = self;
     [self addGestureRecognizer:_longPressGestureRecognizer];
     
-    self.doubleTapGes =[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(tapTwoAct:)];
-    //几次点击时触发事件 ,默认值为1
-    self.doubleTapGes.numberOfTapsRequired = 2;
-    self.doubleTapGes.delegate = self;
-    [self addGestureRecognizer:self.doubleTapGes];
-    
     self.enableCopy = NO;
 }
 
@@ -123,19 +112,10 @@ NSString * const kCJCharacterIndexInfoAttributesName         = @"kCJCharacterInd
 - (void)setEnableCopy:(BOOL)enableCopy {
     _enableCopy = enableCopy;
     if (_enableCopy) {
-        //选择复制相关视图
-//        self.magnifierView = [[CJMagnifierView alloc] init];
-//        self.magnifierView.viewToMagnify = self;
-//
-//        self.selectLeftView = [[CJSelectView alloc]initWithDirection:YES];
-//        self.selectLeftView.hidden = YES;
-//        [self addSubview:self.selectLeftView];
-//        self.selectRightView = [[CJSelectView alloc]initWithDirection:NO];
-//        self.selectRightView.hidden = YES;
-//        [self addSubview:self.selectRightView];
-//        self.textRangeView = [[CJSelectTextRangeView alloc]init];
-//        self.textRangeView.hidden = YES;
-//        [self addSubview:self.textRangeView];
+        self.doubleTapGes =[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(tapTwoAct:)];
+        self.doubleTapGes.numberOfTapsRequired = 2;
+        self.doubleTapGes.delegate = self;
+        [self addGestureRecognizer:self.doubleTapGes];
     }
 }
 
@@ -257,7 +237,7 @@ NSString * const kCJCharacterIndexInfoAttributesName         = @"kCJCharacterInd
     _CTLineVerticalLayoutArray = nil;
     _numberOfLines = -1;
     _needRedrawn = YES;
-//    [self hideAllCopySelectView];
+    [[CJSelectBackView instance] hideView];
 }
 
 - (CTFramesetterRef)framesetter {

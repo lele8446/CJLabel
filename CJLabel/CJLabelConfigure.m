@@ -49,14 +49,18 @@ CGFloat RunDelegateGetWidthCallback(void * refCon) {
 }
 
 UIWindow * keyWindow(){
-    UIWindow *window = [[UIApplication sharedApplication] keyWindow];
-    return window;
+    UIApplication *app = [UIApplication sharedApplication];
+    if ([app.delegate respondsToSelector:@selector(window)]) {
+        return [app.delegate window];
+    } else {
+        return [app keyWindow];
+    }
 }
 
 @implementation CJLabelConfigure
-+ (instancetype)configureAttributes:(NSDictionary<NSAttributedStringKey, id> *)attributes
++ (instancetype)configureAttributes:(NSDictionary<NSString *, id> *)attributes
                              isLink:(BOOL)isLink
-               activeLinkAttributes:(NSDictionary<NSAttributedStringKey, id> *)activeLinkAttributes
+               activeLinkAttributes:(NSDictionary<NSString *, id> *)activeLinkAttributes
                           parameter:(id)parameter
                      clickLinkBlock:(CJLabelLinkModelBlock)clickLinkBlock
                      longPressBlock:(CJLabelLinkModelBlock)longPressBlock
@@ -429,8 +433,26 @@ UIWindow * keyWindow(){
 
 @end
 
+@interface CJContentLayer : CALayer
+@property (nonatomic, assign) CGPoint pointToMagnify;//放大点
+@property (nonatomic, strong) UIView *viewToMagnify;//需要放大的view
+@property (nonatomic, strong) UIView *viewToMagnify2;//需要放大的view
+@end
+@implementation CJContentLayer
+
+- (void)drawInContext:(CGContextRef)ctx {
+    CGContextTranslateCTM(ctx, self.frame.size.width * 0.5, self.frame.size.height * 0.5);
+    CGContextScaleCTM(ctx, 1.35, 1.35);
+    CGContextTranslateCTM(ctx, -1 * self.pointToMagnify.x, -1 * self.pointToMagnify.y);
+    [self.viewToMagnify.layer renderInContext:ctx];
+    [self.viewToMagnify2.layer renderInContext:ctx];
+}
+
+
+@end
+
 @interface CJMagnifierView ()
-@property (strong, nonatomic) CALayer *contentLayer;
+@property (strong, nonatomic) CJContentLayer *contentLayer;
 @end
 @implementation CJMagnifierView
 
@@ -438,7 +460,6 @@ UIWindow * keyWindow(){
     self = [super initWithFrame:frame];
     if (self) {
         self.backgroundColor = [UIColor clearColor];
-        self.windowLevel = UIWindowLevelAlert;
         
         //白色背景
         CALayer *backLayer = [CALayer layer];
@@ -475,19 +496,31 @@ UIWindow * keyWindow(){
         whiteTriangleLayer.transform = transform;
         
         //放大绘制layer
-        self.contentLayer = [CALayer layer];
+        self.contentLayer = [CJContentLayer layer];
         self.contentLayer.frame = CGRectMake(0, 0, 120, 30);
         self.contentLayer.cornerRadius = 5;
         self.contentLayer.masksToBounds = YES;
-        self.contentLayer.delegate = self;
+//        self.contentLayer.delegate = self;
         self.contentLayer.contentsScale = [[UIScreen mainScreen] scale];
         [self.layer addSublayer:self.contentLayer];
     }
     return self;
 }
 
+- (void)setViewToMagnify:(UIView *)viewToMagnify {
+    _viewToMagnify = viewToMagnify;
+    self.contentLayer.viewToMagnify = viewToMagnify;
+}
+
+- (void)setViewToMagnify2:(UIView *)viewToMagnify2 {
+    _viewToMagnify2 = viewToMagnify2;
+    self.contentLayer.viewToMagnify2 = viewToMagnify2;
+}
+
+
 - (void)setPointToMagnify:(CGPoint)pointToMagnify {
     _pointToMagnify = pointToMagnify;
+    self.contentLayer.pointToMagnify = pointToMagnify;
     [self.contentLayer setNeedsDisplay];
 }
 
@@ -501,14 +534,16 @@ UIWindow * keyWindow(){
 }
 
 - (void)drawLayer:(CALayer *)layer inContext:(CGContextRef)ctx {
-    CGContextTranslateCTM(ctx, self.frame.size.width * 0.5, self.frame.size.height * 0.5-17);
-    CGContextScaleCTM(ctx, 1.35, 1.35);
-    CGContextTranslateCTM(ctx, -1 * self.pointToMagnify.x, -1 * self.pointToMagnify.y);
-    [self.viewToMagnify.layer renderInContext:ctx];
+//    CGContextTranslateCTM(ctx, self.frame.size.width * 0.5, self.frame.size.height * 0.5-17);
+//    CGContextScaleCTM(ctx, 1.35, 1.35);
+//    CGContextTranslateCTM(ctx, -1 * self.pointToMagnify.x, -1 * self.pointToMagnify.y);
+//    [self.viewToMagnify.layer renderInContext:ctx];
 
 }
 
 @end
+
+
 
 @interface CJSelectView ()
 @property (nonatomic, assign) BOOL isLeft;
@@ -526,10 +561,7 @@ UIWindow * keyWindow(){
         self.backgroundColor = [UIColor clearColor];
         self.clipsToBounds = NO;
         
-        UIColor *color = [UIColor colorWithRed:0/255.0
-                                         green:128/255.0
-                                          blue:255/255.0
-                                         alpha:1.0];
+        UIColor *color = [UIColor colorWithRed:0/255.0 green:128/255.0 blue:255/255.0 alpha:1.0];
         
         self.lineLayer = [CALayer layer];
         self.lineLayer.frame = CGRectMake(4, isLeft?10:0, 2, 20);
@@ -638,7 +670,8 @@ UIWindow * keyWindow(){
         manager.backgroundColor = [UIColor clearColor];
 
         //选择复制相关视图
-//        manager.magnifierView = [[CJMagnifierView alloc] initWithFrame:CGRectMake(0, 0, 120, 65)];
+        manager.magnifierView = [[CJMagnifierView alloc] initWithFrame:CGRectMake(0, 0, 120, 65)];
+        [manager addSubview:manager.magnifierView];
         
         manager.selectLeftView = [[CJSelectView alloc]initWithDirection:YES];
         manager.selectLeftView.hidden = YES;
@@ -667,13 +700,25 @@ UIWindow * keyWindow(){
         manager.longPressGestureRecognizer.delegate = manager;
 //        [manager addGestureRecognizer:manager.longPressGestureRecognizer];
         
+        [[NSNotificationCenter defaultCenter] addObserver:manager selector:@selector(applicationEnterBackground) name: UIApplicationDidEnterBackgroundNotification object:nil];
+    
+        
     });
     return manager;
 }
 
+- (void)dealloc {
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
+}
+
+- (void)applicationEnterBackground {
+    [self hideView];
+}
+
 - (void)setLabel:(CJLabel *)label {
     _label = label;
-    self.magnifierView.viewToMagnify = self;
+    self.magnifierView.viewToMagnify = self.label;
+    self.magnifierView.viewToMagnify2 = self;
 }
 
 #pragma mark - UIResponder
@@ -756,6 +801,10 @@ UIWindow * keyWindow(){
          allCTLineVerticalArray:(NSArray *)allCTLineVerticalArray
                 allRunItemArray:(NSArray <CJGlyphRunStrokeItem *>*)allRunItemArray
 {
+    if (self.label == label && _startCopyRunItem && CGRectEqualToRect(_startCopyRunItem.withOutMergeBounds, item.withOutMergeBounds) ) {
+        return;
+    }
+    
     self.label = label;
     CGRect labelFrame = [label.superview convertRect:self.label.frame toView:keyWindow()];
     self.frame = labelFrame;
@@ -789,8 +838,7 @@ UIWindow * keyWindow(){
     CGPoint selectPoint = CGPointMake(point.x, lineVerticalLayout.lineRect.origin.y);
     CGPoint pointToMagnify = CGPointMake(point.x, lineVerticalLayout.lineRect.origin.y + lineVerticalLayout.lineRect.size.height/2);
     //更新放大镜的位置
-    CGPoint showMagnifierViewPoint = [self convertPoint:selectPoint toView:self.window];
-    [self.magnifierView makeKeyAndVisible];
+    CGPoint showMagnifierViewPoint = [self convertPoint:selectPoint toView:keyWindow()];
     self.magnifierView.hidden = NO;
     [self.magnifierView updateMagnifyPoint:pointToMagnify showMagnifyViewIn:showMagnifierViewPoint];
     
@@ -1136,7 +1184,6 @@ UIWindow * keyWindow(){
                                startCopyRunItem:_startCopyRunItem
                                  endCopyRunItem:_endCopyRunItem
                          allCTLineVerticalArray:_CTLineVerticalLayoutArray];
-                NSLog(@"LeftView 最后");
             }
         }
         else if (self.selectView == self.selectRightView) {
@@ -1158,7 +1205,6 @@ UIWindow * keyWindow(){
                                startCopyRunItem:_startCopyRunItem
                                  endCopyRunItem:_endCopyRunItem
                          allCTLineVerticalArray:_CTLineVerticalLayoutArray];
-                NSLog(@"RightView 最后");
             }
         }
     }

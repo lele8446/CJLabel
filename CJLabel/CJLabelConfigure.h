@@ -46,7 +46,7 @@ typedef struct CJCTLineVerticalLayout CJCTLineVerticalLayout;
 /**
  设置链点的自定义属性
  */
-@property (nonatomic, strong) NSDictionary<NSAttributedStringKey, id> *attributes;
+@property (nonatomic, strong) NSDictionary<NSString *, id> *attributes;
 /**
  是否为可点击链点，设置 isLink=YES 时，activeLinkAttributes、parameter、clickLinkBlock、longPressBlock才有效
  */
@@ -54,7 +54,7 @@ typedef struct CJCTLineVerticalLayout CJCTLineVerticalLayout;
 /**
  设置链点点击高亮时候的自定义属性
  */
-@property (nonatomic, strong) NSDictionary<NSAttributedStringKey, id> *activeLinkAttributes;
+@property (nonatomic, strong) NSDictionary<NSString *, id> *activeLinkAttributes;
 /**
  点击链点的自定义参数
  */
@@ -71,9 +71,9 @@ typedef struct CJCTLineVerticalLayout CJCTLineVerticalLayout;
 /**
  初始化配置
  */
-+ (instancetype)configureAttributes:(NSDictionary<NSAttributedStringKey, id> *)attributes
++ (instancetype)configureAttributes:(NSDictionary<NSString *, id> *)attributes
                              isLink:(BOOL)isLink
-               activeLinkAttributes:(NSDictionary<NSAttributedStringKey, id> *)activeLinkAttributes
+               activeLinkAttributes:(NSDictionary<NSString *, id> *)activeLinkAttributes
                           parameter:(id)parameter
                      clickLinkBlock:(CJLabelLinkModelBlock)clickLinkBlock
                      longPressBlock:(CJLabelLinkModelBlock)longPressBlock;
@@ -213,8 +213,9 @@ typedef struct CJCTLineVerticalLayout CJCTLineVerticalLayout;
 /**
  长按时候显示的放大镜视图
  */
-@interface CJMagnifierView : UIWindow
+@interface CJMagnifierView : UIView
 @property (nonatomic, strong) UIView *viewToMagnify;//需要放大的view
+@property (nonatomic, strong) UIView *viewToMagnify2;//需要放大的view
 @property (nonatomic, assign) CGPoint pointToMagnify;//放大点
 
 - (void)updateMagnifyPoint:(CGPoint)pointToMagnify showMagnifyViewIn:(CGPoint)showPoint;
