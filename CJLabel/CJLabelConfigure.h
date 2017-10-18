@@ -10,8 +10,10 @@
 #import <UIKit/UIKit.h>
 #import <CoreText/CoreText.h>
 @class CJLabelLinkModel;
+@class CJLabel;
 
 #define CJLabelIsNull(a) ((a)==nil || (a)==NULL || (NSNull *)(a)==[NSNull null])
+#define CJUIRGBColor(r,g,b,a) ([UIColor colorWithRed:r/255.0 green:g/255.0 blue:b/255.0 alpha:a])
 
 typedef void (^CJLabelLinkModelBlock)(CJLabelLinkModel *linkModel);
 
@@ -184,7 +186,6 @@ typedef struct CJCTLineVerticalLayout CJCTLineVerticalLayout;
  */
 @interface CJGlyphRunStrokeItem : NSObject
 
-@property (nonatomic, strong) UIColor *fillCopyColor;//支持复制时选中字符的填充背景色
 @property (nonatomic, strong) UIColor *fillColor;//填充背景色
 @property (nonatomic, strong) UIColor *strokeColor;//描边边框色
 @property (nonatomic, strong) UIColor *activeFillColor;//点击选中时候的填充背景色
@@ -192,17 +193,20 @@ typedef struct CJCTLineVerticalLayout CJCTLineVerticalLayout;
 @property (nonatomic, assign) CGFloat lineWidth;//描边边框粗细
 @property (nonatomic, assign) CGFloat cornerRadius;//描边圆角
 @property (nonatomic, assign) CGRect runBounds;//描边区域在系统坐标下的rect（原点在左下角）
-@property (nonatomic, assign) CGRect locBounds;//描边区域在屏幕坐标下的rect（原点在左上角）
+@property (nonatomic, assign) CGRect locBounds;//描边区域在屏幕坐标下的rect（原点在左上角），相同的一组CTRun，发生了合并
+@property (nonatomic, assign) CGRect withOutMergeBounds;//每个字符对应的CTRun 在屏幕坐标下的rect（原点在左上角），没有发生合并
 @property (nonatomic, copy) NSString *imageName;//插入图片名称
 @property (nonatomic, assign) BOOL isImage;//插入图片
 @property (nonatomic, assign) NSRange range;//链点在文本中的range
 @property (nonatomic, strong) id parameter;//链点自定义参数
 @property (nonatomic, assign) CJCTLineVerticalLayout lineVerticalLayout;//所在CTLine的信息结构体
-@property (nonatomic, assign) BOOL isSelect;//是否被选中复制
 @property (nonatomic, copy) CJLabelLinkModelBlock linkBlock;//点击链点回调
 @property (nonatomic, copy) CJLabelLinkModelBlock longPressBlock;//长按点击链点回调
 @property (nonatomic, assign) BOOL isLink;//判断是否为点击链点
 @property (nonatomic, assign) BOOL needRedrawn;//标记点击该链点是否需要重绘文本
+//与选择复制相关的属性
+@property (nonatomic, assign) NSInteger characterIndex;//字符在整段文本中的index值
+@property (nonatomic, assign) NSRange characterRange;//字符在整段文本中的range值
 
 @end
 
@@ -217,12 +221,69 @@ typedef struct CJCTLineVerticalLayout CJCTLineVerticalLayout;
 
 @end
 
-@interface CJSelectView : UIView
+/**
+ 当text bounds小于label bounds时，文本的垂直对齐方式
+ */
+typedef NS_ENUM(NSInteger, CJSelectViewAction) {
+    ShowAllSelectView    = 0,//显示大头针（长按或者双击）
+    MoveLeftSelectView   = 1,//移动左边大头针
+    MoveRightSelectView  = 2 //移动右边大头针
+};
 
+/**
+ 选择复制，左右显示蓝色大头针视图
+ */
+@interface CJSelectView : UIView
 - (CJSelectView *)initWithDirection:(BOOL)isLeft;
 - (void)updateCJSelectViewHeight:(CGFloat)height showCJSelectViewIn:(CGPoint)showPoint;
 @end
 
+/**
+ 选中复制填充背景色的view
+ */
+@interface CJSelectTextRangeView : UIView
+/**
+ 前半部分选中区域
+ */
+@property (nonatomic, assign) CGRect headRect;
+/**
+ 中间部分选中区域
+ */
+@property (nonatomic, assign) CGRect middleRect;
+/**
+ 后半部分选中区域
+ */
+@property (nonatomic, assign) CGRect tailRect;
+/**
+ 选择内容是否包含不同行
+ */
+@property (nonatomic, assign) BOOL differentLine;
+- (void)updateFrame:(CGRect)frame headRect:(CGRect)headRect middleRect:(CGRect)middleRect tailRect:(CGRect)tailRect differentLine:(BOOL)differentLine;
+@end
+
+
+/**
+ 选择复制时候的操作视图
+ CJSelectBackView 在 window 层，全局只有一个
+ CJMagnifierView（放大镜）、CJSelectView（大头针）、CJSelectTextRangeView（填充背景色的view）都在 CJSelectBackView上面
+ */
+@interface CJSelectBackView : UIView
+@property (nonatomic, strong, setter=setLabel:) CJLabel *label;//选择复制对应的label
+@property (nonatomic, strong) CJMagnifierView *magnifierView;//放大镜
+@property (nonatomic, strong) CJSelectView *selectLeftView;//复制时候左侧选中大头针
+@property (nonatomic, strong) CJSelectView *selectRightView;//复制时候右侧选中大头针
+@property (nonatomic, strong) CJSelectView *selectView;//用来判断是selectLeftView还是selectRightView的临时视图
+@property (nonatomic, strong) CJSelectTextRangeView *textRangeView;//选中复制填充背景色的view
+
++ (instancetype)instance;
+- (void)showSelectViewInCJLabel:(CJLabel *)label
+                        atPoint:(CGPoint)point
+                        runItem:(CJGlyphRunStrokeItem *)item
+                   maxLineWidth:(CGFloat)maxLineWidth
+         allCTLineVerticalArray:(NSArray *)allCTLineVerticalArray
+                allRunItemArray:(NSArray <CJGlyphRunStrokeItem *>*)allRunItemArray;
+- (void)hideView;
+@end
 
 extern NSString * const kCJImageAttributeName;
 extern NSString * const kCJImageName;

@@ -70,6 +70,7 @@
             self.secondLabel.numberOfLines = 10;
             self.secondLabel.textInsets = UIEdgeInsetsMake(10, 15, 20, 0);
             self.secondLabel.verticalAlignment = CJVerticalAlignmentBottom;
+            self.secondLabel.enableCopy = YES;
             [self.view addSubview:self.secondLabel];
             
             configure.attributes = @{
@@ -129,6 +130,7 @@
             self.secondLabel.backgroundColor = UIColorFromRGB(0xf0f0de);
             self.secondLabel.numberOfLines = 0;
             self.secondLabel.verticalAlignment = CJVerticalAlignmentTop;
+            self.secondLabel.enableCopy = YES;
             [self.view addSubview:self.secondLabel];
             
             NSRange imageRange = [attStr.string rangeOfString:@"插入图片"];

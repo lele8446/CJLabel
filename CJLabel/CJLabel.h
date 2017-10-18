@@ -240,7 +240,6 @@
 @end
 
 
-
 /**
  背景填充颜色。值为UIColor。默认 `nil`。
  该属性优先级低于NSBackgroundColorAttributeName，如果设置NSBackgroundColorAttributeName会覆盖kCJBackgroundFillColorAttributeName

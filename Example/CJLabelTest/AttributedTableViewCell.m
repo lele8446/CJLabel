@@ -13,6 +13,7 @@
 - (void)awakeFromNib {
     [super awakeFromNib];
     self.label.preferredMaxLayoutWidth = [[UIScreen mainScreen] bounds].size.width - 20;
+    self.label.enableCopy = YES;
 }
 
 - (void)setSelected:(BOOL)selected animated:(BOOL)animated {

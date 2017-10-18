@@ -7,6 +7,8 @@
 //
 
 #import "CJLabelConfigure.h"
+#import "CJLabel.h"
+#import <objc/runtime.h>
 
 NSString * const kCJImageAttributeName                       = @"kCJImageAttributeName";
 NSString * const kCJImageName                                = @"kCJImageName";
@@ -44,6 +46,11 @@ CGFloat RunDelegateGetDescentCallback(void * refCon) {
 //获取图片宽度
 CGFloat RunDelegateGetWidthCallback(void * refCon) {
     return [(NSNumber *)[(__bridge NSDictionary *)refCon objectForKey:kCJImageWidth] floatValue];
+}
+
+UIWindow * keyWindow(){
+    UIWindow *window = [[UIApplication sharedApplication] keyWindow];
+    return window;
 }
 
 @implementation CJLabelConfigure
@@ -397,12 +404,12 @@ CGFloat RunDelegateGetWidthCallback(void * refCon) {
 
 - (id)copyWithZone:(NSZone *)zone {
     CJGlyphRunStrokeItem *item = [[[self class] allocWithZone:zone] init];
-    item.fillCopyColor = self.fillCopyColor;
     item.strokeColor = self.strokeColor;
     item.fillColor = self.fillColor;
     item.lineWidth = self.lineWidth;
     item.runBounds = self.runBounds;
     item.locBounds = self.locBounds;
+    item.withOutMergeBounds = self.withOutMergeBounds;
     item.cornerRadius = self.cornerRadius;
     item.activeFillColor = self.activeFillColor;
     item.activeStrokeColor = self.activeStrokeColor;
@@ -411,11 +418,12 @@ CGFloat RunDelegateGetWidthCallback(void * refCon) {
     item.range = self.range;
     item.parameter = self.parameter;
     item.lineVerticalLayout = self.lineVerticalLayout;
-    item.isSelect = self.isSelect;
     item.linkBlock = self.linkBlock;
     item.longPressBlock = self.longPressBlock;
     item.isLink = self.isLink;
     item.needRedrawn = self.needRedrawn;
+    item.characterIndex = self.characterIndex;
+    item.characterRange = self.characterRange;
     return item;
 }
 
@@ -426,10 +434,9 @@ CGFloat RunDelegateGetWidthCallback(void * refCon) {
 @end
 @implementation CJMagnifierView
 
-- (id)init {
-    self = [super init];
+- (id)initWithFrame:(CGRect)frame {
+    self = [super initWithFrame:frame];
     if (self) {
-        self.frame = CGRectMake(0, 0, 120, 65);
         self.backgroundColor = [UIColor clearColor];
         self.windowLevel = UIWindowLevelAlert;
         
@@ -475,9 +482,7 @@ CGFloat RunDelegateGetWidthCallback(void * refCon) {
         self.contentLayer.delegate = self;
         self.contentLayer.contentsScale = [[UIScreen mainScreen] scale];
         [self.layer addSublayer:self.contentLayer];
-        
     }
-    
     return self;
 }
 
@@ -500,7 +505,7 @@ CGFloat RunDelegateGetWidthCallback(void * refCon) {
     CGContextScaleCTM(ctx, 1.35, 1.35);
     CGContextTranslateCTM(ctx, -1 * self.pointToMagnify.x, -1 * self.pointToMagnify.y);
     [self.viewToMagnify.layer renderInContext:ctx];
-    
+
 }
 
 @end
@@ -516,7 +521,7 @@ CGFloat RunDelegateGetWidthCallback(void * refCon) {
 - (CJSelectView *)initWithDirection:(BOOL)isLeft {
     self = [super init];
     if (self) {
-        self.frame = CGRectMake(0, 0, 10, 40);
+        self.frame = CGRectMake(0, 0, 10, 30);
         self.autoresizingMask = UIViewAutoresizingNone;
         self.backgroundColor = [UIColor clearColor];
         self.clipsToBounds = NO;
@@ -545,16 +550,584 @@ CGFloat RunDelegateGetWidthCallback(void * refCon) {
 }
 
 - (void)updateCJSelectViewHeight:(CGFloat)height showCJSelectViewIn:(CGPoint)showPoint {
+    //高度限定为20
+//    if (height > 20) {
+        height = 20;
+//    }
     if (self.isLeft) {
-        self.frame = CGRectMake(showPoint.x-5, showPoint.y-10-2, 10, height+10);
-        self.lineLayer.frame = CGRectMake(4, 10, 2, 20);
+        self.frame = CGRectMake(showPoint.x-5, showPoint.y-10, 10, height+10);
+        self.lineLayer.frame = CGRectMake(4, 10, 2, height);
         self.roundLayer.frame = CGRectMake(0, 0, 10, 10);
     }else{
-        self.frame = CGRectMake(showPoint.x-5, showPoint.y-2, 10, height+10);
-        self.lineLayer.frame = CGRectMake(4, 0, 2, 20);
-        self.roundLayer.frame = CGRectMake(0, 20, 10, 10);
+        self.frame = CGRectMake(showPoint.x-5, showPoint.y-height, 10, height+10);
+        self.lineLayer.frame = CGRectMake(4, 0, 2, height);
+        self.roundLayer.frame = CGRectMake(0, height, 10, 10);
     }
 }
 
 @end
+
+@implementation CJSelectTextRangeView
+
+- (instancetype)init {
+    self = [super init];
+    if (self) {
+        self.backgroundColor = [UIColor clearColor];
+        self.opaque = NO;
+    }
+    return self;
+}
+
+- (void)updateFrame:(CGRect)frame headRect:(CGRect)headRect middleRect:(CGRect)middleRect tailRect:(CGRect)tailRect differentLine:(BOOL)differentLine {
+    self.differentLine = differentLine;
+    self.frame = frame;
+    self.headRect = headRect;
+    self.middleRect = middleRect;
+    self.tailRect = tailRect;
+    
+    [self setNeedsDisplay];
+}
+
+- (void)drawRect:(CGRect)rect {
+
+    CGContextRef ctx = UIGraphicsGetCurrentContext();
+
+    //背景色
+    UIColor *backColor = CJUIRGBColor(0,84,166,0.2);
+    [backColor set];
+
+    if (self.differentLine) {
+        CGContextAddRect(ctx, self.headRect);
+        if (!CGRectEqualToRect(self.middleRect,CGRectNull)) {
+            CGContextAddRect(ctx, self.middleRect);
+        }
+        CGContextAddRect(ctx, self.tailRect);
+        CGContextFillPath(ctx);
+    }else{
+        CGContextAddRect(ctx, self.middleRect);
+        CGContextFillPath(ctx);
+    }
+}
+
+@end
+
+
+
+@interface CJSelectBackView()<UIGestureRecognizerDelegate>
+{
+    CGFloat _lineVerticalMaxWidth;//每一行文字中的最大宽度
+    NSArray *_CTLineVerticalLayoutArray;//记录 所有CTLine在垂直方向的对齐方式的数组
+    NSArray <CJGlyphRunStrokeItem *>*_allRunItemArray;//CJLabel包含所有CTRun信息的数组
+    CJGlyphRunStrokeItem *_firstRunItem;//最后一个StrokeItem
+    CJGlyphRunStrokeItem *_lastRunItem;//最后一个StrokeItem
+    CJGlyphRunStrokeItem *_startCopyRunItem;//选中复制的第一个StrokeItem
+    CGFloat _startCopyRunItemY;//_startCopyRunItem Y坐标 显示Menu（选择、全选、复制菜单时用到）
+    CJGlyphRunStrokeItem *_endCopyRunItem;//选中复制的最后一个StrokeItem
+}
+@property (nonatomic, strong) UITapGestureRecognizer *singleTapGes;//单击手势
+@property (nonatomic, strong) UITapGestureRecognizer *doubleTapGes;//双击手势
+@property (nonatomic, strong) UILongPressGestureRecognizer *longPressGestureRecognizer;//长按手势
+@end
+@implementation CJSelectBackView
++ (instancetype)instance {
+    static CJSelectBackView *manager = nil;
+    static dispatch_once_t once;
+    dispatch_once(&once, ^{
+        manager = [[CJSelectBackView alloc] initWithFrame:CGRectZero];
+        manager.backgroundColor = [UIColor clearColor];
+
+        //选择复制相关视图
+//        manager.magnifierView = [[CJMagnifierView alloc] initWithFrame:CGRectMake(0, 0, 120, 65)];
+        
+        manager.selectLeftView = [[CJSelectView alloc]initWithDirection:YES];
+        manager.selectLeftView.hidden = YES;
+        [manager addSubview:manager.selectLeftView];
+        manager.selectRightView = [[CJSelectView alloc]initWithDirection:NO];
+        manager.selectRightView.hidden = YES;
+        [manager addSubview:manager.selectRightView];
+        
+        manager.textRangeView = [[CJSelectTextRangeView alloc]init];
+        manager.textRangeView.hidden = YES;
+        [manager addSubview:manager.textRangeView];
+        
+        manager.singleTapGes =[[UITapGestureRecognizer alloc] initWithTarget:manager action:@selector(tapOneAct:)];
+        [manager addGestureRecognizer:manager.singleTapGes];
+        
+        manager.doubleTapGes =[[UITapGestureRecognizer alloc] initWithTarget:manager action:@selector(tapTwoAct:)];
+        //几次点击时触发事件 ,默认值为1
+        manager.doubleTapGes.numberOfTapsRequired = 2;
+        manager.doubleTapGes.delegate = manager;
+        [manager addGestureRecognizer:manager.doubleTapGes];
+        //当单击操作遇到了 双击 操作时，单击失效
+        [manager.singleTapGes requireGestureRecognizerToFail:manager.doubleTapGes];
+        
+        manager.longPressGestureRecognizer = [[UILongPressGestureRecognizer alloc] initWithTarget:manager
+                                                                                    action:@selector(longPressGestureDidFire:)];
+        manager.longPressGestureRecognizer.delegate = manager;
+//        [manager addGestureRecognizer:manager.longPressGestureRecognizer];
+        
+    });
+    return manager;
+}
+
+- (void)setLabel:(CJLabel *)label {
+    _label = label;
+    self.magnifierView.viewToMagnify = self;
+}
+
+#pragma mark - UIResponder
+- (BOOL)canBecomeFirstResponder {
+    return YES;
+}
+
+- (BOOL)canPerformAction:(SEL)action withSender:(id)sender {
+    if ( (action == @selector(select:) && self.label.attributedText) // 需要有文字才能支持选择复制
+        || (action == @selector(selectAll:) && self.label.attributedText)
+        || (action == @selector(copy:) && self.label.attributedText))
+    {
+        return YES;
+    }
+    return NO;
+}
+
+- (void)select:(nullable id)sender {
+    _endCopyRunItem = [_startCopyRunItem copy];
+    CGPoint point = CGPointMake(_startCopyRunItem.withOutMergeBounds.origin.x, _startCopyRunItem.withOutMergeBounds.origin.y);
+    [self showCJSelectViewWithPoint:point
+                         selectType:ShowAllSelectView
+                               item:_startCopyRunItem
+                   startCopyRunItem:_startCopyRunItem
+                     endCopyRunItem:_endCopyRunItem
+             allCTLineVerticalArray:_CTLineVerticalLayoutArray];
+    self.magnifierView.hidden = YES;
+    [self showMenuView];
+}
+- (void)selectAll:(nullable id)sender {
+    _startCopyRunItem = [_firstRunItem copy];
+    _endCopyRunItem = [_lastRunItem copy];
+    CGPoint point = CGPointMake(_startCopyRunItem.withOutMergeBounds.origin.x, _startCopyRunItem.withOutMergeBounds.origin.y);
+    [self showCJSelectViewWithPoint:point
+                         selectType:ShowAllSelectView
+                               item:_startCopyRunItem
+                   startCopyRunItem:_startCopyRunItem
+                     endCopyRunItem:_endCopyRunItem
+             allCTLineVerticalArray:_CTLineVerticalLayoutArray];
+    self.magnifierView.hidden = YES;
+    [self showMenuView];
+}
+- (void)copy:(nullable id)sender {
+    if (_startCopyRunItem && _endCopyRunItem) {
+        
+        NSUInteger loc = _startCopyRunItem.characterRange.location;
+        loc = loc<=0?0:loc;
+        
+        NSUInteger length = _endCopyRunItem.characterRange.location+_endCopyRunItem.characterRange.length - loc;
+        
+        if (length >= self.label.attributedText.string.length-loc) {
+            length = self.label.attributedText.string.length-loc;
+        }
+        
+        NSRange rangeCopy = NSMakeRange(loc,length);
+        NSString *str = [self.label.attributedText.string substringWithRange:rangeCopy];
+        UIPasteboard *pasteboard = [UIPasteboard generalPasteboard];
+        pasteboard.string = str;
+    }
+    [self hideView];
+}
+
+- (void)showMenuView {
+//    if (self.magnifierView.hidden && !self.selectRightView.hidden && !self.selectLeftView.hidden) {
+    if (!self.selectRightView.hidden && !self.selectLeftView.hidden) {
+        [self becomeFirstResponder];
+        CGRect rect = CGRectMake((self.bounds.origin.x - (_lineVerticalMaxWidth/2 - _startCopyRunItem.withOutMergeBounds.origin.x)),
+                                 _startCopyRunItemY-5,
+                                 _lineVerticalMaxWidth,
+                                 _endCopyRunItem.withOutMergeBounds.origin.y + _endCopyRunItem.withOutMergeBounds.size.height + 16);
+        [[UIMenuController sharedMenuController] setTargetRect:rect inView:self];
+        [[UIMenuController sharedMenuController] setMenuVisible:YES animated:YES];
+    }
+}
+
+- (void)showSelectViewInCJLabel:(CJLabel *)label
+                        atPoint:(CGPoint)point
+                        runItem:(CJGlyphRunStrokeItem *)item
+                   maxLineWidth:(CGFloat)maxLineWidth
+         allCTLineVerticalArray:(NSArray *)allCTLineVerticalArray
+                allRunItemArray:(NSArray <CJGlyphRunStrokeItem *>*)allRunItemArray
+{
+    self.label = label;
+    CGRect labelFrame = [label.superview convertRect:self.label.frame toView:keyWindow()];
+    self.frame = labelFrame;
+    _lineVerticalMaxWidth = maxLineWidth;
+    _CTLineVerticalLayoutArray = allCTLineVerticalArray;
+    _allRunItemArray = allRunItemArray;
+    _firstRunItem = [[allRunItemArray firstObject] copy];
+    _lastRunItem = [[allRunItemArray lastObject] copy];
+    
+    _startCopyRunItem = [item copy];
+    _endCopyRunItem = _startCopyRunItem;
+    [self showCJSelectViewWithPoint:point selectType:ShowAllSelectView item:_startCopyRunItem startCopyRunItem:_startCopyRunItem endCopyRunItem:_startCopyRunItem allCTLineVerticalArray:_CTLineVerticalLayoutArray];
+    
+    [keyWindow() addSubview:self];
+    [keyWindow() bringSubviewToFront:self];
+    
+    [self showMenuView];
+}
+
+- (void)showCJSelectViewWithPoint:(CGPoint)point
+                       selectType:(CJSelectViewAction)type
+                             item:(CJGlyphRunStrokeItem *)item
+                 startCopyRunItem:(CJGlyphRunStrokeItem *)startCopyRunItem
+                   endCopyRunItem:(CJGlyphRunStrokeItem *)endCopyRunItem
+           allCTLineVerticalArray:(NSArray *)allCTLineVerticalArray
+{
+    [[UIMenuController sharedMenuController] setMenuVisible:NO];
+    
+    CJCTLineVerticalLayout lineVerticalLayout = item.lineVerticalLayout;
+    
+    CGPoint selectPoint = CGPointMake(point.x, lineVerticalLayout.lineRect.origin.y);
+    CGPoint pointToMagnify = CGPointMake(point.x, lineVerticalLayout.lineRect.origin.y + lineVerticalLayout.lineRect.size.height/2);
+    //更新放大镜的位置
+    CGPoint showMagnifierViewPoint = [self convertPoint:selectPoint toView:self.window];
+    [self.magnifierView makeKeyAndVisible];
+    self.magnifierView.hidden = NO;
+    [self.magnifierView updateMagnifyPoint:pointToMagnify showMagnifyViewIn:showMagnifierViewPoint];
+    
+    
+    [self updateSelectTextRangeViewStartCopyRunItem:startCopyRunItem endCopyRunItem:endCopyRunItem allCTLineVerticalArray:allCTLineVerticalArray finishBlock:^(CGFloat leftViewHeight, CGPoint leftViewPoint, CGFloat rightViewHeight, CGPoint rightViewPoint) {
+        self.selectLeftView.hidden = self.selectRightView.hidden = NO;
+        [self bringSubviewToFront:self.selectLeftView];
+        [self bringSubviewToFront:self.selectRightView];
+        
+        if (type == ShowAllSelectView) {
+            [self.selectLeftView updateCJSelectViewHeight:leftViewHeight showCJSelectViewIn:leftViewPoint];
+            [self.selectRightView updateCJSelectViewHeight:rightViewHeight showCJSelectViewIn:rightViewPoint];
+        }
+        else if (type == MoveLeftSelectView) {
+            [self.selectLeftView updateCJSelectViewHeight:leftViewHeight showCJSelectViewIn:leftViewPoint];
+        }
+        else if (type == MoveRightSelectView) {
+            [self.selectRightView updateCJSelectViewHeight:rightViewHeight showCJSelectViewIn:rightViewPoint];
+        }
+    }];
+}
+
+/**
+ 更新选中复制的背景填充色
+ */
+- (void)updateSelectTextRangeViewStartCopyRunItem:(CJGlyphRunStrokeItem *)startCopyRunItem
+                                   endCopyRunItem:(CJGlyphRunStrokeItem *)endCopyRunItem
+                           allCTLineVerticalArray:(NSArray *)allCTLineVerticalArray
+                                      finishBlock:(void(^)(CGFloat leftViewHeight, CGPoint leftViewPoint, CGFloat rightViewHeight, CGPoint rightViewPoint))finishBlock {
+    
+    CGRect frame = self.bounds;
+    CGRect headRect = CGRectNull;
+    CGRect middleRect = CGRectNull;
+    CGRect tailRect = CGRectNull;
+    
+    CGFloat maxWidth = _lineVerticalMaxWidth;
+    
+    //headRect 坐标
+    CGFloat startCopyRunItemY = startCopyRunItem.lineVerticalLayout.lineRect.origin.y;
+    CGFloat startCopyLintHeight = startCopyRunItem.lineVerticalLayout.lineRect.size.height;
+    CGFloat headHeight = ({
+        CGFloat height = startCopyRunItem.lineVerticalLayout.lineRect.size.height;
+        height = MAX(height, startCopyRunItem.lineVerticalLayout.maxRunHeight);
+        height = MAX(height, startCopyRunItem.lineVerticalLayout.maxImageHeight);
+        height;
+    });
+    startCopyRunItemY = startCopyRunItemY - (headHeight - startCopyLintHeight);
+    _startCopyRunItemY = startCopyRunItemY;
+    CGFloat headWidth = maxWidth - startCopyRunItem.withOutMergeBounds.origin.x;
+    headRect = CGRectMake(startCopyRunItem.withOutMergeBounds.origin.x, startCopyRunItemY, headWidth, headHeight);
+    
+    CGFloat maxHeight = endCopyRunItem.lineVerticalLayout.lineRect.origin.y + endCopyRunItem.lineVerticalLayout.lineRect.size.height - startCopyRunItemY - self.label.font.descender;
+    
+    //tailRect 坐标
+    CGFloat tailWidth = endCopyRunItem.withOutMergeBounds.origin.x+endCopyRunItem.withOutMergeBounds.size.width;
+    CGFloat tailHeight = endCopyRunItem.lineVerticalLayout.lineRect.size.height - self.label.font.descender;
+    CGFloat endCopyRunItemY = endCopyRunItem.lineVerticalLayout.lineRect.origin.y;
+    CGFloat tailY = ({
+        CGFloat yy = endCopyRunItem.lineVerticalLayout.lineRect.origin.y;
+        for (NSValue *value in allCTLineVerticalArray) {
+            CJCTLineVerticalLayout themLineVerticalLayout;
+            [value getValue:&themLineVerticalLayout];
+            if (themLineVerticalLayout.line+1 == endCopyRunItem.lineVerticalLayout.line) {
+                yy = themLineVerticalLayout.lineRect.origin.y + themLineVerticalLayout.lineRect.size.height;
+                break;
+            }
+        }
+        yy;
+    });
+    tailHeight = tailHeight + (endCopyRunItemY - tailY);
+    tailRect = CGRectMake(0, tailY, tailWidth, tailHeight);
+    
+    BOOL differentLine = YES;
+    if (startCopyRunItem.lineVerticalLayout.line == endCopyRunItem.lineVerticalLayout.line) {
+        differentLine = NO;
+        headRect = CGRectNull;
+        middleRect = CGRectMake(startCopyRunItem.withOutMergeBounds.origin.x,
+                                startCopyRunItemY,
+                                endCopyRunItem.withOutMergeBounds.origin.x+endCopyRunItem.withOutMergeBounds.size.width-startCopyRunItem.withOutMergeBounds.origin.x,
+                                headHeight);
+        tailRect = CGRectNull;
+    }else{
+        //相差一行
+        if (startCopyRunItem.lineVerticalLayout.line + 1 == endCopyRunItem.lineVerticalLayout.line) {
+            middleRect = CGRectNull;
+        }else{
+            middleRect = CGRectMake(0, startCopyRunItemY+headHeight, maxWidth, maxHeight-headHeight-tailHeight);
+        }
+    }
+    
+    [self.textRangeView updateFrame:frame headRect:headRect middleRect:middleRect tailRect:tailRect differentLine:differentLine];
+    
+    self.textRangeView.hidden = NO;
+    [self bringSubviewToFront:self.textRangeView];
+    
+    finishBlock(headHeight,
+                CGPointMake(startCopyRunItem.withOutMergeBounds.origin.x, startCopyRunItemY),
+                tailHeight,
+                CGPointMake(tailWidth,tailY+tailHeight));
+}
+
+- (CJSelectView *)choseSelectView:(CGPoint)point {
+    if (self.selectLeftView.hidden && self.selectRightView.hidden) {
+        return nil;
+    }
+    CJSelectView *selectView = [self choseSelectView:point inset:1];
+    return selectView;
+}
+
+- (CJSelectView *)choseSelectView:(CGPoint)point inset:(CGFloat)inset {
+    CJSelectView *selectView = nil;
+    
+    BOOL inLeftView = CGRectContainsPoint(CGRectInset(self.selectLeftView.frame, inset, inset), point);
+    BOOL inRightView = CGRectContainsPoint(CGRectInset(self.selectRightView.frame, inset, inset), point);
+    
+    if (!inLeftView && !inRightView) {
+        return [self choseSelectView:point inset:inset+(-0.15)];
+    }
+    else if (inLeftView && !inRightView) {
+        selectView = self.selectLeftView;
+        return selectView;
+    }
+    else if (!inLeftView && inRightView) {
+        selectView = self.selectRightView;
+        return selectView;
+    }
+    else if (inLeftView && inRightView) {
+        return [self choseSelectView:point inset:inset+(0.25)];
+    }else{
+        return selectView;
+    }
+}
+
+- (void)hideView {
+    [self hideAllCopySelectView];
+    [self removeFromSuperview];
+}
+
+/**
+ 隐藏所有与选择复制相关的视图
+ */
+- (void)hideAllCopySelectView {
+    _startCopyRunItem = nil;
+    _endCopyRunItem = nil;
+    self.selectLeftView.hidden = YES;
+    self.selectRightView.hidden = YES;
+    self.textRangeView.hidden = YES;
+    self.magnifierView.hidden = YES;
+    [[UIMenuController sharedMenuController] setMenuVisible:NO];
+}
+
+- (BOOL)pointInside:(CGPoint)point withEvent:(nullable UIEvent *)event {
+    //接收任意视图的点击响应
+    return YES;
+}
+
+- (UIView *)hitTest:(CGPoint)point withEvent:(UIEvent *)event {
+    if (CGRectContainsPoint(self.bounds, point)) {
+        return self;
+    }else{
+        [self hideView];
+        return nil;
+    }
+}
+
+#pragma mark - UIGestureRecognizerDelegate
+- (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldReceiveTouch:(UITouch *)touch {
+    if ([gestureRecognizer isKindOfClass:[UISwipeGestureRecognizer class]]) {
+        objc_setAssociatedObject(gestureRecognizer, "UITouch", touch, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+    }
+    else if (gestureRecognizer == self.doubleTapGes) {
+        objc_setAssociatedObject(self.doubleTapGes, "UITouch", touch, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+    }
+    return YES;
+}
+
+- (void)tapOneAct:(UITapGestureRecognizer *)sender {
+    [self hideView];
+}
+
+- (void)tapTwoAct:(UITapGestureRecognizer *)sender {
+    UITouch *touch = objc_getAssociatedObject(self.doubleTapGes, "UITouch");
+    CGPoint point = [touch locationInView:self];
+    CJGlyphRunStrokeItem *currentItem = nil;
+    for (CJGlyphRunStrokeItem *item in _allRunItemArray) {
+        if (CGRectContainsPoint(item.withOutMergeBounds, point)) {
+            currentItem = [item copy];
+            break;
+        }
+    }
+    if (currentItem) {
+        _startCopyRunItem = currentItem;
+        _endCopyRunItem = currentItem;
+        [self showCJSelectViewWithPoint:point selectType:ShowAllSelectView item:currentItem startCopyRunItem:currentItem endCopyRunItem:currentItem allCTLineVerticalArray:_CTLineVerticalLayoutArray];
+        [self showMenuView];
+    }
+}
+
+#pragma mark - UILongPressGestureRecognizer
+- (void)longPressGestureDidFire:(UILongPressGestureRecognizer *)sender {
+    
+    UITouch *touch = objc_getAssociatedObject(self.longPressGestureRecognizer, "UITouch");
+    switch (sender.state) {
+        case UIGestureRecognizerStateBegan: {
+            //发生长按，隐藏选择相关的视图
+            [self hideAllCopySelectView];
+            break;
+        }
+        case UIGestureRecognizerStateEnded:{
+            //隐藏放大镜，显示菜单
+            [self.magnifierView setHidden:YES];
+            [self showMenuView];
+            break;
+        }
+        case UIGestureRecognizerStateChanged:{
+            CGPoint point = [touch locationInView:self];
+            CJGlyphRunStrokeItem *currentItem = nil;
+            for (CJGlyphRunStrokeItem *item in _allRunItemArray) {
+                if (CGRectContainsPoint(item.withOutMergeBounds, point)) {
+                    currentItem = [item copy];
+                    break;
+                }
+            }
+            if (currentItem) {
+                _startCopyRunItem = currentItem;
+                _endCopyRunItem = currentItem;
+                [self showCJSelectViewWithPoint:point selectType:ShowAllSelectView item:currentItem startCopyRunItem:currentItem endCopyRunItem:currentItem allCTLineVerticalArray:_CTLineVerticalLayoutArray];
+                [self showMenuView];
+            }
+        }
+        default:
+            break;
+    }
+}
+
+- (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event {
+    CGPoint point = [[touches anyObject] locationInView:self];
+    //复制选择正在移动的大头针(用来判断selectLeftView还是selectRightView的临时视图)
+    self.selectView = [self choseSelectView:point];
+}
+
+- (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event {
+    if (!self.selectLeftView.hidden && !self.selectRightView.hidden) {
+        [self showMenuView];
+    }
+}
+
+- (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event {
+    CGPoint point = [[touches anyObject] locationInView:self];
+    
+    CJGlyphRunStrokeItem *currentItem = nil;
+    
+    //第一个CTRun选中判断
+//    CGFloat firstRunItemX = _firstRunItem.withOutMergeBounds.origin.x;
+//    CGFloat firstRunItemY = _firstRunItem.withOutMergeBounds.origin.y;
+//    CGFloat firstRunItemHeight = _firstRunItem.withOutMergeBounds.size.height;
+//    if (point.y < firstRunItemY - 1) {
+//        currentItem = [_firstRunItem copy];
+//    }
+//    else if (point.x <= firstRunItemX && (point.y < firstRunItemY + firstRunItemHeight - 1) && (point.y > firstRunItemY - 1)){
+//        currentItem = [_firstRunItem copy];
+//    }
+    //最后一个CTRun选中判断
+    CGFloat lastRunItemX = _lastRunItem.withOutMergeBounds.origin.x;
+    CGFloat lastRunItemY = _lastRunItem.withOutMergeBounds.origin.y;
+    CGFloat lastRunItemHeight = _lastRunItem.withOutMergeBounds.size.height;
+    CGFloat lastRunItemWidth = _lastRunItem.withOutMergeBounds.size.width;
+    
+    if ((point.x >= lastRunItemX + lastRunItemWidth) && (point.y >= lastRunItemY)) {
+        currentItem = [_lastRunItem copy];
+    }
+    else if (point.y > lastRunItemY + lastRunItemHeight + 1) {
+        currentItem = [_lastRunItem copy];
+    }
+    
+    if (!currentItem) {
+        for (CJGlyphRunStrokeItem *item in _allRunItemArray) {
+            if (CGRectContainsPoint(item.withOutMergeBounds, point)) {
+                currentItem = [item copy];
+                break;
+            }
+        }
+    }
+    
+    if (currentItem) {
+        
+        CJSelectView *selectView = [self choseSelectView:point];
+
+        CGPoint selectPoint = CGPointMake(point.x, (selectView.frame.size.height/2)+selectView.frame.origin.y);
+        if (self.selectView == self.selectLeftView) {
+            if (currentItem.characterIndex < _endCopyRunItem.characterIndex) {
+                _startCopyRunItem = currentItem;
+                [self showCJSelectViewWithPoint:selectPoint
+                                     selectType:MoveLeftSelectView
+                                           item:currentItem
+                               startCopyRunItem:_startCopyRunItem
+                                 endCopyRunItem:_endCopyRunItem
+                         allCTLineVerticalArray:_CTLineVerticalLayoutArray];
+            }
+            else if (currentItem.characterIndex == _endCopyRunItem.characterIndex){
+                _startCopyRunItem = [currentItem copy];
+                _endCopyRunItem = _startCopyRunItem;
+                [self showCJSelectViewWithPoint:selectPoint
+                                     selectType:ShowAllSelectView
+                                           item:_startCopyRunItem
+                               startCopyRunItem:_startCopyRunItem
+                                 endCopyRunItem:_endCopyRunItem
+                         allCTLineVerticalArray:_CTLineVerticalLayoutArray];
+                NSLog(@"LeftView 最后");
+            }
+        }
+        else if (self.selectView == self.selectRightView) {
+            if (currentItem.characterIndex > _startCopyRunItem.characterIndex) {
+                _endCopyRunItem = [currentItem copy];
+                [self showCJSelectViewWithPoint:selectPoint
+                                     selectType:MoveRightSelectView
+                                           item:currentItem
+                               startCopyRunItem:_startCopyRunItem
+                                 endCopyRunItem:_endCopyRunItem
+                         allCTLineVerticalArray:_CTLineVerticalLayoutArray];
+            }
+            else if (currentItem.characterIndex == _startCopyRunItem.characterIndex){
+                _startCopyRunItem = [currentItem copy];
+                _endCopyRunItem = _startCopyRunItem;
+                [self showCJSelectViewWithPoint:selectPoint
+                                     selectType:ShowAllSelectView
+                                           item:_startCopyRunItem
+                               startCopyRunItem:_startCopyRunItem
+                                 endCopyRunItem:_endCopyRunItem
+                         allCTLineVerticalArray:_CTLineVerticalLayoutArray];
+                NSLog(@"RightView 最后");
+            }
+        }
+    }
+    else{
+//        NSLog(@"没有item");
+    }
+}
+@end
+
 
