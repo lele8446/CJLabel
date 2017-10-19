@@ -60,7 +60,10 @@
  *
  * CJLabel 已知bug：
  *
-   `numberOfLines`大于0且小于实际`label.numberOfLines`，同时`verticalAlignment`不等于`CJContentVerticalAlignmentTop`时，文本显示位置有偏差
+   `numberOfLines`大于0且小于实际`label.numberOfLines`，同时`verticalAlignment`不等于`CJContentVerticalAlignmentTop`时:
+    1.文本显示位置有偏差
+    2.链点点击相应位置以及选择复制位置有偏差
+    （！！！推荐解决方案：使用AutoLayout布局，或者手动设置frame时请确保self.frame与文本区域大小相等）
  *
  */
 @interface CJLabel : UILabel
@@ -118,18 +121,36 @@
             limitedToNumberOfLines:(NSUInteger)numberOfLines;
 
 /**
+ 初始化配置实例
+
+ @param attributes           普通属性
+ @param isLink               是否是点击链点
+ @param activeLinkAttributes 点击高亮属性
+ @param parameter            链点参数
+ @param clickLinkBlock       链点点击block
+ @param longPressBlock       链点长按block
+ @return CJLabelConfigure实例
+ */
++ (CJLabelConfigure *)configureAttributes:(NSDictionary<NSString *, id> *)attributes
+                                   isLink:(BOOL)isLink
+                     activeLinkAttributes:(NSDictionary<NSString *, id> *)activeLinkAttributes
+                                parameter:(id)parameter
+                           clickLinkBlock:(CJLabelLinkModelBlock)clickLinkBlock
+                           longPressBlock:(CJLabelLinkModelBlock)longPressBlock;
+
+/**
  根据图片名初始化NSAttributedString
 
- @param imageName     图片名称
+ @param image         图片名称，或者UIImage
  @param size          图片大小（这里是指显示图片等区域大小）
  @param lineAlignment 图片所在行，图片与文字在垂直方向的对齐方式（只针对当前行）
  @param configure     链点配置
  @return              NSAttributedString
  */
-+ (NSMutableAttributedString *)initWithImageName:(NSString *)imageName
-                                       imageSize:(CGSize)size
-                              imagelineAlignment:(CJLabelVerticalAlignment)lineAlignment
-                                       configure:(CJLabelConfigure *)configure;
++ (NSMutableAttributedString *)initWithImage:(id)image
+                                   imageSize:(CGSize)size
+                          imagelineAlignment:(CJLabelVerticalAlignment)lineAlignment
+                                   configure:(CJLabelConfigure *)configure;
 
 /**
  在指定位置插入图片，并设置图片链点属性
@@ -138,11 +159,11 @@
  默认 paragraph.lineBreakMode = NSLineBreakByCharWrapping
  */
 + (NSMutableAttributedString *)insertImageAtAttrString:(NSAttributedString *)attrStr
-                                      imageName:(NSString *)imageName
-                                      imageSize:(CGSize)size
-                                        atIndex:(NSUInteger)loc
-                             imagelineAlignment:(CJLabelVerticalAlignment)lineAlignment
-                                      configure:(CJLabelConfigure *)configure;
+                                                 image:(id)image
+                                             imageSize:(CGSize)size
+                                               atIndex:(NSUInteger)loc
+                                    imagelineAlignment:(CJLabelVerticalAlignment)lineAlignment
+                                             configure:(CJLabelConfigure *)configure;
 
 /**
  设置指定NSRange属性

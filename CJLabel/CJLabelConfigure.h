@@ -69,20 +69,10 @@ typedef struct CJCTLineVerticalLayout CJCTLineVerticalLayout;
 @property (nonatomic, copy) CJLabelLinkModelBlock longPressBlock;
 
 /**
- 初始化配置
- */
-+ (instancetype)configureAttributes:(NSDictionary<NSString *, id> *)attributes
-                             isLink:(BOOL)isLink
-               activeLinkAttributes:(NSDictionary<NSString *, id> *)activeLinkAttributes
-                          parameter:(id)parameter
-                     clickLinkBlock:(CJLabelLinkModelBlock)clickLinkBlock
-                     longPressBlock:(CJLabelLinkModelBlock)longPressBlock;
-
-/**
  在指定位置插入图片链点！！！
  */
 + (NSMutableAttributedString *)configureLinkAttributedString:(NSAttributedString *)attrStr
-                                                addImageName:(NSString *)imageName
+                                                    addImage:(id)image
                                                    imageSize:(CGSize)size
                                                      atIndex:(NSUInteger)loc
                                            verticalAlignment:(CJLabelVerticalAlignment)verticalAlignment
@@ -92,7 +82,6 @@ typedef struct CJCTLineVerticalLayout CJCTLineVerticalLayout;
                                               clickLinkBlock:(CJLabelLinkModelBlock)clickLinkBlock
                                               longPressBlock:(CJLabelLinkModelBlock)longPressBlock
                                                       islink:(BOOL)isLink;
-
 /**
  根据指定NSRange配置富文本链点！！！
  */
@@ -170,12 +159,12 @@ typedef struct CJCTLineVerticalLayout CJCTLineVerticalLayout;
  */
 @property (readonly, nonatomic, assign) CGRect imageRect;
 /**
- 链点图片名称
+ 链点图片
  */
-@property (readonly, nonatomic, copy) NSString *imageName;
+@property (readonly, nonatomic, strong) id image;
 
 - (instancetype)initWithAttributedString:(NSAttributedString *)attributedString
-                               imageName:(NSString *)imageName
+                                   image:(id)image
                                imageRect:(CGRect )imageRect
                                parameter:(id)parameter
                                linkRange:(NSRange)linkRange;
@@ -195,7 +184,7 @@ typedef struct CJCTLineVerticalLayout CJCTLineVerticalLayout;
 @property (nonatomic, assign) CGRect runBounds;//描边区域在系统坐标下的rect（原点在左下角）
 @property (nonatomic, assign) CGRect locBounds;//描边区域在屏幕坐标下的rect（原点在左上角），相同的一组CTRun，发生了合并
 @property (nonatomic, assign) CGRect withOutMergeBounds;//每个字符对应的CTRun 在屏幕坐标下的rect（原点在左上角），没有发生合并
-@property (nonatomic, copy) NSString *imageName;//插入图片名称
+@property (nonatomic, strong) id image;//插入图片
 @property (nonatomic, assign) BOOL isImage;//插入图片
 @property (nonatomic, assign) NSRange range;//链点在文本中的range
 @property (nonatomic, strong) id parameter;//链点自定义参数
@@ -214,80 +203,50 @@ typedef struct CJCTLineVerticalLayout CJCTLineVerticalLayout;
  长按时候显示的放大镜视图
  */
 @interface CJMagnifierView : UIView
-@property (nonatomic, strong) UIView *viewToMagnify;//需要放大的view
-@property (nonatomic, strong) UIView *viewToMagnify2;//需要放大的view
-@property (nonatomic, assign) CGPoint pointToMagnify;//放大点
-
-- (void)updateMagnifyPoint:(CGPoint)pointToMagnify showMagnifyViewIn:(CGPoint)showPoint;
-
 @end
-
-/**
- 当text bounds小于label bounds时，文本的垂直对齐方式
- */
-typedef NS_ENUM(NSInteger, CJSelectViewAction) {
-    ShowAllSelectView    = 0,//显示大头针（长按或者双击）
-    MoveLeftSelectView   = 1,//移动左边大头针
-    MoveRightSelectView  = 2 //移动右边大头针
-};
-
-/**
- 选择复制，左右显示蓝色大头针视图
- */
-@interface CJSelectView : UIView
-- (CJSelectView *)initWithDirection:(BOOL)isLeft;
-- (void)updateCJSelectViewHeight:(CGFloat)height showCJSelectViewIn:(CGPoint)showPoint;
-@end
-
-/**
- 选中复制填充背景色的view
- */
-@interface CJSelectTextRangeView : UIView
-/**
- 前半部分选中区域
- */
-@property (nonatomic, assign) CGRect headRect;
-/**
- 中间部分选中区域
- */
-@property (nonatomic, assign) CGRect middleRect;
-/**
- 后半部分选中区域
- */
-@property (nonatomic, assign) CGRect tailRect;
-/**
- 选择内容是否包含不同行
- */
-@property (nonatomic, assign) BOOL differentLine;
-- (void)updateFrame:(CGRect)frame headRect:(CGRect)headRect middleRect:(CGRect)middleRect tailRect:(CGRect)tailRect differentLine:(BOOL)differentLine;
-@end
-
-
 /**
  选择复制时候的操作视图
  CJSelectBackView 在 window 层，全局只有一个
  CJMagnifierView（放大镜）、CJSelectView（大头针）、CJSelectTextRangeView（填充背景色的view）都在 CJSelectBackView上面
  */
 @interface CJSelectBackView : UIView
-@property (nonatomic, strong, setter=setLabel:) CJLabel *label;//选择复制对应的label
 @property (nonatomic, strong) CJMagnifierView *magnifierView;//放大镜
-@property (nonatomic, strong) CJSelectView *selectLeftView;//复制时候左侧选中大头针
-@property (nonatomic, strong) CJSelectView *selectRightView;//复制时候右侧选中大头针
-@property (nonatomic, strong) CJSelectView *selectView;//用来判断是selectLeftView还是selectRightView的临时视图
-@property (nonatomic, strong) CJSelectTextRangeView *textRangeView;//选中复制填充背景色的view
-
 + (instancetype)instance;
+
+/**
+ CJLabel选中point点对应的文本内容
+
+ @param label                  CJLabel
+ @param point                  放大点
+ @param item                   放大点对应的CJGlyphRunStrokeItem
+ @param maxLineWidth           CJLabel的最大行宽度
+ @param allCTLineVerticalArray CJLabel的CTLine数组
+ @param allRunItemArray        CJLabel的CTRun数组
+ */
 - (void)showSelectViewInCJLabel:(CJLabel *)label
                         atPoint:(CGPoint)point
                         runItem:(CJGlyphRunStrokeItem *)item
                    maxLineWidth:(CGFloat)maxLineWidth
          allCTLineVerticalArray:(NSArray *)allCTLineVerticalArray
                 allRunItemArray:(NSArray <CJGlyphRunStrokeItem *>*)allRunItemArray;
+
+/**
+ 显示放大镜
+
+ @param label CJLabel
+ @param point 放大点
+ @param runItem 放大点对应的CJGlyphRunStrokeItem
+ */
+- (void)showMagnifyInCJLabel:(CJLabel *)label magnifyPoint:(CGPoint)point runItem:(CJGlyphRunStrokeItem *)runItem;
+
+/**
+ 隐藏选择复制相关的view
+ */
 - (void)hideView;
 @end
 
 extern NSString * const kCJImageAttributeName;
-extern NSString * const kCJImageName;
+extern NSString * const kCJImage;
 extern NSString * const kCJImageHeight;
 extern NSString * const kCJImageWidth;
 extern NSString * const kCJImageLineVerticalAlignment;

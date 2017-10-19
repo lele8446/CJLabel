@@ -207,8 +207,11 @@ NSString * const kCJCharacterIndexInfoAttributesName         = @"kCJCharacterInd
             NSDictionary *activeLinkAttributes = attrs[kCJActiveLinkAttributesName];
             if (!CJLabelIsNull(activeLinkAttributes)) {
                 //设置当前点击链点的activeLinkAttributes属性
-                if (_currentClickRunStrokeItem && NSEqualRanges(_currentClickRunStrokeItem.range,range)) {
-                    [fullString addAttributes:activeLinkAttributes range:range];
+                if (_currentClickRunStrokeItem) {
+                    NSInteger clickRunItemRange = _currentClickRunStrokeItem.range.location + _currentClickRunStrokeItem.range.length;
+                    if (range.location >= _currentClickRunStrokeItem.range.location && (range.location+range.length) <= clickRunItemRange) {
+                        [fullString addAttributes:activeLinkAttributes range:range];
+                    }
                 }else{
                     for (NSString *key in activeLinkAttributes) {
                         [fullString removeAttribute:key range:range];
@@ -662,8 +665,14 @@ NSString * const kCJCharacterIndexInfoAttributesName         = @"kCJCharacterInd
         CGFloat yy = [self yOffset:y lineVerticalLayout:lineVerticalLayout lineDescent:lineDescent isImage:isImage runHeight:runHeight imageVerticalAlignment:imageVerticalAlignment];
         
         //绘制图片
-        if (imgInfoDic[kCJImageName]) {
-            UIImage *image = [UIImage imageNamed:imgInfoDic[kCJImageName]];
+        if (imgInfoDic[kCJImage]) {
+            UIImage *image = nil;
+            if ([imgInfoDic[kCJImage] isKindOfClass:[UIImage class]]) {
+                image = imgInfoDic[kCJImage];
+            }
+            else if ([imgInfoDic[kCJImage] isKindOfClass:[NSString class]]) {
+                image = [UIImage imageNamed:imgInfoDic[kCJImage]];
+            }
             if (image) {
                 runRect = CGRectMake(lineOrigin.x + CTLineGetOffsetForStringIndex(line, CTRunGetStringRange(run).location, NULL), lineOrigin.y - runDescent, runRect.size.width, runAscent + runDescent);
                 CGRect imageDrawRect;
@@ -923,8 +932,8 @@ NSString * const kCJCharacterIndexInfoAttributesName         = @"kCJCharacterInd
                 runStrokeItem.isLink = YES;
                 runStrokeItem.needRedrawn = needRedrawn;
                 
-                if (imgInfoDic[kCJImageName]) {
-                    runStrokeItem.imageName = imgInfoDic[kCJImageName];
+                if (imgInfoDic[kCJImage]) {
+                    runStrokeItem.image = imgInfoDic[kCJImage];
                     runStrokeItem.isImage = YES;
                 }
                 if (!CJLabelIsNull(attributes[kCJLinkParameterAttributesName])) {
@@ -950,8 +959,8 @@ NSString * const kCJCharacterIndexInfoAttributesName         = @"kCJCharacterInd
                     runStrokeItem.activeStrokeColor = activeStrokeColor;
                     runStrokeItem.activeFillColor = activeFillColor;
                     runStrokeItem.isLink = NO;
-                    if (imgInfoDic[kCJImageName]) {
-                        runStrokeItem.imageName = imgInfoDic[kCJImageName];
+                    if (imgInfoDic[kCJImage]) {
+                        runStrokeItem.image = imgInfoDic[kCJImage];
                         runStrokeItem.isImage = YES;
                     }
                     
@@ -1277,7 +1286,7 @@ NSString * const kCJCharacterIndexInfoAttributesName         = @"kCJCharacterInd
             NSAttributedString *attributedString = [self.attributedText attributedSubstringFromRange:_currentClickRunStrokeItem.range];
             CJLabelLinkModel *linkModel =
             [[CJLabelLinkModel alloc]initWithAttributedString:attributedString
-                                                    imageName:_currentClickRunStrokeItem.imageName
+                                                        image:_currentClickRunStrokeItem.image
                                                     imageRect:_currentClickRunStrokeItem.locBounds
                                                     parameter:_currentClickRunStrokeItem.parameter
                                                     linkRange:_currentClickRunStrokeItem.range];
@@ -1336,7 +1345,7 @@ NSString * const kCJCharacterIndexInfoAttributesName         = @"kCJCharacterInd
         NSAttributedString *attributedString = [self.attributedText attributedSubstringFromRange:_currentClickRunStrokeItem.range];
         CJLabelLinkModel *linkModel =
         [[CJLabelLinkModel alloc]initWithAttributedString:attributedString
-                                                imageName:_currentClickRunStrokeItem.imageName
+                                                    image:_currentClickRunStrokeItem.image
                                                 imageRect:_currentClickRunStrokeItem.locBounds
                                                 parameter:_currentClickRunStrokeItem.parameter
                                                 linkRange:_currentClickRunStrokeItem.range];
@@ -1376,6 +1385,7 @@ NSString * const kCJCharacterIndexInfoAttributesName         = @"kCJCharacterInd
 - (void)longPressGestureDidFire:(UILongPressGestureRecognizer *)sender {
     
     UITouch *touch = objc_getAssociatedObject(self.longPressGestureRecognizer, "UITouch");
+    CGPoint point = [touch locationInView:self];
     BOOL isLinkItem = [self containslinkAtPoint:[touch locationInView:self]];
     switch (sender.state) {
         case UIGestureRecognizerStateBegan: {
@@ -1386,11 +1396,11 @@ NSString * const kCJCharacterIndexInfoAttributesName         = @"kCJCharacterInd
                     NSAttributedString *attributedString = [self.attributedText attributedSubstringFromRange:_currentClickRunStrokeItem.range];
                     CJLabelLinkModel *linkModel =
                     [[CJLabelLinkModel alloc]initWithAttributedString:attributedString
-                                                            imageName:_currentClickRunStrokeItem.imageName
+                                                                image:_currentClickRunStrokeItem.image
                                                             imageRect:_currentClickRunStrokeItem.locBounds
                                                             parameter:_currentClickRunStrokeItem.parameter
                                                             linkRange:_currentClickRunStrokeItem.range];
-                    
+
                     
                     if (_currentClickRunStrokeItem.longPressBlock) {
                         _currentClickRunStrokeItem.longPressBlock(linkModel);
@@ -1408,6 +1418,18 @@ NSString * const kCJCharacterIndexInfoAttributesName         = @"kCJCharacterInd
                     [self setNeedsDisplay];
                     [CATransaction flush];
                 }
+            }else{
+                //发生长按，显示放大镜
+                CJGlyphRunStrokeItem *currentItem = nil;
+                for (CJGlyphRunStrokeItem *item in _allRunItemArray) {
+                    if (CGRectContainsPoint(item.withOutMergeBounds, point)) {
+                        currentItem = [item copy];
+                        break;
+                    }
+                }
+                if (currentItem) {
+                    [[CJSelectBackView instance] showMagnifyInCJLabel:self magnifyPoint:point runItem:currentItem];
+                }
             }
             
             break;
@@ -1422,22 +1444,38 @@ NSString * const kCJCharacterIndexInfoAttributesName         = @"kCJCharacterInd
                     [self setNeedsDisplay];
                     [CATransaction flush];
                 }
+            }else{
+                if (self.enableCopy) {
+                    [[CJSelectBackView instance] hideView];
+                    CJGlyphRunStrokeItem *currentItem = nil;
+                    for (CJGlyphRunStrokeItem *item in _allRunItemArray) {
+                        if (CGRectContainsPoint(item.withOutMergeBounds, point)) {
+                            currentItem = item;
+                            break;
+                        }
+                    }
+                    if (currentItem) {
+                        //唤起 选择复制视图
+                        [[CJSelectBackView instance]showSelectViewInCJLabel:self atPoint:point runItem:[currentItem copy] maxLineWidth:_lineVerticalMaxWidth allCTLineVerticalArray:_CTLineVerticalLayoutArray allRunItemArray:_allRunItemArray];
+                    }
+                }
             }
             break;
         }
-        case UIGestureRecognizerStateChanged:{
-            if (self.enableCopy && !isLinkItem) {
-                CGPoint point = [touch locationInView:self];
+        case UIGestureRecognizerStateChanged:
+        {
+            //只移动放大镜
+            if (self.enableCopy && ![CJSelectBackView instance].magnifierView.hidden) {
+                //发生长按，显示放大镜
                 CJGlyphRunStrokeItem *currentItem = nil;
                 for (CJGlyphRunStrokeItem *item in _allRunItemArray) {
                     if (CGRectContainsPoint(item.withOutMergeBounds, point)) {
-                        currentItem = item;
+                        currentItem = [item copy];
                         break;
                     }
                 }
                 if (currentItem) {
-                    //唤起 选择复制视图
-                    [[CJSelectBackView instance]showSelectViewInCJLabel:self atPoint:point runItem:[currentItem copy] maxLineWidth:_lineVerticalMaxWidth allCTLineVerticalArray:_CTLineVerticalLayoutArray allRunItemArray:_allRunItemArray];
+                    [[CJSelectBackView instance] showMagnifyInCJLabel:self magnifyPoint:point runItem:currentItem];
                 }
             }
         }
@@ -1457,16 +1495,35 @@ NSString * const kCJCharacterIndexInfoAttributesName         = @"kCJCharacterInd
     return calculatedSize;
 }
 
-+ (NSMutableAttributedString *)initWithImageName:(NSString *)imageName imageSize:(CGSize)size imagelineAlignment:(CJLabelVerticalAlignment)lineAlignment configure:(CJLabelConfigure *)configure {
++ (CJLabelConfigure *)configureAttributes:(NSDictionary<NSString *, id> *)attributes
+                                   isLink:(BOOL)isLink
+                     activeLinkAttributes:(NSDictionary<NSString *, id> *)activeLinkAttributes
+                                parameter:(id)parameter
+                           clickLinkBlock:(CJLabelLinkModelBlock)clickLinkBlock
+                           longPressBlock:(CJLabelLinkModelBlock)longPressBlock
+{
+    CJLabelConfigure *configure = [[CJLabelConfigure alloc]init];
+    if (configure) {
+        configure.attributes = attributes;
+        configure.isLink = isLink;
+        configure.activeLinkAttributes = activeLinkAttributes;
+        configure.parameter = parameter;
+        configure.clickLinkBlock = clickLinkBlock;
+        configure.longPressBlock = longPressBlock;
+    }
+    return configure;
+}
+
++ (NSMutableAttributedString *)initWithImage:(id)image imageSize:(CGSize)size imagelineAlignment:(CJLabelVerticalAlignment)lineAlignment configure:(CJLabelConfigure *)configure {
     NSAttributedString *attStr = [[NSAttributedString alloc]init];
     BOOL isLink = configure.isLink;
-    NSMutableAttributedString *result = [CJLabelConfigure configureLinkAttributedString:attStr addImageName:imageName imageSize:size atIndex:0 verticalAlignment:lineAlignment linkAttributes:configure.attributes activeLinkAttributes:configure.activeLinkAttributes parameter:configure.parameter clickLinkBlock:configure.clickLinkBlock longPressBlock:configure.longPressBlock islink:isLink];
+    NSMutableAttributedString *result = [CJLabelConfigure configureLinkAttributedString:attStr addImage:image imageSize:size atIndex:0 verticalAlignment:lineAlignment linkAttributes:configure.attributes activeLinkAttributes:configure.activeLinkAttributes parameter:configure.parameter clickLinkBlock:configure.clickLinkBlock longPressBlock:configure.longPressBlock islink:isLink];
     return result;
 }
 
-+ (NSMutableAttributedString *)insertImageAtAttrString:(NSAttributedString *)attrStr imageName:(NSString *)imageName imageSize:(CGSize)size atIndex:(NSUInteger)loc imagelineAlignment:(CJLabelVerticalAlignment)lineAlignment configure:(CJLabelConfigure *)configure {
++ (NSMutableAttributedString *)insertImageAtAttrString:(NSAttributedString *)attrStr image:(id)image imageSize:(CGSize)size atIndex:(NSUInteger)loc imagelineAlignment:(CJLabelVerticalAlignment)lineAlignment configure:(CJLabelConfigure *)configure {
     BOOL isLink = configure.isLink;
-    NSMutableAttributedString *result = [CJLabelConfigure configureLinkAttributedString:attrStr addImageName:imageName imageSize:size atIndex:loc verticalAlignment:lineAlignment linkAttributes:configure.attributes activeLinkAttributes:configure.activeLinkAttributes parameter:configure.parameter clickLinkBlock:configure.clickLinkBlock longPressBlock:configure.longPressBlock islink:isLink];
+    NSMutableAttributedString *result = [CJLabelConfigure configureLinkAttributedString:attrStr addImage:image imageSize:size atIndex:loc verticalAlignment:lineAlignment linkAttributes:configure.attributes activeLinkAttributes:configure.activeLinkAttributes parameter:configure.parameter clickLinkBlock:configure.clickLinkBlock longPressBlock:configure.longPressBlock islink:isLink];
     return result;
 }
 
