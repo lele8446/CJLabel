@@ -18,8 +18,32 @@ NSString * const kCJBackgroundLineWidthAttributeName         = @"kCJBackgroundLi
 NSString * const kCJBackgroundLineCornerRadiusAttributeName  = @"kCJBackgroundLineCornerRadius";
 NSString * const kCJActiveBackgroundFillColorAttributeName   = @"kCJActiveBackgroundFillColor";
 NSString * const kCJActiveBackgroundStrokeColorAttributeName = @"kCJActiveBackgroundStrokeColor";
-//标记每个字符的index值，以及range值
-NSString * const kCJCharacterIndexInfoAttributesName         = @"kCJCharacterIndexInfoAttributesName";
+
+@interface CJCTRunUrl: NSURL
+@property (nonatomic, assign) NSInteger index;
+@property (nonatomic, strong) NSValue *rangeValue;
+@end
+
+@implementation CJCTRunUrl
+
+//static char indexKey;
+//static char rangeValueKey;
+
+//- (void)setIndex:(NSInteger)index {
+//    objc_setAssociatedObject(self, &indexKey, @(index), OBJC_ASSOCIATION_ASSIGN);
+//}
+//- (NSInteger)index {
+//    return [objc_getAssociatedObject(self, &indexKey) integerValue];
+//}
+//
+//- (void)setRangeValue:(NSValue *)rangeValue {
+//    objc_setAssociatedObject(self, &rangeValueKey, rangeValue, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+//}
+//- (NSValue *)rangeValue {
+//    return objc_getAssociatedObject(self, &rangeValueKey);
+//}
+@end
+
 
 @interface CJLabel ()<UIGestureRecognizerDelegate>
 
@@ -27,6 +51,18 @@ NSString * const kCJCharacterIndexInfoAttributesName         = @"kCJCharacterInd
 @property (nonatomic, copy) NSAttributedString *renderedAttributedText;
 @property (nonatomic, strong) UILongPressGestureRecognizer *longPressGestureRecognizer;//长按手势
 @property (nonatomic, strong) UITapGestureRecognizer *doubleTapGes;//双击手势
+/**
+ 是否需要计算支持复制的每个字符的frame大小
+ */
+@property (nonatomic, assign) BOOL caculateCopySize;
+/**
+ 不需要显示，只是用来计算label的size
+ */
+@property (nonatomic, assign) BOOL caculateSizeOnly;
+/**
+ 支持复制时计算每一个CTRun的frame完成后的block
+ */
+@property (nonatomic, copy) void(^caculateCTRunSizeBlock)(void);
 @end
 
 @implementation CJLabel {
@@ -75,6 +111,7 @@ NSString * const kCJCharacterIndexInfoAttributesName         = @"kCJCharacterInd
     self.textInsets = UIEdgeInsetsZero;
     self.verticalAlignment = CJVerticalAlignmentCenter;
     _numberOfLines = -1;
+    self.caculateCopySize = NO;
     _needRedrawn = YES;
     _longPress = NO;
     _extendsLinkTouchArea = NO;
@@ -89,6 +126,7 @@ NSString * const kCJCharacterIndexInfoAttributesName         = @"kCJCharacterInd
     [self addGestureRecognizer:_longPressGestureRecognizer];
     
     self.enableCopy = NO;
+    self.caculateCTRunSizeBlock = nil;
 }
 
 - (void)dealloc {
@@ -144,8 +182,19 @@ NSString * const kCJCharacterIndexInfoAttributesName         = @"kCJCharacterInd
 }
 
 - (void)setAttributedText:(NSAttributedString *)text {
-    if ([text isEqualToAttributedString:_attributedText]) {
+    if (text == nil) {
         return;
+    }
+    //不需要计算支持复制的每个字符的frame大小
+    if (!self.caculateCopySize) {
+        if ([text isEqualToAttributedString:_attributedText]) {
+            return;
+        }
+        _allRunItemArray = nil;
+    }else{
+        if (![text isEqualToAttributedString:_attributedText]) {
+            self.caculateCopySize = NO;
+        }
     }
     
     _needRedrawn = YES;
@@ -158,39 +207,46 @@ NSString * const kCJCharacterIndexInfoAttributesName         = @"kCJCharacterInd
     //获取点击链点的NSRange
     NSMutableAttributedString *attText = [[NSMutableAttributedString alloc]initWithAttributedString:text];
 
-    [attText enumerateAttributesInRange:NSMakeRange(0, attText.length) options:NSAttributedStringEnumerationLongestEffectiveRangeNotRequired usingBlock:^(NSDictionary<NSString *, id> *attrs, NSRange range, BOOL *stop){
-        BOOL isLink = [attrs[kCJIsLinkAttributesName] boolValue];
-        if (isLink) {
-            [attText addAttribute:kCJLinkRangeAttributesName value:NSStringFromRange(range) range:range];
-        }else{
-            [attText removeAttribute:kCJLinkRangeAttributesName range:range];
-        }
-    }];
-    
-    if (self.enableCopy) {
-        //给每一个字符设置index值，enableCopy=YES时用到
-        __block NSInteger index = 0;
-        NSMutableArray *dicArray = [NSMutableArray arrayWithCapacity:3];
-        [attText.string enumerateSubstringsInRange:NSMakeRange(0, [attText length]) options:NSStringEnumerationByComposedCharacterSequences usingBlock:
-         ^(NSString *substring, NSRange substringRange, NSRange enclosingRange, BOOL *stop) {
-             [dicArray addObject:@{@"index":@(index),@"substringRange":NSStringFromRange(substringRange)}];
-             index++;
-         }];
-        for (NSDictionary *dic in dicArray) {
-            [attText addAttribute:kCJCharacterIndexInfoAttributesName value:dic range:NSRangeFromString(dic[@"substringRange"])];
-        }
+    if (!self.caculateSizeOnly) {
+        [attText enumerateAttributesInRange:NSMakeRange(0, attText.length) options:NSAttributedStringEnumerationLongestEffectiveRangeNotRequired usingBlock:^(NSDictionary<NSString *, id> *attrs, NSRange range, BOOL *stop){
+            BOOL isLink = [attrs[kCJIsLinkAttributesName] boolValue];
+            if (isLink) {
+                [attText addAttribute:kCJLinkRangeAttributesName value:NSStringFromRange(range) range:range];
+            }else{
+                [attText removeAttribute:kCJLinkRangeAttributesName range:range];
+            }
+        }];
     }
     
+    if (!self.caculateSizeOnly && self.enableCopy && self.caculateCopySize) {
+        //给每一个字符设置index值，enableCopy=YES时用到
+        __block NSInteger index = 0;
+
+        [attText.string enumerateSubstringsInRange:NSMakeRange(0, [attText length]) options:NSStringEnumerationByComposedCharacterSequences usingBlock:
+         ^(NSString *substring, NSRange substringRange, NSRange enclosingRange, BOOL *stop) {
+
+             CJCTRunUrl *runUrl = nil;
+             if (!runUrl) {
+                 NSString *urlStr = [NSString stringWithFormat:@"https://www.CJLabel%@",@(index)];
+                 runUrl = [CJCTRunUrl URLWithString:urlStr];
+             }
+             runUrl.index = index;
+             runUrl.rangeValue = [NSValue valueWithRange:substringRange];
+             [attText addAttribute:NSLinkAttributeName
+                         value:runUrl
+                         range:substringRange];
+             index++;
+         }];
+    }
     _attributedText = [attText copy];
     
     [self setNeedsFramesetter];
     [self setNeedsDisplay];
-    
     if ([self respondsToSelector:@selector(invalidateIntrinsicContentSize)]) {
         [self invalidateIntrinsicContentSize];
     }
     
-    [super setText:[self.attributedText string]];
+//    [super setText:[self.attributedText string]];
 }
 
 - (NSAttributedString *)renderedAttributedText {
@@ -203,31 +259,36 @@ NSString * const kCJCharacterIndexInfoAttributesName         = @"kCJCharacterInd
             if (!CJLabelIsNull(linkAttributes)) {
                 [fullString addAttributes:linkAttributes range:range];
             }
-            //如果有设置activeLinkAttributes，且正在点击当前链点，则读取并设置
-            NSDictionary *activeLinkAttributes = attrs[kCJActiveLinkAttributesName];
-            if (!CJLabelIsNull(activeLinkAttributes)) {
-                //设置当前点击链点的activeLinkAttributes属性
-                if (_currentClickRunStrokeItem) {
-                    NSInteger clickRunItemRange = _currentClickRunStrokeItem.range.location + _currentClickRunStrokeItem.range.length;
-                    if (range.location >= _currentClickRunStrokeItem.range.location && (range.location+range.length) <= clickRunItemRange) {
-                        [fullString addAttributes:activeLinkAttributes range:range];
-                    }
-                }else{
-                    for (NSString *key in activeLinkAttributes) {
-                        [fullString removeAttribute:key range:range];
-                    }
-                    //防止将linkAttributes中的属性也删除了
-                    if (!CJLabelIsNull(linkAttributes)) {
-                        [fullString addAttributes:linkAttributes range:range];
+            
+            //如果只需要计算label的size，就不用再判断activeLinkAttributes属性了
+            if (!self.caculateSizeOnly) {
+                //如果有设置activeLinkAttributes，且正在点击当前链点，则读取并设置
+                NSDictionary *activeLinkAttributes = attrs[kCJActiveLinkAttributesName];
+                if (!CJLabelIsNull(activeLinkAttributes)) {
+                    //设置当前点击链点的activeLinkAttributes属性
+                    if (_currentClickRunStrokeItem) {
+                        NSInteger clickRunItemRange = _currentClickRunStrokeItem.range.location + _currentClickRunStrokeItem.range.length;
+                        if (range.location >= _currentClickRunStrokeItem.range.location && (range.location+range.length) <= clickRunItemRange) {
+                            [fullString addAttributes:activeLinkAttributes range:range];
+                        }
+                    }else{
+                        for (NSString *key in activeLinkAttributes) {
+                            [fullString removeAttribute:key range:range];
+                        }
+                        //防止将linkAttributes中的属性也删除了
+                        if (!CJLabelIsNull(linkAttributes)) {
+                            [fullString addAttributes:linkAttributes range:range];
+                        }
                     }
                 }
             }
+            
         }];
         
         NSAttributedString *string = [[NSAttributedString alloc] initWithAttributedString:fullString];
         self.renderedAttributedText = string;
     }
-    
+        
     return _renderedAttributedText;
 }
 
@@ -428,8 +489,14 @@ NSString * const kCJCharacterIndexInfoAttributesName         = @"kCJCharacterInd
             _attributedText = originalAttributedText;
         }
     }
+
     CGContextRestoreGState(c);
     _needRedrawn = NO;
+    self.caculateCopySize = NO;
+    if (self.caculateCTRunSizeBlock) {
+        self.caculateCTRunSizeBlock();
+    }
+    self.caculateCTRunSizeBlock = nil;
 }
 
 #pragma mark - Draw Method
@@ -464,8 +531,10 @@ NSString * const kCJCharacterIndexInfoAttributesName         = @"kCJCharacterInd
         }];
     }
     
-    //填充背景色
-    [self drawBackgroundColor:c runStrokeItems:_runStrokeItemArray isStrokeColor:NO];
+    if (!self.caculateSizeOnly) {
+        //填充背景色
+        [self drawBackgroundColor:c runStrokeItems:_runStrokeItemArray isStrokeColor:NO];
+    }
     
     CFArrayRef lines = CTFrameGetLines(frame);
     if (_numberOfLines == -1) {
@@ -563,8 +632,10 @@ NSString * const kCJCharacterIndexInfoAttributesName         = @"kCJCharacterInd
         
     }
     
-    // 绘制描边
-    [self drawBackgroundColor:c runStrokeItems:_runStrokeItemArray isStrokeColor:YES];
+    if (!self.caculateSizeOnly) {
+        // 绘制描边
+        [self drawBackgroundColor:c runStrokeItems:_runStrokeItemArray isStrokeColor:YES];
+    }
     
     CFRelease(frame);
     CGPathRelease(path);
@@ -794,10 +865,11 @@ NSString * const kCJCharacterIndexInfoAttributesName         = @"kCJCharacterInd
         NSValue *value = [NSValue valueWithBytes:&lineVerticalLayout objCType:@encode(CJCTLineVerticalLayout)];
         [verticalLayoutArray addObject:value];
         
-//        _lineVerticalMaxWidth = MAX(_lineVerticalMaxWidth, lineBounds.size.width);
+        _lineVerticalMaxWidth = MAX(_lineVerticalMaxWidth, lineBounds.size.width);
     }
+    _lineVerticalMaxWidth += 1;
     
-    _lineVerticalMaxWidth = self.bounds.size.width;
+//    _lineVerticalMaxWidth = self.bounds.size.width;
     
     return verticalLayoutArray;
 }
@@ -887,10 +959,16 @@ NSString * const kCJCharacterIndexInfoAttributesName         = @"kCJCharacterInd
                 imageVerticalAlignment = [imgInfoDic[kCJImageLineVerticalAlignment] integerValue];
             }
             
-            NSDictionary *characterIndexInfo = attributes[kCJCharacterIndexInfoAttributesName];
-            NSInteger characterIndex = [characterIndexInfo[@"index"] integerValue];
-            NSRange substringRange = NSRangeFromString(characterIndexInfo[@"substringRange"]);
-            
+            NSInteger characterIndex = 0;
+            NSRange substringRange = NSMakeRange(0, 0);
+            if (self.caculateCopySize) {
+                CJCTRunUrl *runUrl = attributes[NSLinkAttributeName];
+                if ([runUrl isKindOfClass:[CJCTRunUrl class]]) {
+                    characterIndex = runUrl.index;
+                    substringRange = [runUrl.rangeValue rangeValue];
+                }
+            }
+        
             //当前run相对于self的CGRect
             CGRect runBounds = [self getRunStrokeItemlocRunBoundsFromGlyphRun:glyphRun
                                                                          line:line
@@ -915,7 +993,7 @@ NSString * const kCJCharacterIndexInfoAttributesName         = @"kCJCharacterInd
             runStrokeItem.characterIndex = characterIndex;
             runStrokeItem.characterRange = substringRange;
             
-            if (self.enableCopy) {
+            if (self.enableCopy && self.caculateCopySize) {
                 [allRunItemArray addObject:runStrokeItem];
             }
             
@@ -1190,11 +1268,11 @@ NSString * const kCJCharacterIndexInfoAttributesName         = @"kCJCharacterInd
         return [super sizeThatFits:size];
     } else {
         NSAttributedString *string = [self renderedAttributedText];
-        
+
         CGSize labelSize = CTFramesetterSuggestFrameSizeForAttributedStringWithConstraints([self framesetter], string, size, (NSUInteger)self.numberOfLines);
         labelSize.width += self.textInsets.left + self.textInsets.right;
         labelSize.height += self.textInsets.top + self.textInsets.bottom;
-        
+
         return labelSize;
     }
 }
@@ -1204,7 +1282,7 @@ NSString * const kCJCharacterIndexInfoAttributesName         = @"kCJCharacterInd
 }
 
 - (UIView *)hitTest:(CGPoint)point withEvent:(UIEvent *)event {
-    if (![self linkAtPoint:point] || !self.userInteractionEnabled || self.hidden || self.alpha < 0.01) {
+    if (![self linkAtPoint:point extendsLinkTouchArea:NO] || !self.userInteractionEnabled || self.hidden || self.alpha < 0.01) {
         return [super hitTest:point withEvent:event];
     }
     return self;
@@ -1216,18 +1294,17 @@ NSString * const kCJCharacterIndexInfoAttributesName         = @"kCJCharacterInd
 }
 
 - (BOOL)containslinkAtPoint:(CGPoint)point {
-    return [self linkAtPoint:point] != nil;
+    return [self linkAtPoint:point extendsLinkTouchArea:self.extendsLinkTouchArea] != nil;
 }
 
-- (CJGlyphRunStrokeItem *)linkAtPoint:(CGPoint)point {
-    
+- (CJGlyphRunStrokeItem *)linkAtPoint:(CGPoint)point extendsLinkTouchArea:(BOOL)extendsLinkTouchArea {
     if (!CGRectContainsPoint(CGRectInset(self.bounds, -15.f, -15.f), point) || _linkStrokeItemArray.count == 0) {
         return nil;
     }
     
     CJGlyphRunStrokeItem *resultItem = [self clickLinkItemAtRadius:0 aroundPoint:point];
     
-    if (!resultItem && self.extendsLinkTouchArea) {
+    if (!resultItem && extendsLinkTouchArea) {
         resultItem = [self clickLinkItemAtRadius:0 aroundPoint:point]
         ?: [self clickLinkItemAtRadius:2.5 aroundPoint:point]
         ?: [self clickLinkItemAtRadius:5 aroundPoint:point]
@@ -1258,7 +1335,7 @@ NSString * const kCJCharacterIndexInfoAttributesName         = @"kCJCharacterInd
     
     UITouch *touch = [touches anyObject];
     _currentClickRunStrokeItem = nil;
-    CJGlyphRunStrokeItem *item = [self linkAtPoint:[touch locationInView:self]];
+    CJGlyphRunStrokeItem *item = [self linkAtPoint:[touch locationInView:self] extendsLinkTouchArea:self.extendsLinkTouchArea];
     if (item) {
         _currentClickRunStrokeItem = item;
         _needRedrawn = _currentClickRunStrokeItem.needRedrawn;
@@ -1305,7 +1382,6 @@ NSString * const kCJCharacterIndexInfoAttributesName         = @"kCJCharacterInd
         }
         else {
             [super touchesEnded:touches withEvent:event];
-            
         }
     }
 }
@@ -1323,6 +1399,16 @@ NSString * const kCJCharacterIndexInfoAttributesName         = @"kCJCharacterInd
     }
 }
 
+- (void)caculateCTRunCopySizeBlock:(void(^)(void))block {
+    if (_allRunItemArray.count > 0) {
+        block();
+        return;
+    }
+    self.caculateCopySize = YES;
+    self.caculateCTRunSizeBlock = block;
+    self.attributedText = self.attributedText;
+}
+
 #pragma mark - UIGestureRecognizerDelegate
 - (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldReceiveTouch:(UITouch *)touch {
     if (gestureRecognizer == self.longPressGestureRecognizer) {
@@ -1336,8 +1422,7 @@ NSString * const kCJCharacterIndexInfoAttributesName         = @"kCJCharacterInd
 
 - (void)tapTwoAct:(UITapGestureRecognizer *)sender {
     UITouch *touch = objc_getAssociatedObject(self.doubleTapGes, "UITouch");
-    
-    CJGlyphRunStrokeItem *item = [self linkAtPoint:[touch locationInView:self]];
+    CJGlyphRunStrokeItem *item = [self linkAtPoint:[touch locationInView:self]extendsLinkTouchArea:self.extendsLinkTouchArea];
     if (item) {
         _currentClickRunStrokeItem = nil;
         _currentClickRunStrokeItem = item;
@@ -1366,17 +1451,15 @@ NSString * const kCJCharacterIndexInfoAttributesName         = @"kCJCharacterInd
     else{
         if (self.enableCopy) {
             CGPoint point = [touch locationInView:self];
-            CJGlyphRunStrokeItem *currentItem = nil;
-            for (CJGlyphRunStrokeItem *item in _allRunItemArray) {
-                if (CGRectContainsPoint(item.withOutMergeBounds, point)) {
-                    currentItem = item;
-                    break;
+            [self caculateCTRunCopySizeBlock:^(){
+                CJGlyphRunStrokeItem *currentItem = [CJSelectBackView currentItem:point allRunItemArray:_allRunItemArray inset:1];
+                if (currentItem) {
+                    //唤起 选择复制视图
+                    [[CJSelectBackView instance]showSelectViewInCJLabel:self atPoint:point runItem:[currentItem copy] maxLineWidth:_lineVerticalMaxWidth allCTLineVerticalArray:_CTLineVerticalLayoutArray allRunItemArray:_allRunItemArray hideViewBlock:^(){
+                        self.caculateCopySize = NO;
+                    }];
                 }
-            }
-            if (currentItem) {
-                //唤起 选择复制视图
-                [[CJSelectBackView instance]showSelectViewInCJLabel:self atPoint:point runItem:[currentItem copy] maxLineWidth:_lineVerticalMaxWidth allCTLineVerticalArray:_CTLineVerticalLayoutArray allRunItemArray:_allRunItemArray];
-            }
+            }];
         }
     }
 }
@@ -1419,17 +1502,13 @@ NSString * const kCJCharacterIndexInfoAttributesName         = @"kCJCharacterInd
                     [CATransaction flush];
                 }
             }else{
-                //发生长按，显示放大镜
-                CJGlyphRunStrokeItem *currentItem = nil;
-                for (CJGlyphRunStrokeItem *item in _allRunItemArray) {
-                    if (CGRectContainsPoint(item.withOutMergeBounds, point)) {
-                        currentItem = [item copy];
-                        break;
+                [self caculateCTRunCopySizeBlock:^(){
+                    //发生长按，显示放大镜
+                    CJGlyphRunStrokeItem *currentItem = [CJSelectBackView currentItem:point allRunItemArray:_allRunItemArray inset:0.5];
+                    if (currentItem) {
+                        [[CJSelectBackView instance] showMagnifyInCJLabel:self magnifyPoint:point runItem:currentItem hideViewBlock:nil];
                     }
-                }
-                if (currentItem) {
-                    [[CJSelectBackView instance] showMagnifyInCJLabel:self magnifyPoint:point runItem:currentItem];
-                }
+                }];
             }
             
             break;
@@ -1446,17 +1525,14 @@ NSString * const kCJCharacterIndexInfoAttributesName         = @"kCJCharacterInd
                 }
             }else{
                 if (self.enableCopy) {
+
                     [[CJSelectBackView instance] hideView];
-                    CJGlyphRunStrokeItem *currentItem = nil;
-                    for (CJGlyphRunStrokeItem *item in _allRunItemArray) {
-                        if (CGRectContainsPoint(item.withOutMergeBounds, point)) {
-                            currentItem = item;
-                            break;
-                        }
-                    }
+                    CJGlyphRunStrokeItem *currentItem = [CJSelectBackView currentItem:point allRunItemArray:_allRunItemArray inset:1];
                     if (currentItem) {
                         //唤起 选择复制视图
-                        [[CJSelectBackView instance]showSelectViewInCJLabel:self atPoint:point runItem:[currentItem copy] maxLineWidth:_lineVerticalMaxWidth allCTLineVerticalArray:_CTLineVerticalLayoutArray allRunItemArray:_allRunItemArray];
+                        [[CJSelectBackView instance]showSelectViewInCJLabel:self atPoint:point runItem:[currentItem copy] maxLineWidth:_lineVerticalMaxWidth allCTLineVerticalArray:_CTLineVerticalLayoutArray allRunItemArray:_allRunItemArray hideViewBlock:^(){
+                            self.caculateCopySize = NO;
+                        }];
                     }
                 }
             }
@@ -1467,15 +1543,9 @@ NSString * const kCJCharacterIndexInfoAttributesName         = @"kCJCharacterInd
             //只移动放大镜
             if (self.enableCopy && ![CJSelectBackView instance].magnifierView.hidden) {
                 //发生长按，显示放大镜
-                CJGlyphRunStrokeItem *currentItem = nil;
-                for (CJGlyphRunStrokeItem *item in _allRunItemArray) {
-                    if (CGRectContainsPoint(item.withOutMergeBounds, point)) {
-                        currentItem = [item copy];
-                        break;
-                    }
-                }
+                CJGlyphRunStrokeItem *currentItem = [CJSelectBackView currentItem:point allRunItemArray:_allRunItemArray inset:1];
                 if (currentItem) {
-                    [[CJSelectBackView instance] showMagnifyInCJLabel:self magnifyPoint:point runItem:currentItem];
+                    [[CJSelectBackView instance] showMagnifyInCJLabel:self magnifyPoint:point runItem:currentItem hideViewBlock:nil];
                 }
             }
         }
@@ -1484,15 +1554,28 @@ NSString * const kCJCharacterIndexInfoAttributesName         = @"kCJCharacterInd
     }
 }
 
++ (instancetype)instance {
+    static CJLabel *manager = nil;
+    static dispatch_once_t once;
+    dispatch_once(&once, ^{
+        manager = [[CJLabel alloc]initWithFrame:CGRectMake(0, 0, 1, 1)];
+        manager.numberOfLines = 0;
+        [manager setValue:@(YES) forKey:@"caculateSizeOnly"];
+    });
+    return manager;
+}
+
 #pragma mark - Public Method
 + (CGSize)sizeWithAttributedString:(NSAttributedString *)attributedString withConstraints:(CGSize)size limitedToNumberOfLines:(NSUInteger)numberOfLines {
     if (!attributedString || attributedString.length == 0) {
         return CGSizeZero;
     }
-    CTFramesetterRef framesetter = CTFramesetterCreateWithAttributedString((__bridge CFAttributedStringRef)attributedString);
-    CGSize calculatedSize = CTFramesetterSuggestFrameSizeForAttributedStringWithConstraints(framesetter, attributedString, size, numberOfLines);
-    CFRelease(framesetter);
-    return calculatedSize;
+    
+    [CJLabel instance].numberOfLines = numberOfLines;
+    [CJLabel instance].attributedText = attributedString;
+    CGSize caculateSize = [[CJLabel instance] sizeThatFits:size];
+    [CJLabel instance].attributedText = nil;
+    return caculateSize;
 }
 
 + (CJLabelConfigure *)configureAttributes:(NSDictionary<NSString *, id> *)attributes
@@ -1535,6 +1618,13 @@ NSString * const kCJCharacterIndexInfoAttributesName         = @"kCJCharacterInd
 
 + (NSMutableAttributedString *)initWithString:(NSString *)string configure:(CJLabelConfigure *)configure {
     NSAttributedString *attrStr = [[NSAttributedString alloc] initWithString:string];
+    BOOL isLink = configure.isLink;
+    NSMutableAttributedString *result = [CJLabelConfigure configureLinkAttributedString:attrStr atRange:NSMakeRange(0, attrStr.length) linkAttributes:configure.attributes activeLinkAttributes:configure.activeLinkAttributes parameter:configure.parameter clickLinkBlock:configure.clickLinkBlock longPressBlock:configure.longPressBlock islink:isLink];
+    return result;
+}
+
++ (NSMutableAttributedString *)initWithNSString:(NSString *)string strIdentifier:(NSString *)strIdentifier configure:(CJLabelConfigure *)configure {
+    NSAttributedString *attrStr = [CJLabelConfigure linkAttStr:string attributes:nil identifier:strIdentifier];
     BOOL isLink = configure.isLink;
     NSMutableAttributedString *result = [CJLabelConfigure configureLinkAttributedString:attrStr atRange:NSMakeRange(0, attrStr.length) linkAttributes:configure.attributes activeLinkAttributes:configure.activeLinkAttributes parameter:configure.parameter clickLinkBlock:configure.clickLinkBlock longPressBlock:configure.longPressBlock islink:isLink];
     return result;

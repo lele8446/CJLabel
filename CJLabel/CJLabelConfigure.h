@@ -222,13 +222,15 @@ typedef struct CJCTLineVerticalLayout CJCTLineVerticalLayout;
  @param maxLineWidth           CJLabel的最大行宽度
  @param allCTLineVerticalArray CJLabel的CTLine数组
  @param allRunItemArray        CJLabel的CTRun数组
+ @param hideViewBlock          复制选择view隐藏后的block
  */
 - (void)showSelectViewInCJLabel:(CJLabel *)label
                         atPoint:(CGPoint)point
                         runItem:(CJGlyphRunStrokeItem *)item
                    maxLineWidth:(CGFloat)maxLineWidth
          allCTLineVerticalArray:(NSArray *)allCTLineVerticalArray
-                allRunItemArray:(NSArray <CJGlyphRunStrokeItem *>*)allRunItemArray;
+                allRunItemArray:(NSArray <CJGlyphRunStrokeItem *>*)allRunItemArray
+                  hideViewBlock:(void(^)(void))hideViewBlock;
 
 /**
  显示放大镜
@@ -236,13 +238,19 @@ typedef struct CJCTLineVerticalLayout CJCTLineVerticalLayout;
  @param label CJLabel
  @param point 放大点
  @param runItem 放大点对应的CJGlyphRunStrokeItem
+ @param hideViewBlock          放大镜隐藏后的block
  */
-- (void)showMagnifyInCJLabel:(CJLabel *)label magnifyPoint:(CGPoint)point runItem:(CJGlyphRunStrokeItem *)runItem;
+- (void)showMagnifyInCJLabel:(CJLabel *)label
+                magnifyPoint:(CGPoint)point
+                     runItem:(CJGlyphRunStrokeItem *)runItem
+               hideViewBlock:(void(^)(void))hideViewBlock;
 
 /**
  隐藏选择复制相关的view
  */
 - (void)hideView;
+
++ (CJGlyphRunStrokeItem *)currentItem:(CGPoint)point allRunItemArray:(NSArray <CJGlyphRunStrokeItem *>*)allRunItemArray inset:(CGFloat)inset;
 @end
 
 extern NSString * const kCJImageAttributeName;
