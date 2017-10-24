@@ -26,22 +26,6 @@ NSString * const kCJActiveBackgroundStrokeColorAttributeName = @"kCJActiveBackgr
 
 @implementation CJCTRunUrl
 
-//static char indexKey;
-//static char rangeValueKey;
-
-//- (void)setIndex:(NSInteger)index {
-//    objc_setAssociatedObject(self, &indexKey, @(index), OBJC_ASSOCIATION_ASSIGN);
-//}
-//- (NSInteger)index {
-//    return [objc_getAssociatedObject(self, &indexKey) integerValue];
-//}
-//
-//- (void)setRangeValue:(NSValue *)rangeValue {
-//    objc_setAssociatedObject(self, &rangeValueKey, rangeValue, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
-//}
-//- (NSValue *)rangeValue {
-//    return objc_getAssociatedObject(self, &rangeValueKey);
-//}
 @end
 
 
@@ -208,11 +192,19 @@ NSString * const kCJActiveBackgroundStrokeColorAttributeName = @"kCJActiveBackgr
     NSMutableAttributedString *attText = [[NSMutableAttributedString alloc]initWithAttributedString:text];
 
     if (!self.caculateSizeOnly) {
+        __block NSRange linkRange = NSMakeRange(0, 0);
         [attText enumerateAttributesInRange:NSMakeRange(0, attText.length) options:NSAttributedStringEnumerationLongestEffectiveRangeNotRequired usingBlock:^(NSDictionary<NSString *, id> *attrs, NSRange range, BOOL *stop){
             BOOL isLink = [attrs[kCJIsLinkAttributesName] boolValue];
             if (isLink) {
-                [attText addAttribute:kCJLinkRangeAttributesName value:NSStringFromRange(range) range:range];
+                NSInteger linkLength = [attrs[kCJLinkLengthAttributesName] integerValue];
+                if (linkRange.location == 0) {
+                    linkRange = NSMakeRange(range.location, linkLength);
+                }else{
+                    linkRange = NSMakeRange(linkRange.location, linkLength);
+                }
+                [attText addAttribute:kCJLinkRangeAttributesName value:NSStringFromRange(linkRange) range:range];
             }else{
+                linkRange = NSMakeRange(0, 0);
                 [attText removeAttribute:kCJLinkRangeAttributesName range:range];
             }
         }];
@@ -1514,6 +1506,7 @@ NSString * const kCJActiveBackgroundStrokeColorAttributeName = @"kCJActiveBackgr
             break;
         }
         case UIGestureRecognizerStateEnded:{
+            [[CJSelectBackView instance] hideView];
             if (isLinkItem) {
                 _longPress = NO;
                 if (_currentClickRunStrokeItem) {
@@ -1523,17 +1516,14 @@ NSString * const kCJActiveBackgroundStrokeColorAttributeName = @"kCJActiveBackgr
                     [self setNeedsDisplay];
                     [CATransaction flush];
                 }
-            }else{
-                if (self.enableCopy) {
-
-                    [[CJSelectBackView instance] hideView];
-                    CJGlyphRunStrokeItem *currentItem = [CJSelectBackView currentItem:point allRunItemArray:_allRunItemArray inset:1];
-                    if (currentItem) {
-                        //唤起 选择复制视图
-                        [[CJSelectBackView instance]showSelectViewInCJLabel:self atPoint:point runItem:[currentItem copy] maxLineWidth:_lineVerticalMaxWidth allCTLineVerticalArray:_CTLineVerticalLayoutArray allRunItemArray:_allRunItemArray hideViewBlock:^(){
-                            self.caculateCopySize = NO;
-                        }];
-                    }
+            }
+            if (self.enableCopy) {
+                CJGlyphRunStrokeItem *currentItem = [CJSelectBackView currentItem:point allRunItemArray:_allRunItemArray inset:1];
+                if (currentItem) {
+                    //唤起 选择复制视图
+                    [[CJSelectBackView instance]showSelectViewInCJLabel:self atPoint:point runItem:[currentItem copy] maxLineWidth:_lineVerticalMaxWidth allCTLineVerticalArray:_CTLineVerticalLayoutArray allRunItemArray:_allRunItemArray hideViewBlock:^(){
+                        self.caculateCopySize = NO;
+                    }];
                 }
             }
             break;

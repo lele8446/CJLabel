@@ -21,6 +21,7 @@ NSString * const kCJLinkStringKeyAttributesName              = @"kCJLinkStringKe
 NSString * const kCJLinkAttributesName                       = @"kCJLinkAttributesName";
 NSString * const kCJActiveLinkAttributesName                 = @"kCJActiveLinkAttributesName";
 NSString * const kCJIsLinkAttributesName                     = @"kCJIsLinkAttributesName";
+NSString * const kCJLinkLengthAttributesName                 = @"kCJLinkLengthAttributesName";
 NSString * const kCJLinkRangeAttributesName                  = @"kCJLinkRangeAttributesName";
 NSString * const kCJLinkParameterAttributesName              = @"kCJLinkParameterAttributesName";
 NSString * const kCJClickLinkBlockAttributesName             = @"kCJClickLinkBlockAttributesName";
@@ -115,8 +116,10 @@ UIWindow * keyWindow(){
     }
     if (isLink) {
         [imageAttributedString addAttribute:kCJIsLinkAttributesName value:@(YES) range:imgRange];
+        [imageAttributedString addAttribute:kCJLinkLengthAttributesName value:@(imgRange.length) range:imgRange];
     }else{
         [imageAttributedString addAttribute:kCJIsLinkAttributesName value:@(NO) range:imgRange];
+        [imageAttributedString addAttribute:kCJLinkLengthAttributesName value:@(0) range:imgRange];
     }
     NSRange range = NSMakeRange(loc, imgPlaceholderStr.length);
     NSMutableAttributedString *attributedString = [[NSMutableAttributedString alloc]initWithAttributedString:attrStr];
@@ -190,8 +193,10 @@ UIWindow * keyWindow(){
     }
     if (isLink) {
         [attributedString addAttribute:kCJIsLinkAttributesName value:@(YES) range:range];
+        [attributedString addAttribute:kCJLinkLengthAttributesName value:@(range.length) range:range];
     }else{
         [attributedString addAttribute:kCJIsLinkAttributesName value:@(NO) range:range];
+        [attributedString addAttribute:kCJLinkLengthAttributesName value:@(0) range:range];
     }
     return attributedString;
 }

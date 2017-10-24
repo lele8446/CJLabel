@@ -191,7 +191,7 @@
     CJLabelConfigure *configure =
     [CJLabel configureAttributes:@{
                                    NSForegroundColorAttributeName:[UIColor blueColor],
-                                   NSFontAttributeName:[UIFont boldSystemFontOfSize:self.index == 5?16:15],
+                                   NSFontAttributeName:[UIFont boldSystemFontOfSize:self.index == 5?15:15],
                                    kCJBackgroundStrokeColorAttributeName:[UIColor orangeColor],
                                    kCJBackgroundLineWidthAttributeName:@(self.index == 5?1:2),
                                    kCJBackgroundFillColorAttributeName:[UIColor lightGrayColor]

@@ -264,6 +264,7 @@ extern NSString * const kCJLinkStringKeyAttributesName;
 extern NSString * const kCJLinkAttributesName;
 extern NSString * const kCJActiveLinkAttributesName;
 extern NSString * const kCJIsLinkAttributesName;
+extern NSString * const kCJLinkLengthAttributesName;
 extern NSString * const kCJLinkRangeAttributesName;
 extern NSString * const kCJLinkParameterAttributesName;
 extern NSString * const kCJClickLinkBlockAttributesName;
