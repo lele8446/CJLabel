@@ -50,12 +50,14 @@
     
     CJLabelConfigure *configure =
     [CJLabel configureAttributes:@{NSForegroundColorAttributeName:[UIColor blackColor],
-                                   NSFontAttributeName:[UIFont boldSystemFontOfSize:15],
+                                   NSFontAttributeName:[UIFont boldSystemFontOfSize:16],
                                    }
-                          isLink:NO
+                          isLink:YES
             activeLinkAttributes:nil
                        parameter:nil
-                  clickLinkBlock:nil
+                  clickLinkBlock:^(CJLabelLinkModel *linkModel) {
+                      [self clickLink:linkModel isImage:NO];
+                  }
                   longPressBlock:nil];
     
     NSMutableAttributedString *attStr = content;
@@ -67,11 +69,11 @@
             self.firstLabel.hidden = YES;
             self.secondLabel = [[CJLabel alloc]initWithFrame:CGRectMake(10, 10, [[UIScreen mainScreen] bounds].size.width - 20, [[UIScreen mainScreen] bounds].size.height - 64 - 100)];
             self.secondLabel.backgroundColor = UIColorFromRGB(0xf0f0de);
-            self.secondLabel.numberOfLines = 10;
+            self.secondLabel.numberOfLines = 0;
             self.secondLabel.textInsets = UIEdgeInsetsMake(10, 15, 20, 0);
             self.secondLabel.verticalAlignment = CJVerticalAlignmentBottom;
             self.secondLabel.enableCopy = YES;
-            self.secondLabel.enableCopy = NO;
+//            self.secondLabel.enableCopy = NO;
             [self.view addSubview:self.secondLabel];
             
             configure.attributes = @{
@@ -130,13 +132,16 @@
             self.secondLabel = [[CJLabel alloc]initWithFrame:CGRectMake(10, 10, [[UIScreen mainScreen] bounds].size.width - 20, [[UIScreen mainScreen] bounds].size.height - 64 - 100)];
             self.secondLabel.backgroundColor = UIColorFromRGB(0xf0f0de);
             self.secondLabel.numberOfLines = 0;
+            self.secondLabel.textInsets = UIEdgeInsetsMake(100, 50, 0, 0);
             self.secondLabel.verticalAlignment = CJVerticalAlignmentTop;
-            self.secondLabel.enableCopy = NO;
+            self.secondLabel.enableCopy = YES;
             [self.view addSubview:self.secondLabel];
             
             NSRange imageRange = [attStr.string rangeOfString:@"插入图片"];
             CJLabelConfigure *imgConfigure =
-            [CJLabel configureAttributes:@{kCJBackgroundStrokeColorAttributeName:[UIColor redColor],                                                         kCJBackgroundLineWidthAttributeName:@(2)} isLink:NO activeLinkAttributes:nil parameter:nil clickLinkBlock:nil longPressBlock:nil];
+            [CJLabel configureAttributes:@{kCJBackgroundStrokeColorAttributeName:[UIColor redColor],                                                         kCJBackgroundLineWidthAttributeName:@(2)} isLink:YES activeLinkAttributes:nil parameter:nil clickLinkBlock:^(CJLabelLinkModel *linkModel) {
+                [self clickLink:linkModel isImage:YES];
+            } longPressBlock:nil];
             
             attStr = [CJLabel insertImageAtAttrString:attStr
                                                 image:[UIImage imageNamed:@"CJLabel.png"]
@@ -191,7 +196,7 @@
     CJLabelConfigure *configure =
     [CJLabel configureAttributes:@{
                                    NSForegroundColorAttributeName:[UIColor blueColor],
-                                   NSFontAttributeName:[UIFont boldSystemFontOfSize:self.index == 5?15:15],
+                                   NSFontAttributeName:[UIFont boldSystemFontOfSize:15],
                                    kCJBackgroundStrokeColorAttributeName:[UIColor orangeColor],
                                    kCJBackgroundLineWidthAttributeName:@(self.index == 5?1:2),
                                    kCJBackgroundFillColorAttributeName:[UIColor lightGrayColor]
@@ -231,7 +236,7 @@
                   longPressBlock:^(CJLabelLinkModel *linkModel){
                       [self clicklongPressLink:linkModel isImage:YES];
                   }];
-    attStr = [CJLabel insertImageAtAttrString:attStr image:@"CJLabel.png" imageSize:CGSizeMake(60, 48) atIndex:(imageRange.location+imageRange.length) imagelineAlignment:verticalAlignment configure:imgConfigure];
+    attStr = [CJLabel insertImageAtAttrString:attStr image:@"CJLabel.png" imageSize:CGSizeMake(45, 38) atIndex:(imageRange.location+imageRange.length) imagelineAlignment:verticalAlignment configure:imgConfigure];
 
     self.firstLabel.attributedText = attStr;
     self.firstLabel.extendsLinkTouchArea = YES;

@@ -33,7 +33,7 @@ struct CJCTLineVerticalLayout {
     CFIndex line;//第几行
     CGFloat maxRunHeight;//当前行run的最大高度（不包括图片）
     CGFloat lineHeight;//行高
-    CGFloat maxImageHeight;//图片等最大高度
+    CGFloat maxImageHeight;//图片的最大高度
     CGRect  lineRect;//当前行对应的CGRect
     CJLabelVerticalAlignment verticalAlignment;//对齐方式（默认底部对齐）
 };
@@ -264,6 +264,8 @@ extern NSString * const kCJLinkStringKeyAttributesName;
 extern NSString * const kCJLinkAttributesName;
 extern NSString * const kCJActiveLinkAttributesName;
 extern NSString * const kCJIsLinkAttributesName;
+//点击链点唯一标识
+extern NSString * const kCJLinkIdentifierAttributesName;
 extern NSString * const kCJLinkLengthAttributesName;
 extern NSString * const kCJLinkRangeAttributesName;
 extern NSString * const kCJLinkParameterAttributesName;

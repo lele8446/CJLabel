@@ -21,6 +21,7 @@ NSString * const kCJLinkStringKeyAttributesName              = @"kCJLinkStringKe
 NSString * const kCJLinkAttributesName                       = @"kCJLinkAttributesName";
 NSString * const kCJActiveLinkAttributesName                 = @"kCJActiveLinkAttributesName";
 NSString * const kCJIsLinkAttributesName                     = @"kCJIsLinkAttributesName";
+NSString * const kCJLinkIdentifierAttributesName             = @"kCJLinkIdentifierAttributesName";
 NSString * const kCJLinkLengthAttributesName                 = @"kCJLinkLengthAttributesName";
 NSString * const kCJLinkRangeAttributesName                  = @"kCJLinkRangeAttributesName";
 NSString * const kCJLinkParameterAttributesName              = @"kCJLinkParameterAttributesName";
@@ -116,6 +117,7 @@ UIWindow * keyWindow(){
     }
     if (isLink) {
         [imageAttributedString addAttribute:kCJIsLinkAttributesName value:@(YES) range:imgRange];
+        [imageAttributedString addAttribute:kCJLinkIdentifierAttributesName value:@(arc4random()) range:imgRange];
         [imageAttributedString addAttribute:kCJLinkLengthAttributesName value:@(imgRange.length) range:imgRange];
     }else{
         [imageAttributedString addAttribute:kCJIsLinkAttributesName value:@(NO) range:imgRange];
@@ -193,6 +195,7 @@ UIWindow * keyWindow(){
     }
     if (isLink) {
         [attributedString addAttribute:kCJIsLinkAttributesName value:@(YES) range:range];
+        [attributedString addAttribute:kCJLinkIdentifierAttributesName value:@(arc4random()) range:range];
         [attributedString addAttribute:kCJLinkLengthAttributesName value:@(range.length) range:range];
     }else{
         [attributedString addAttribute:kCJIsLinkAttributesName value:@(NO) range:range];

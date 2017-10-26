@@ -174,7 +174,7 @@ NSString * const kCJActiveBackgroundStrokeColorAttributeName = @"kCJActiveBackgr
         if ([text isEqualToAttributedString:_attributedText]) {
             return;
         }
-        _allRunItemArray = nil;
+//        _allRunItemArray = nil;
     }else{
         if (![text isEqualToAttributedString:_attributedText]) {
             self.caculateCopySize = NO;
@@ -193,13 +193,19 @@ NSString * const kCJActiveBackgroundStrokeColorAttributeName = @"kCJActiveBackgr
 
     if (!self.caculateSizeOnly) {
         __block NSRange linkRange = NSMakeRange(0, 0);
+        __block NSUInteger oldLinkIdentifier = 0;
         [attText enumerateAttributesInRange:NSMakeRange(0, attText.length) options:NSAttributedStringEnumerationLongestEffectiveRangeNotRequired usingBlock:^(NSDictionary<NSString *, id> *attrs, NSRange range, BOOL *stop){
             BOOL isLink = [attrs[kCJIsLinkAttributesName] boolValue];
             if (isLink) {
                 NSInteger linkLength = [attrs[kCJLinkLengthAttributesName] integerValue];
-                if (linkRange.location == 0) {
+                NSUInteger linkIdentifier = [attrs[kCJLinkIdentifierAttributesName] unsignedIntegerValue];
+                //不同的链点
+                if (oldLinkIdentifier != linkIdentifier) {
+                    oldLinkIdentifier = linkIdentifier;
                     linkRange = NSMakeRange(range.location, linkLength);
-                }else{
+                }
+                //相同的链点
+                else{
                     linkRange = NSMakeRange(linkRange.location, linkLength);
                 }
                 [attText addAttribute:kCJLinkRangeAttributesName value:NSStringFromRange(linkRange) range:range];
@@ -857,11 +863,11 @@ NSString * const kCJActiveBackgroundStrokeColorAttributeName = @"kCJActiveBackgr
         NSValue *value = [NSValue valueWithBytes:&lineVerticalLayout objCType:@encode(CJCTLineVerticalLayout)];
         [verticalLayoutArray addObject:value];
         
-        _lineVerticalMaxWidth = MAX(_lineVerticalMaxWidth, lineBounds.size.width);
+//        _lineVerticalMaxWidth = MAX(_lineVerticalMaxWidth, lineBounds.size.width);
     }
-    _lineVerticalMaxWidth += 1;
+//    _lineVerticalMaxWidth += 1;
     
-//    _lineVerticalMaxWidth = self.bounds.size.width;
+    _lineVerticalMaxWidth = self.bounds.size.width;
     
     return verticalLayoutArray;
 }
@@ -945,10 +951,12 @@ NSString * const kCJActiveBackgroundStrokeColorAttributeName = @"kCJActiveBackgr
             //点击链点是否需要重绘
             BOOL needRedrawn = [attributes[kCJLinkNeedRedrawnAttributesName] boolValue];
             
+            BOOL isImage = NO;
             NSDictionary *imgInfoDic = attributes[kCJImageAttributeName];
             CJLabelVerticalAlignment imageVerticalAlignment = CJVerticalAlignmentBottom;
             if (!CJLabelIsNull(imgInfoDic)) {
                 imageVerticalAlignment = [imgInfoDic[kCJImageLineVerticalAlignment] integerValue];
+                isImage = YES;
             }
             
             NSInteger characterIndex = 0;
@@ -962,20 +970,25 @@ NSString * const kCJActiveBackgroundStrokeColorAttributeName = @"kCJActiveBackgr
             }
         
             //当前run相对于self的CGRect
-            CGRect runBounds = [self getRunStrokeItemlocRunBoundsFromGlyphRun:glyphRun
-                                                                         line:line
-                                                                      origins:origins
-                                                                    lineIndex:i
-                                                                       inRect:rect
-                                                                        width:width
-                                                              moreThanOneLine:(_numberOfLines > 1)
-                                                           lineVerticalLayout:lineVerticalLayout
-                                                                      isImage:!CJLabelIsNull(imgInfoDic)
-                                                       imageVerticalAlignment:imageVerticalAlignment
-                                                                  lineDescent:descent
-                                                                  lineLeading:leading];
+            NSArray *array =  [self getRunStrokeItemlocRunBoundsFromGlyphRun:glyphRun
+                                                                        line:line
+                                                                     origins:origins
+                                                                   lineIndex:i
+                                                                      inRect:rect
+                                                                       width:width
+                                                             moreThanOneLine:(_numberOfLines > 1)
+                                                          lineVerticalLayout:lineVerticalLayout
+                                                                     isImage:!CJLabelIsNull(imgInfoDic)
+                                                      imageVerticalAlignment:imageVerticalAlignment
+                                                                 lineDescent:descent
+                                                                 lineLeading:leading];
+            NSValue *value = array[0];
+            CGRect runBounds = [value CGRectValue];
+            CGFloat runHeight = [array[1] floatValue];
+            
             //转换为UIKit坐标系统
-            CGRect locBounds = [self convertRectFromLoc:runBounds moreThanOneLine:(_numberOfLines > 1)];
+            CGRect locBounds = [self convertRectFromLoc:runBounds runHeight:runHeight lineVerticalLayout:lineVerticalLayout isImage:isImage lineDescent:descent];
+
             
             CJGlyphRunStrokeItem *runStrokeItem = [[CJGlyphRunStrokeItem alloc]init];
             runStrokeItem.runBounds = runBounds;
@@ -991,7 +1004,6 @@ NSString * const kCJActiveBackgroundStrokeColorAttributeName = @"kCJActiveBackgr
             
             // 当前glyphRun是一个可点击链点
             if (isLink) {
-                
                 runStrokeItem.strokeColor = strokeColor;
                 runStrokeItem.fillColor = fillColor;
                 runStrokeItem.lineWidth = lineWidth;
@@ -1048,7 +1060,7 @@ NSString * const kCJActiveBackgroundStrokeColorAttributeName = @"kCJActiveBackgr
 }
 
 //当前run相对于self的CGRect
-- (CGRect )getRunStrokeItemlocRunBoundsFromGlyphRun:(id)glyphRun
+- (NSArray *)getRunStrokeItemlocRunBoundsFromGlyphRun:(id)glyphRun
                                                line:(id)line
                                             origins:(CGPoint[])origins
                                           lineIndex:(CFIndex)lineIndex
@@ -1060,6 +1072,7 @@ NSString * const kCJActiveBackgroundStrokeColorAttributeName = @"kCJActiveBackgr
                              imageVerticalAlignment:(CJLabelVerticalAlignment)imageVerticalAlignment
                                         lineDescent:(CGFloat)lineDescent
                                         lineLeading:(CGFloat)lineLeading
+
 {
     CGRect runBounds = CGRectZero;
     CGFloat runAscent = 0.0f;
@@ -1080,7 +1093,9 @@ NSString * const kCJActiveBackgroundStrokeColorAttributeName = @"kCJActiveBackgr
     
     runBounds.origin.x = origins[lineIndex].x + rect.origin.x + xOffset;
     CGFloat y = origins[lineIndex].y;
+    
     CGFloat yy = [self yOffset:y lineVerticalLayout:lineVerticalLayout lineDescent:lineDescent isImage:isImage runHeight:runAscent + runDescent imageVerticalAlignment:imageVerticalAlignment];
+
     //文字对应的runBounds 微调
     if (!isImage) {
         yy = yy - self.font.descender/2;
@@ -1090,8 +1105,8 @@ NSString * const kCJActiveBackgroundStrokeColorAttributeName = @"kCJActiveBackgr
     if (CGRectGetWidth(runBounds) > width) {
         runBounds.size.width = width;
     }
-    
-    return runBounds;
+
+    return @[[NSValue valueWithCGRect:runBounds],@(runAscent+runDescent)];
 }
 //判断是否有需要合并的runStrokeItems
 - (NSMutableArray <CJGlyphRunStrokeItem *>*)mergeLineSameStrokePathItems:(NSArray <CJGlyphRunStrokeItem *>*)lineStrokePathItems ascentAndDescent:(CGFloat)ascentAndDescent moreThanOneLine:(BOOL)more {
@@ -1110,6 +1125,7 @@ NSString * const kCJActiveBackgroundStrokeColorAttributeName = @"kCJActiveBackgr
             }else{
                 
                 CGRect runBounds = item.runBounds;
+                CGRect locBounds = item.locBounds;
                 UIColor *strokeColor = item.strokeColor;
                 UIColor *fillColor = item.fillColor;
                 UIColor *activeStrokeColor = item.activeStrokeColor;
@@ -1118,6 +1134,7 @@ NSString * const kCJActiveBackgroundStrokeColorAttributeName = @"kCJActiveBackgr
                 CGFloat cornerRadius = item.cornerRadius;
                 
                 CGRect lastRunBounds = _lastGlyphRunStrokeItem.runBounds;
+                CGRect lastLocBounds = _lastGlyphRunStrokeItem.locBounds;
                 UIColor *lastStrokeColor = _lastGlyphRunStrokeItem.strokeColor;
                 UIColor *lastFillColor = _lastGlyphRunStrokeItem.fillColor;
                 UIColor *lastActiveStrokeColor = _lastGlyphRunStrokeItem.activeStrokeColor;
@@ -1146,11 +1163,15 @@ NSString * const kCJActiveBackgroundStrokeColorAttributeName = @"kCJActiveBackgr
                     if (NSEqualRanges(range,lastRange)) {
                         needMerge = YES;
                         lastRunBounds = CGRectMake(compareMaxNum(lastRunBounds.origin.x,runBounds.origin.x,NO),
-                                                   compareMaxNum(lastRunBounds.origin.y,runBounds.origin.y,NO),
+                                                   compareMaxNum(lastRunBounds.origin.y,runBounds.origin.y,YES),
                                                    lastRunBounds.size.width + runBounds.size.width,
                                                    compareMaxNum(lastRunBounds.size.height,runBounds.size.height,YES));
                         _lastGlyphRunStrokeItem.runBounds = lastRunBounds;
-                        _lastGlyphRunStrokeItem.locBounds = [self convertRectFromLoc:lastRunBounds moreThanOneLine:more];
+                        _lastGlyphRunStrokeItem.locBounds =
+                        CGRectMake(compareMaxNum(lastLocBounds.origin.x,locBounds.origin.x,NO),
+                                   compareMaxNum(lastLocBounds.origin.y,locBounds.origin.y,NO),
+                                   lastLocBounds.size.width + locBounds.size.width,
+                                   compareMaxNum(lastLocBounds.size.height,locBounds.size.height,YES));
                     }
                 }else if (!item.isLink && !_lastGlyphRunStrokeItem.isLink){
                     //非点击链点，但是是需要合并的连续run
@@ -1159,11 +1180,15 @@ NSString * const kCJActiveBackgroundStrokeColorAttributeName = @"kCJActiveBackgr
                         
                         needMerge = YES;
                         lastRunBounds = CGRectMake(compareMaxNum(lastRunBounds.origin.x,runBounds.origin.x,NO),
-                                                   compareMaxNum(lastRunBounds.origin.y,runBounds.origin.y,NO),
+                                                   compareMaxNum(lastRunBounds.origin.y,runBounds.origin.y,YES),
                                                    lastRunBounds.size.width + runBounds.size.width,
                                                    compareMaxNum(lastRunBounds.size.height,runBounds.size.height,YES));
                         _lastGlyphRunStrokeItem.runBounds = lastRunBounds;
-                        _lastGlyphRunStrokeItem.locBounds = [self convertRectFromLoc:lastRunBounds moreThanOneLine:more];
+                        _lastGlyphRunStrokeItem.locBounds =
+                        CGRectMake(compareMaxNum(lastLocBounds.origin.x,locBounds.origin.x,NO),
+                                   compareMaxNum(lastLocBounds.origin.y,locBounds.origin.y,NO),
+                                   lastLocBounds.size.width + locBounds.size.width,
+                                   compareMaxNum(lastLocBounds.size.height,locBounds.size.height,YES));
                     }
                 }
                 
@@ -1210,7 +1235,7 @@ NSString * const kCJActiveBackgroundStrokeColorAttributeName = @"kCJActiveBackgr
     // runBounds小于 ascent + Descent 时，rect扩大 1
     if (item.runBounds.size.height < ascentAndDescent) {
         item.runBounds = CGRectInset(item.runBounds,-1,-1);
-        item.locBounds = [self convertRectFromLoc:item.runBounds moreThanOneLine:more];;
+//        item.locBounds = [self convertRectFromLoc:item.runBounds moreThanOneLine:more];
     }
     return item;
 }
@@ -1225,32 +1250,74 @@ NSString * const kCJActiveBackgroundStrokeColorAttributeName = @"kCJActiveBackgr
     return linkArray;
 }
 
+#pragma mark - 将系统坐标转换为屏幕坐标
 /**
  将系统坐标转换为屏幕坐标
 
  @param rect 坐标原点在左下角的 rect
  @return 坐标原点在左上角的 rect
  */
-- (CGRect)convertRectFromLoc:(CGRect)rect moreThanOneLine:(BOOL)more {    
-    if ((fabs(rect.origin.y) + fabs(rect.size.height)) <= self.bounds.size.height) {
-        rect = CGRectMake(rect.origin.x ,
-                          self.bounds.size.height - rect.origin.y - rect.size.height,
-                          rect.size.width,
-                          rect.size.height);
-    }else{
-        if (more) {
-            rect = CGRectMake(rect.origin.x ,
-                              self.bounds.size.height - rect.origin.y - rect.size.height,
-                              rect.size.width,
-                              rect.size.height);
-        }else{
-            rect = CGRectMake(rect.origin.x ,
-                              (self.bounds.size.height - rect.size.height)/2.0,
-                              rect.size.width,
-                              rect.size.height);
+- (CGRect)convertRectFromLoc:(CGRect)rect runHeight:(CGFloat)runHeight lineVerticalLayout:(CJCTLineVerticalLayout)lineVerticalLayout isImage:(BOOL)isImage lineDescent:(CGFloat)lineDescent {
+
+    CJLabelVerticalAlignment verticalAlignment = lineVerticalLayout.verticalAlignment;
+    CGFloat lineHeight = lineVerticalLayout.lineHeight;
+    CGFloat maxRunHeight = lineVerticalLayout.maxRunHeight;
+    CGFloat maxImageHeight = lineVerticalLayout.maxImageHeight;
+    CGFloat maxH = MAX(lineHeight, maxRunHeight);
+    maxH = MAX(maxH, maxImageHeight);
+    maxH = MAX(maxH, lineVerticalLayout.lineRect.size.height);
+    
+    CGRect resultRect = CGRectZero;
+    CGFloat Y = lineVerticalLayout.lineRect.origin.y;
+    CGFloat lineRectH = lineVerticalLayout.lineRect.size.height;
+    
+    if (!isImage) {
+        if (lineRectH > runHeight) {
+            Y = Y + lineRectH - runHeight - self.font.descender;
+        }else if (lineRectH < runHeight) {
+            Y = Y + self.font.descender;
         }
     }
-    return rect;
+    
+    if (isImage) {
+        if (lineRectH < runHeight) {
+            Y = Y - (runHeight - lineRectH) - self.font.descender/2;
+        }else {
+            Y = Y + lineRectH - runHeight - self.font.descender;
+        }
+    }
+    
+    //如果是图片
+    if (isImage) {
+        if (verticalAlignment == CJVerticalAlignmentCenter) {
+            if (runHeight < maxRunHeight) {
+                Y = Y - (maxH - runHeight)/2 - self.font.descender;
+            }
+        }
+        else if (verticalAlignment == CJVerticalAlignmentTop) {
+            if (runHeight < maxRunHeight) {
+                Y = Y - (maxH - runHeight) - 2*self.font.descender;
+            }
+        }
+        resultRect = CGRectMake(rect.origin.x ,Y,rect.size.width,rect.size.height);
+        return resultRect;
+    }
+    
+    //文字高度比图片高度大，且是最大文字
+    if (runHeight == maxRunHeight && maxRunHeight > maxImageHeight) {
+        Y = Y - lineDescent - self.font.descender;
+        resultRect = CGRectMake(rect.origin.x ,Y,rect.size.width,rect.size.height);
+        return resultRect;
+    }
+    //其他文字
+    if (verticalAlignment == CJVerticalAlignmentCenter) {
+        Y = Y - (maxH - runHeight)/2 + lineDescent - self.font.descender;
+    }
+    else if (verticalAlignment == CJVerticalAlignmentTop) {
+        Y = Y - (maxH - runHeight) + lineDescent - self.font.descender;
+    }
+    resultRect = CGRectMake(rect.origin.x ,Y,rect.size.width,rect.size.height);
+    return resultRect;
     
 }
 
@@ -1310,9 +1377,10 @@ NSString * const kCJActiveBackgroundStrokeColorAttributeName = @"kCJActiveBackgr
     for (CJGlyphRunStrokeItem *item in _linkStrokeItemArray) {
         CGRect bounds = item.locBounds;
         
-        CGFloat top = self.textInsets.top;
-        CGFloat bottom = self.textInsets.bottom;
-        bounds.origin.y = bounds.origin.y + top - bottom + _yOffset;
+//        CGFloat top = self.textInsets.top;
+//        CGFloat bottom = self.textInsets.bottom;
+//        bounds.origin.y = bounds.origin.y + top - bottom + _yOffset;
+
         if (radius > 0) {
             bounds = CGRectInset(bounds,-radius,-radius);
         }
