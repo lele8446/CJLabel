@@ -1567,6 +1567,8 @@ NSString * const kCJActiveBackgroundStrokeColorAttributeName = @"kCJActiveBackgr
                     CJGlyphRunStrokeItem *currentItem = [CJSelectBackView currentItem:point allRunItemArray:_allRunItemArray inset:0.5];
                     if (currentItem) {
                         [[CJSelectBackView instance] showMagnifyInCJLabel:self magnifyPoint:point runItem:currentItem hideViewBlock:nil];
+                    }else{
+                        [[CJSelectBackView instance] showMagnifyInCJLabel:self magnifyPoint:point runItem:nil hideViewBlock:nil];
                     }
                 }];
             }
@@ -1604,6 +1606,8 @@ NSString * const kCJActiveBackgroundStrokeColorAttributeName = @"kCJActiveBackgr
                 CJGlyphRunStrokeItem *currentItem = [CJSelectBackView currentItem:point allRunItemArray:_allRunItemArray inset:1];
                 if (currentItem) {
                     [[CJSelectBackView instance] showMagnifyInCJLabel:self magnifyPoint:point runItem:currentItem hideViewBlock:nil];
+                }else{
+                    [[CJSelectBackView instance] showMagnifyInCJLabel:self magnifyPoint:point runItem:nil hideViewBlock:nil];
                 }
             }
         }

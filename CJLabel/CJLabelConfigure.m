@@ -435,7 +435,7 @@ UIWindow * keyWindow(){
 
 - (void)drawInContext:(CGContextRef)ctx {
     CGContextTranslateCTM(ctx, self.frame.size.width/2, self.frame.size.height/2);
-    CGContextScaleCTM(ctx, 1.35, 1.35);
+    CGContextScaleCTM(ctx, 1.40, 1.40);
     CGContextTranslateCTM(ctx, -1 * self.pointToMagnify.x, -1 * self.pointToMagnify.y);
     [keyWindow().layer renderInContext:ctx];
     keyWindow().layer.contents = (id)nil;
@@ -1024,15 +1024,27 @@ typedef NS_ENUM(NSInteger, CJSelectViewAction) {
 
 //更新放大镜的位置
 - (void)updateMagnifyPoint:(CGPoint)point item:(CJGlyphRunStrokeItem *)item {
-    CJCTLineVerticalLayout lineVerticalLayout = item.lineVerticalLayout;
-    // Y 值往上偏移20 像素
-    CGPoint selectPoint = CGPointMake(point.x, lineVerticalLayout.lineRect.origin.y-20);
-    CGPoint pointToMagnify = CGPointMake(point.x, lineVerticalLayout.lineRect.origin.y + lineVerticalLayout.lineRect.size.height/2);
-    selectPoint = [self convertPoint:selectPoint toView:keyWindow()];
-    pointToMagnify = [self convertPoint:pointToMagnify toView:keyWindow()];
+    if (item) {
+        CJCTLineVerticalLayout lineVerticalLayout = item.lineVerticalLayout;
+        // Y 值往上偏移20 像素
+        CGPoint selectPoint = CGPointMake(point.x, lineVerticalLayout.lineRect.origin.y-20);
+        CGPoint pointToMagnify = CGPointMake(point.x, lineVerticalLayout.lineRect.origin.y + lineVerticalLayout.lineRect.size.height/2);
+        selectPoint = [self convertPoint:selectPoint toView:keyWindow()];
+        pointToMagnify = [self convertPoint:pointToMagnify toView:keyWindow()];
+        self.magnifierView.hidden = NO;
+        [self.magnifierView updateMagnifyPoint:pointToMagnify showMagnifyViewIn:selectPoint];
+    }
+    else {
+        // Y 值往上偏移20 像素
+        CGPoint selectPoint = CGPointMake(point.x, point.y-20);
+        CGPoint pointToMagnify = CGPointMake(point.x, point.y);
+        selectPoint = [self convertPoint:selectPoint toView:keyWindow()];
+        pointToMagnify = [self convertPoint:pointToMagnify toView:keyWindow()];
+        self.magnifierView.hidden = NO;
+        [self.magnifierView updateMagnifyPoint:pointToMagnify showMagnifyViewIn:selectPoint];
+    }
     
-    self.magnifierView.hidden = NO;
-    [self.magnifierView updateMagnifyPoint:pointToMagnify showMagnifyViewIn:selectPoint];
+
 }
 
 /**
