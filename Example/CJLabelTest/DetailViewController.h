@@ -11,6 +11,6 @@
 @interface DetailViewController : UIViewController
 
 @property (nonatomic, assign) NSInteger index;
-@property (nonatomic, strong) NSAttributedString *content;
+@property (nonatomic, strong) NSMutableAttributedString *content;
 
 @end

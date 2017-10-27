@@ -10,8 +10,10 @@
 #import <UIKit/UIKit.h>
 #import <CoreText/CoreText.h>
 @class CJLabelLinkModel;
+@class CJLabel;
 
 #define CJLabelIsNull(a) ((a)==nil || (a)==NULL || (NSNull *)(a)==[NSNull null])
+#define CJUIRGBColor(r,g,b,a) ([UIColor colorWithRed:r/255.0 green:g/255.0 blue:b/255.0 alpha:a])
 
 typedef void (^CJLabelLinkModelBlock)(CJLabelLinkModel *linkModel);
 
@@ -31,7 +33,7 @@ struct CJCTLineVerticalLayout {
     CFIndex line;//第几行
     CGFloat maxRunHeight;//当前行run的最大高度（不包括图片）
     CGFloat lineHeight;//行高
-    CGFloat maxImageHeight;//图片等最大高度
+    CGFloat maxImageHeight;//图片的最大高度
     CGRect  lineRect;//当前行对应的CGRect
     CJLabelVerticalAlignment verticalAlignment;//对齐方式（默认底部对齐）
 };
@@ -44,7 +46,7 @@ typedef struct CJCTLineVerticalLayout CJCTLineVerticalLayout;
 /**
  设置链点的自定义属性
  */
-@property (nonatomic, strong) NSDictionary<NSAttributedStringKey, id> *attributes;
+@property (nonatomic, strong) NSDictionary<NSString *, id> *attributes;
 /**
  是否为可点击链点，设置 isLink=YES 时，activeLinkAttributes、parameter、clickLinkBlock、longPressBlock才有效
  */
@@ -52,7 +54,7 @@ typedef struct CJCTLineVerticalLayout CJCTLineVerticalLayout;
 /**
  设置链点点击高亮时候的自定义属性
  */
-@property (nonatomic, strong) NSDictionary<NSAttributedStringKey, id> *activeLinkAttributes;
+@property (nonatomic, strong) NSDictionary<NSString *, id> *activeLinkAttributes;
 /**
  点击链点的自定义参数
  */
@@ -67,20 +69,10 @@ typedef struct CJCTLineVerticalLayout CJCTLineVerticalLayout;
 @property (nonatomic, copy) CJLabelLinkModelBlock longPressBlock;
 
 /**
- 初始化配置
- */
-+ (instancetype)configureAttributes:(NSDictionary<NSAttributedStringKey, id> *)attributes
-                             isLink:(BOOL)isLink
-               activeLinkAttributes:(NSDictionary<NSAttributedStringKey, id> *)activeLinkAttributes
-                          parameter:(id)parameter
-                     clickLinkBlock:(CJLabelLinkModelBlock)clickLinkBlock
-                     longPressBlock:(CJLabelLinkModelBlock)longPressBlock;
-
-/**
  在指定位置插入图片链点！！！
  */
 + (NSMutableAttributedString *)configureLinkAttributedString:(NSAttributedString *)attrStr
-                                                addImageName:(NSString *)imageName
+                                                    addImage:(id)image
                                                    imageSize:(CGSize)size
                                                      atIndex:(NSUInteger)loc
                                            verticalAlignment:(CJLabelVerticalAlignment)verticalAlignment
@@ -90,7 +82,6 @@ typedef struct CJCTLineVerticalLayout CJCTLineVerticalLayout;
                                               clickLinkBlock:(CJLabelLinkModelBlock)clickLinkBlock
                                               longPressBlock:(CJLabelLinkModelBlock)longPressBlock
                                                       islink:(BOOL)isLink;
-
 /**
  根据指定NSRange配置富文本链点！！！
  */
@@ -168,12 +159,12 @@ typedef struct CJCTLineVerticalLayout CJCTLineVerticalLayout;
  */
 @property (readonly, nonatomic, assign) CGRect imageRect;
 /**
- 链点图片名称
+ 链点图片
  */
-@property (readonly, nonatomic, copy) NSString *imageName;
+@property (readonly, nonatomic, strong) id image;
 
 - (instancetype)initWithAttributedString:(NSAttributedString *)attributedString
-                               imageName:(NSString *)imageName
+                                   image:(id)image
                                imageRect:(CGRect )imageRect
                                parameter:(id)parameter
                                linkRange:(NSRange)linkRange;
@@ -184,7 +175,6 @@ typedef struct CJCTLineVerticalLayout CJCTLineVerticalLayout;
  */
 @interface CJGlyphRunStrokeItem : NSObject
 
-@property (nonatomic, strong) UIColor *fillCopyColor;//支持复制时选中字符的填充背景色
 @property (nonatomic, strong) UIColor *fillColor;//填充背景色
 @property (nonatomic, strong) UIColor *strokeColor;//描边边框色
 @property (nonatomic, strong) UIColor *activeFillColor;//点击选中时候的填充背景色
@@ -192,27 +182,79 @@ typedef struct CJCTLineVerticalLayout CJCTLineVerticalLayout;
 @property (nonatomic, assign) CGFloat lineWidth;//描边边框粗细
 @property (nonatomic, assign) CGFloat cornerRadius;//描边圆角
 @property (nonatomic, assign) CGRect runBounds;//描边区域在系统坐标下的rect（原点在左下角）
-@property (nonatomic, assign) CGRect locBounds;//描边区域在屏幕坐标下的rect（原点在左上角）
-@property (nonatomic, copy) NSString *imageName;//插入图片名称
+@property (nonatomic, assign) CGRect locBounds;//描边区域在屏幕坐标下的rect（原点在左上角），相同的一组CTRun，发生了合并
+@property (nonatomic, assign) CGRect withOutMergeBounds;//每个字符对应的CTRun 在屏幕坐标下的rect（原点在左上角），没有发生合并
+@property (nonatomic, strong) id image;//插入图片
 @property (nonatomic, assign) BOOL isImage;//插入图片
 @property (nonatomic, assign) NSRange range;//链点在文本中的range
 @property (nonatomic, strong) id parameter;//链点自定义参数
 @property (nonatomic, assign) CJCTLineVerticalLayout lineVerticalLayout;//所在CTLine的信息结构体
-@property (nonatomic, assign) BOOL isSelect;//是否被选中复制
 @property (nonatomic, copy) CJLabelLinkModelBlock linkBlock;//点击链点回调
 @property (nonatomic, copy) CJLabelLinkModelBlock longPressBlock;//长按点击链点回调
-
-
-//判断是否为点击链点
-@property (nonatomic, assign) BOOL isLink;
-//标记点击该链点是否需要重绘文本
-@property (nonatomic, assign) BOOL needRedrawn;
-
+@property (nonatomic, assign) BOOL isLink;//判断是否为点击链点
+@property (nonatomic, assign) BOOL needRedrawn;//标记点击该链点是否需要重绘文本
+//与选择复制相关的属性
+@property (nonatomic, assign) NSInteger characterIndex;//字符在整段文本中的index值
+@property (nonatomic, assign) NSRange characterRange;//字符在整段文本中的range值
 
 @end
 
+/**
+ 长按时候显示的放大镜视图
+ */
+@interface CJMagnifierView : UIView
+@end
+/**
+ 选择复制时候的操作视图
+ CJSelectBackView 在 window 层，全局只有一个
+ CJMagnifierView（放大镜）、CJSelectView（大头针）、CJSelectTextRangeView（填充背景色的view）都在 CJSelectBackView上面
+ */
+@interface CJSelectBackView : UIView
+@property (nonatomic, strong) CJMagnifierView *magnifierView;//放大镜
++ (instancetype)instance;
+
+/**
+ CJLabel选中point点对应的文本内容
+
+ @param label                  CJLabel
+ @param point                  放大点
+ @param item                   放大点对应的CJGlyphRunStrokeItem
+ @param maxLineWidth           CJLabel的最大行宽度
+ @param allCTLineVerticalArray CJLabel的CTLine数组
+ @param allRunItemArray        CJLabel的CTRun数组
+ @param hideViewBlock          复制选择view隐藏后的block
+ */
+- (void)showSelectViewInCJLabel:(CJLabel *)label
+                        atPoint:(CGPoint)point
+                        runItem:(CJGlyphRunStrokeItem *)item
+                   maxLineWidth:(CGFloat)maxLineWidth
+         allCTLineVerticalArray:(NSArray *)allCTLineVerticalArray
+                allRunItemArray:(NSArray <CJGlyphRunStrokeItem *>*)allRunItemArray
+                  hideViewBlock:(void(^)(void))hideViewBlock;
+
+/**
+ 显示放大镜
+
+ @param label CJLabel
+ @param point 放大点
+ @param runItem 放大点对应的CJGlyphRunStrokeItem
+ @param hideViewBlock          放大镜隐藏后的block
+ */
+- (void)showMagnifyInCJLabel:(CJLabel *)label
+                magnifyPoint:(CGPoint)point
+                     runItem:(CJGlyphRunStrokeItem *)runItem
+               hideViewBlock:(void(^)(void))hideViewBlock;
+
+/**
+ 隐藏选择复制相关的view
+ */
+- (void)hideView;
+
++ (CJGlyphRunStrokeItem *)currentItem:(CGPoint)point allRunItemArray:(NSArray <CJGlyphRunStrokeItem *>*)allRunItemArray inset:(CGFloat)inset;
+@end
+
 extern NSString * const kCJImageAttributeName;
-extern NSString * const kCJImageName;
+extern NSString * const kCJImage;
 extern NSString * const kCJImageHeight;
 extern NSString * const kCJImageWidth;
 extern NSString * const kCJImageLineVerticalAlignment;
@@ -222,6 +264,9 @@ extern NSString * const kCJLinkStringKeyAttributesName;
 extern NSString * const kCJLinkAttributesName;
 extern NSString * const kCJActiveLinkAttributesName;
 extern NSString * const kCJIsLinkAttributesName;
+//点击链点唯一标识
+extern NSString * const kCJLinkIdentifierAttributesName;
+extern NSString * const kCJLinkLengthAttributesName;
 extern NSString * const kCJLinkRangeAttributesName;
 extern NSString * const kCJLinkParameterAttributesName;
 extern NSString * const kCJClickLinkBlockAttributesName;
