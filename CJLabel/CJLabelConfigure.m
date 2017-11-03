@@ -50,7 +50,7 @@ CGFloat RunDelegateGetWidthCallback(void * refCon) {
     return [(NSNumber *)[(__bridge NSDictionary *)refCon objectForKey:kCJImageWidth] floatValue];
 }
 
-UIWindow * keyWindow(){
+UIWindow * CJkeyWindow(){
     UIApplication *app = [UIApplication sharedApplication];
     if ([app.delegate respondsToSelector:@selector(window)]) {
         return [app.delegate window];
@@ -437,8 +437,8 @@ UIWindow * keyWindow(){
     CGContextTranslateCTM(ctx, self.frame.size.width/2, self.frame.size.height/2);
     CGContextScaleCTM(ctx, 1.40, 1.40);
     CGContextTranslateCTM(ctx, -1 * self.pointToMagnify.x, -1 * self.pointToMagnify.y);
-    [keyWindow().layer renderInContext:ctx];
-    keyWindow().layer.contents = (id)nil;
+    [CJkeyWindow().layer renderInContext:ctx];
+    CJkeyWindow().layer.contents = (id)nil;
 }
 @end
 
@@ -867,7 +867,8 @@ typedef NS_ENUM(NSInteger, CJSelectViewAction) {
     if (unable) {
         for (NSDictionary *viewDic in self.scrlooViewArray) {
             UIScrollView *view = viewDic[@"ScrollView"];
-            view.scrollEnabled = [viewDic[@"unable"] boolValue];
+            view.delaysContentTouches = [viewDic[@"delaysContentTouches"] boolValue];
+            view.canCancelContentTouches = [viewDic[@"canCancelContentTouches"] boolValue];
         }
         [self.scrlooViewArray removeAllObjects];
     }
@@ -881,8 +882,12 @@ typedef NS_ENUM(NSInteger, CJSelectViewAction) {
     if (view.superview) {
         if ([view.superview isKindOfClass:[UIScrollView class]]) {
             UIScrollView *scrollView = (UIScrollView *)view.superview;
-            [self.scrlooViewArray addObject:@{@"ScrollView":scrollView,@"unable":@(scrollView.scrollEnabled)}];
-            scrollView.scrollEnabled = unable;
+            [self.scrlooViewArray addObject:@{@"ScrollView":scrollView,
+                                              @"delaysContentTouches":@(scrollView.delaysContentTouches),
+                                              @"canCancelContentTouches":@(scrollView.canCancelContentTouches)
+                                              }];
+            scrollView.delaysContentTouches = NO;
+            scrollView.canCancelContentTouches = NO;
         }
         [self setScrollView:view.superview scrollUnable:unable];
     }else{
@@ -905,7 +910,7 @@ typedef NS_ENUM(NSInteger, CJSelectViewAction) {
     [label addSubview:self];
     [label bringSubviewToFront:self];
     self.magnifierView.hidden = NO;
-    [keyWindow() addSubview:self.magnifierView];
+    [CJkeyWindow() addSubview:self.magnifierView];
     [self updateMagnifyPoint:point item:runItem];
     self.hideViewBlock = hideViewBlock;
 }
@@ -937,14 +942,14 @@ typedef NS_ENUM(NSInteger, CJSelectViewAction) {
     _endCopyRunItem = _startCopyRunItem;
     [self showCJSelectViewWithPoint:point selectType:ShowAllSelectView item:_startCopyRunItem startCopyRunItem:_startCopyRunItem endCopyRunItem:_startCopyRunItem allCTLineVerticalArray:_CTLineVerticalLayoutArray needShowMagnifyView:NO];
     
-    CGRect windowFrame = [label.superview convertRect:self.label.frame toView:keyWindow()];
+    CGRect windowFrame = [label.superview convertRect:self.label.frame toView:CJkeyWindow()];
     self.backWindView.frame = windowFrame;
     self.backWindView.hidden = NO;
-    [keyWindow() addSubview:self.backWindView];
+    [CJkeyWindow() addSubview:self.backWindView];
     
     [label addSubview:self];
     [label bringSubviewToFront:self];
-    [keyWindow() addSubview:self.magnifierView];
+    [CJkeyWindow() addSubview:self.magnifierView];
     [self showMenuView];
     [self scrollViewUnable:NO];
     self.hideViewBlock = hideViewBlock;
@@ -1029,8 +1034,8 @@ typedef NS_ENUM(NSInteger, CJSelectViewAction) {
         // Y 值往上偏移20 像素
         CGPoint selectPoint = CGPointMake(point.x, lineVerticalLayout.lineRect.origin.y-20);
         CGPoint pointToMagnify = CGPointMake(point.x, lineVerticalLayout.lineRect.origin.y + lineVerticalLayout.lineRect.size.height/2);
-        selectPoint = [self convertPoint:selectPoint toView:keyWindow()];
-        pointToMagnify = [self convertPoint:pointToMagnify toView:keyWindow()];
+        selectPoint = [self convertPoint:selectPoint toView:CJkeyWindow()];
+        pointToMagnify = [self convertPoint:pointToMagnify toView:CJkeyWindow()];
         self.magnifierView.hidden = NO;
         [self.magnifierView updateMagnifyPoint:pointToMagnify showMagnifyViewIn:selectPoint];
     }
@@ -1038,8 +1043,8 @@ typedef NS_ENUM(NSInteger, CJSelectViewAction) {
         // Y 值往上偏移20 像素
         CGPoint selectPoint = CGPointMake(point.x, point.y-20);
         CGPoint pointToMagnify = CGPointMake(point.x, point.y);
-        selectPoint = [self convertPoint:selectPoint toView:keyWindow()];
-        pointToMagnify = [self convertPoint:pointToMagnify toView:keyWindow()];
+        selectPoint = [self convertPoint:selectPoint toView:CJkeyWindow()];
+        pointToMagnify = [self convertPoint:pointToMagnify toView:CJkeyWindow()];
         self.magnifierView.hidden = NO;
         [self.magnifierView updateMagnifyPoint:pointToMagnify showMagnifyViewIn:selectPoint];
     }

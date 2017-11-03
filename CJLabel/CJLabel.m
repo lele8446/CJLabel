@@ -521,7 +521,7 @@ NSString * const kCJActiveBackgroundStrokeColorAttributeName = @"kCJActiveBackgr
         //记录 所有CTLine在垂直方向的对齐方式的数组
         _CTLineVerticalLayoutArray = [self allCTLineVerticalLayoutArray:lines origins:origins inRect:rect context:c];
         // 获取所有需要重绘背景的StrokeItem数组；支持复制，获取所有run数组
-        [self calculateRunStrokeItemsFrame:lines origins:origins inRect:rect finishBlock:^(NSArray <CJGlyphRunStrokeItem *>*runStrokeItemArray, NSArray <CJGlyphRunStrokeItem *>*allRunItemArray){
+        [self calculateRunStrokeItemsFrame:lines origins:origins inRect:rect context:c finishBlock:^(NSArray <CJGlyphRunStrokeItem *>*runStrokeItemArray, NSArray <CJGlyphRunStrokeItem *>*allRunItemArray){
             _runStrokeItemArray = runStrokeItemArray;
             _allRunItemArray = allRunItemArray;
             
@@ -639,56 +639,83 @@ NSString * const kCJActiveBackgroundStrokeColorAttributeName = @"kCJActiveBackgr
     CGPathRelease(path);
 }
 
-- (CGFloat)yOffset:(CGFloat)y lineVerticalLayout:(CJCTLineVerticalLayout)lineVerticalLayout lineDescent:(CGFloat)lineDescent isImage:(BOOL)isImage runHeight:(CGFloat)runHeight imageVerticalAlignment:(CJLabelVerticalAlignment)imageVerticalAlignment
-{
-    CGFloat lineHeight = lineVerticalLayout.lineHeight;
-    CGFloat maxRunHeight = lineVerticalLayout.maxRunHeight;
-    CGFloat maxImageHeight = lineVerticalLayout.maxImageHeight;
+#pragma mark - 将系统坐标转换为屏幕坐标
+/**
+ 将系统坐标转换为屏幕坐标
+ 
+ @param rect 坐标原点在左下角的 rect
+ @return 坐标原点在左上角的 rect
+ */
+- (CGRect)convertRectFromLoc:(CGRect)rect {
     
+    CGRect resultRect = CGRectZero;
+    CGFloat labelRectHeight = self.bounds.size.height - self.textInsets.top - self.textInsets.bottom - _translateCTMty;
+    CGFloat y = labelRectHeight - rect.origin.y - rect.size.height;
+
+    resultRect = CGRectMake(rect.origin.x, y, rect.size.width, rect.size.height);
+    return resultRect;
+}
+
+- (CGFloat)locY:(CGFloat)Y verticalAlignment:(CJLabelVerticalAlignment)verticalAlignment heightY:(CGFloat)heightY imgIsMaxHeight:(BOOL)imgIsMaxHeight {
+    if (verticalAlignment == CJVerticalAlignmentCenter) {
+        Y = Y - heightY/2.0 - (imgIsMaxHeight?(self.font.descender/2):self.font.descender);
+    }
+    else if (verticalAlignment == CJVerticalAlignmentTop) {
+        Y = Y - heightY - (imgIsMaxHeight?self.font.descender:(2*self.font.descender));
+    }else {
+        Y = Y;
+    }
+    return Y;
+}
+
+//调整CTRun在Y轴方向的坐标
+- (CGFloat)yOffset:(CGFloat)y lineVerticalLayout:(CJCTLineVerticalLayout)lineVerticalLayout isImage:(BOOL)isImage runHeight:(CGFloat)runHeight imageVerticalAlignment:(CJLabelVerticalAlignment)imageVerticalAlignment lineLeading:(CGFloat)lineLeading runAscent:(CGFloat)runAscent
+{
     CJLabelVerticalAlignment verticalAlignment = lineVerticalLayout.verticalAlignment;
     if (isImage) {
         verticalAlignment = imageVerticalAlignment;
     }
     
+    //底对齐不用调整
+    if (verticalAlignment == CJVerticalAlignmentBottom) {
+        if (isImage) {
+            y = y + self.font.descender/2 - lineLeading;
+        }
+        return y;
+    }
+    
+    CGFloat maxRunHeight = lineVerticalLayout.maxRunHeight;
+    CGFloat maxRunAscent = lineVerticalLayout.maxRunAscent;
+    CGFloat maxImageHeight = lineVerticalLayout.maxImageHeight;
+    CGFloat maxImageAscent = lineVerticalLayout.maxImageAscent;
+    CGFloat maxHeight = MAX(maxRunHeight, maxImageHeight);
+    CGFloat ascentY = maxRunAscent - runAscent;
+    if (maxRunHeight > maxImageHeight) {
+        if (isImage) {
+            ascentY = maxRunAscent - runAscent + self.font.descender/2 - lineLeading;
+        }
+    }else{
+        ascentY = maxImageAscent - runAscent;
+    }
+    
     CGFloat yy = y;
     
-    //如果是图片
-    if (isImage) {
-        if (verticalAlignment == CJVerticalAlignmentBottom) {
-            yy = y - lineDescent - self.font.descender;
-            if (runHeight >= maxRunHeight && runHeight >= maxImageHeight) {
-                yy = y - lineDescent + (lineHeight-runHeight)/2.0;
-            }
-        }
-        else if (verticalAlignment == CJVerticalAlignmentCenter) {
-            yy = y - lineDescent + (lineHeight-runHeight)/2.0;
-        }
-        else if (verticalAlignment == CJVerticalAlignmentTop) {
-            yy = y - lineDescent + (lineHeight-runHeight) + self.font.descender;
-            if (runHeight >= maxRunHeight && runHeight >= maxImageHeight) {
-                yy = y - lineDescent + (lineHeight-runHeight)/2.0;
-            }
+    //这是当前行最大高度的CTRun
+    if (runHeight >= maxHeight) {
+        if (isImage) {
+            yy = yy + self.font.descender/2 - lineLeading;
         }
         return yy;
     }
-    //文字高度比图片高度大，且是最大文字
-    if (runHeight == maxRunHeight && maxRunHeight > maxImageHeight) {
-        yy = y - lineDescent - self.font.descender;
-        return yy;
-    }
-    //其他文字
-    if (verticalAlignment == CJVerticalAlignmentBottom) {
-        yy = y - lineDescent - self.font.descender;
-    }
-    else if (verticalAlignment == CJVerticalAlignmentCenter) {
-        yy = y - lineDescent + (lineHeight-runHeight)/2.0;
-        
-    }
-    else if (verticalAlignment == CJVerticalAlignmentTop) {
-        yy = y - lineDescent + (lineHeight-runHeight) + self.font.descender;
+    
+    if (verticalAlignment == CJVerticalAlignmentCenter) {
+        yy = y + ascentY/2.0;
+    }else if (verticalAlignment == CJVerticalAlignmentTop) {
+        yy = y + ascentY;
     }
     return yy;
 }
+
 // 绘制单个CTRun
 - (void)drawCTRun:(CGContextRef)c line:(CTLineRef)line x:(CGFloat)x y:(CGFloat)y lineIndex:(CFIndex)lineIndex lineOrigin:(CGPoint)lineOrigin inRect:(CGRect)rect {
     
@@ -697,8 +724,6 @@ NSString * const kCJActiveBackgroundStrokeColorAttributeName = @"kCJActiveBackgr
     CTLineGetTypographicBounds(line, &lineAscent, &lineDescent, &lineLeading);
     
     lineVerticalLayout.line = lineIndex;
-    lineVerticalLayout.maxRunHeight = lineAscent + lineDescent + lineLeading;
-    lineVerticalLayout.lineHeight = lineAscent + lineDescent + lineLeading;
     
     for (NSValue *value in _CTLineVerticalLayoutArray) {
         CJCTLineVerticalLayout themLineVerticalLayout;
@@ -716,13 +741,12 @@ NSString * const kCJActiveBackgroundStrokeColorAttributeName = @"kCJActiveBackgr
         NSDictionary *imgInfoDic = attributes[kCJImageAttributeName];
         
         CGRect runRect;
-        CGFloat runAscent = 0, runDescent = 0;
+        CGFloat runAscent = 0, runDescent = 0, runLeading = 0;
         //调整CTRun的rect
-        runRect.size.width = CTRunGetTypographicBounds(run, CFRangeMake(0,0), &runAscent, &runDescent, NULL);
+        runRect.size.width = CTRunGetTypographicBounds(run, CFRangeMake(0,0), &runAscent, &runDescent, &runLeading);
         
         BOOL isImage = YES;
-        CGFloat runHeight = 0;
-        runHeight = runAscent + runDescent;
+        CGFloat runHeight = runAscent + fabs(runDescent) + runLeading;
         CJLabelVerticalAlignment imageVerticalAlignment = CJVerticalAlignmentBottom;
         if (CJLabelIsNull(imgInfoDic)) {
             isImage = NO;
@@ -731,7 +755,8 @@ NSString * const kCJActiveBackgroundStrokeColorAttributeName = @"kCJActiveBackgr
         }
         
         //y轴方向的偏移
-        CGFloat yy = [self yOffset:y lineVerticalLayout:lineVerticalLayout lineDescent:lineDescent isImage:isImage runHeight:runHeight imageVerticalAlignment:imageVerticalAlignment];
+        //此时在Y轴方向是以基线标准对齐的，所以忽略每个CTRun的下行高runDescent
+        CGFloat yy = [self yOffset:y lineVerticalLayout:lineVerticalLayout isImage:isImage runHeight:runHeight imageVerticalAlignment:imageVerticalAlignment lineLeading:lineLeading runAscent:runAscent];
         
         //绘制图片
         if (imgInfoDic[kCJImage]) {
@@ -743,7 +768,7 @@ NSString * const kCJActiveBackgroundStrokeColorAttributeName = @"kCJActiveBackgr
                 image = [UIImage imageNamed:imgInfoDic[kCJImage]];
             }
             if (image) {
-                runRect = CGRectMake(lineOrigin.x + CTLineGetOffsetForStringIndex(line, CTRunGetStringRange(run).location, NULL), lineOrigin.y - runDescent, runRect.size.width, runAscent + runDescent);
+                runRect = CGRectMake(lineOrigin.x + CTLineGetOffsetForStringIndex(line, CTRunGetStringRange(run).location, NULL), lineOrigin.y - runDescent, runRect.size.width, runHeight);
                 CGRect imageDrawRect;
                 CGFloat imageSizeWidth = runRect.size.width;
                 CGFloat imageSizeHeight = runRect.size.height;
@@ -784,10 +809,7 @@ NSString * const kCJActiveBackgroundStrokeColorAttributeName = @"kCJActiveBackgr
 {
     CGContextSetLineJoin(c, kCGLineJoinRound);
     CGFloat x = runStrokeItem.runBounds.origin.x-self.textInsets.left;
-    CGFloat y = runStrokeItem.runBounds.origin.y+self.font.descender;
-    if (runStrokeItem.isImage) {
-        y = runStrokeItem.runBounds.origin.y;
-    }
+    CGFloat y = runStrokeItem.runBounds.origin.y;
     
     CGRect roundedRect = CGRectMake(x,y,runStrokeItem.runBounds.size.width,runStrokeItem.runBounds.size.height);
     CGPathRef glyphRunpath = [[UIBezierPath bezierPathWithRoundedRect:roundedRect cornerRadius:runStrokeItem.cornerRadius] CGPath];
@@ -822,13 +844,15 @@ NSString * const kCJActiveBackgroundStrokeColorAttributeName = @"kCJActiveBackgr
         CGFloat ascent = 0.0f, descent = 0.0f, leading = 0.0f;
         CTLineGetTypographicBounds(line, &ascent, &descent, &leading);
         //行高
-        CGFloat lineHeight = ascent + descent + leading;
+        CGFloat lineAscentAndDescent = ascent + fabs(descent);
         //默认底部对齐
         CJLabelVerticalAlignment verticalAlignment = CJVerticalAlignmentBottom;
         
         CFArrayRef runs = CTLineGetGlyphRuns(line);
         CGFloat maxRunHeight = 0;
+        CGFloat maxRunAscent = 0;
         CGFloat maxImageHeight = 0;
+        CGFloat maxImageAscent = 0;
         for (CFIndex j = 0; j < CFArrayGetCount(runs); ++j) {
             CTRunRef run = CFArrayGetValueAtIndex(runs, j);
             CGFloat runAscent = 0.0f, runDescent = 0.0f, runLeading = 0.0f;
@@ -836,10 +860,14 @@ NSString * const kCJActiveBackgroundStrokeColorAttributeName = @"kCJActiveBackgr
             NSDictionary *attDic = (__bridge NSDictionary *)CTRunGetAttributes(run);
             NSDictionary *imgInfoDic = attDic[kCJImageAttributeName];
             if (CJLabelIsNull(imgInfoDic)) {
-                maxRunHeight = MAX(maxRunHeight, runAscent + runDescent );
+                if (maxRunHeight < runAscent + fabs(runDescent)) {
+                    maxRunHeight = runAscent + fabs(runDescent);
+                    maxRunAscent = runAscent;
+                }
             }else{
-                if (maxImageHeight < runAscent + runDescent) {
-                    maxImageHeight = runAscent + runDescent;
+                if (maxImageHeight < runAscent + fabs(runDescent)) {
+                    maxImageHeight = runAscent + fabs(runDescent);
+                    maxImageAscent = runAscent;
                     verticalAlignment = [imgInfoDic[kCJImageLineVerticalAlignment] integerValue];
                 }
             }
@@ -854,11 +882,13 @@ NSString * const kCJActiveBackgroundStrokeColorAttributeName = @"kCJActiveBackgr
         
         CJCTLineVerticalLayout lineVerticalLayout;
         lineVerticalLayout.line = i;
-        lineVerticalLayout.lineHeight = lineHeight;
-        lineVerticalLayout.maxRunHeight = maxRunHeight;
-        lineVerticalLayout.verticalAlignment = verticalAlignment;
-        lineVerticalLayout.maxImageHeight = maxImageHeight;
+        lineVerticalLayout.lineAscentAndDescent = lineAscentAndDescent;
         lineVerticalLayout.lineRect = lineBounds;
+        lineVerticalLayout.verticalAlignment = verticalAlignment;
+        lineVerticalLayout.maxRunHeight = maxRunHeight;
+        lineVerticalLayout.maxRunAscent = maxRunAscent;
+        lineVerticalLayout.maxImageHeight = maxImageHeight;
+        lineVerticalLayout.maxImageAscent = maxImageAscent;
         
         NSValue *value = [NSValue valueWithBytes:&lineVerticalLayout objCType:@encode(CJCTLineVerticalLayout)];
         [verticalLayoutArray addObject:value];
@@ -873,10 +903,11 @@ NSString * const kCJActiveBackgroundStrokeColorAttributeName = @"kCJActiveBackgr
 }
 
 // 计算可点击链点，以及需要填充背景或边框线的run数组；如果支持复制，则同时计算所有run数组
-- (void)calculateRunStrokeItemsFrame:(NSArray *)lines origins:(CGPoint[])origins inRect:(CGRect)rect finishBlock:(void (^)(NSArray <CJGlyphRunStrokeItem *>*runStrokeItemArray, NSArray <CJGlyphRunStrokeItem *>*allRunItemArray))finishBlock {
+- (void)calculateRunStrokeItemsFrame:(NSArray *)lines origins:(CGPoint[])origins inRect:(CGRect)rect context:(CGContextRef)c finishBlock:(void (^)(NSArray <CJGlyphRunStrokeItem *>*runStrokeItemArray, NSArray <CJGlyphRunStrokeItem *>*allRunItemArray))finishBlock {
     NSMutableArray *allStrokePathItems = [NSMutableArray arrayWithCapacity:3];
     NSMutableArray *allRunItemArray = [NSMutableArray arrayWithCapacity:3];
     
+    //当前行对应的CJCTLineVerticalLayout 结构体
     CJCTLineVerticalLayout lineVerticalLayout = {0,0,0};
     // 遍历所有行
     for (NSInteger i = 0; i < MIN(_numberOfLines, lines.count); i ++ ) {
@@ -885,12 +916,9 @@ NSString * const kCJActiveBackgroundStrokeColorAttributeName = @"kCJActiveBackgr
         
         CGFloat ascent = 0.0f, descent = 0.0f, leading = 0.0f;
         CGFloat width = (CGFloat)CTLineGetTypographicBounds((__bridge CTLineRef)line, &ascent, &descent, &leading);
-        CGFloat ascentAndDescent = ascent + descent;
+        CGFloat ascentAndDescent = ascent + fabs(descent);
         
         lineVerticalLayout.line = i;
-        lineVerticalLayout.maxRunHeight = ascentAndDescent + leading;
-        lineVerticalLayout.lineHeight = ascentAndDescent + leading;
-        
         for (NSValue *value in _CTLineVerticalLayoutArray) {
             CJCTLineVerticalLayout themLineVerticalLayout;
             [value getValue:&themLineVerticalLayout];
@@ -904,10 +932,11 @@ NSString * const kCJActiveBackgroundStrokeColorAttributeName = @"kCJActiveBackgr
         NSMutableArray *strokePathItems = [NSMutableArray arrayWithCapacity:3];
         
         //遍历每一行的所有glyphRun
-        for (id glyphRun in (__bridge NSArray *)CTLineGetGlyphRuns((__bridge CTLineRef)line)) {
-            
-            NSDictionary *attributes = (__bridge NSDictionary *)CTRunGetAttributes((__bridge CTRunRef) glyphRun);
-            
+        CFArrayRef runArray = CTLineGetGlyphRuns((__bridge CTLineRef)line);
+        for (NSInteger j = 0; j < CFArrayGetCount(runArray); j ++) {
+            id glyphRun = CFArrayGetValueAtIndex(runArray, j);
+            NSDictionary *attributes = (__bridge NSDictionary *)CTRunGetAttributes((__bridge CTRunRef)glyphRun);
+            //背景色以及描边属性
             UIColor *strokeColor = colorWithAttributeName(attributes, kCJBackgroundStrokeColorAttributeName);
             if (!CJLabelIsNull(attributes[kCJLinkAttributesName]) && !isNotClearColor(strokeColor)) {
                 strokeColor = colorWithAttributeName(attributes[kCJLinkAttributesName], kCJBackgroundStrokeColorAttributeName);
@@ -916,7 +945,7 @@ NSString * const kCJActiveBackgroundStrokeColorAttributeName = @"kCJActiveBackgr
             if (!CJLabelIsNull(attributes[kCJLinkAttributesName]) && !isNotClearColor(fillColor)) {
                 fillColor = colorWithAttributeName(attributes[kCJLinkAttributesName], kCJBackgroundFillColorAttributeName);
             }
-            
+            //点击高亮背景色以及描边属性
             UIColor *activeStrokeColor = colorWithAttributeName(attributes, kCJActiveBackgroundStrokeColorAttributeName);
             if (!CJLabelIsNull(attributes[kCJActiveLinkAttributesName]) && !isNotClearColor(activeStrokeColor)) {
                 activeStrokeColor = colorWithAttributeName(attributes[kCJActiveLinkAttributesName], kCJActiveBackgroundStrokeColorAttributeName);
@@ -932,11 +961,12 @@ NSString * const kCJActiveBackgroundStrokeColorAttributeName = @"kCJActiveBackgr
             if (fillColor && !activeFillColor) {
                 activeFillColor = fillColor;
             }
-            
+            //描边边线宽度
             CGFloat lineWidth = [[attributes objectForKey:kCJBackgroundLineWidthAttributeName] floatValue];
             if (!CJLabelIsNull(attributes[kCJActiveLinkAttributesName]) && lineWidth == 0) {
                 lineWidth = [[attributes[kCJActiveLinkAttributesName] objectForKey:kCJBackgroundLineCornerRadiusAttributeName] floatValue];
             }
+            //填充背景色圆角
             CGFloat cornerRadius = [[attributes objectForKey:kCJBackgroundLineCornerRadiusAttributeName] floatValue];
             if (!CJLabelIsNull(attributes[kCJActiveLinkAttributesName]) && cornerRadius == 0) {
                 cornerRadius = [[attributes[kCJActiveLinkAttributesName] objectForKey:kCJBackgroundLineCornerRadiusAttributeName] floatValue];
@@ -970,24 +1000,20 @@ NSString * const kCJActiveBackgroundStrokeColorAttributeName = @"kCJActiveBackgr
             }
         
             //当前run相对于self的CGRect
-            NSArray *array =  [self getRunStrokeItemlocRunBoundsFromGlyphRun:glyphRun
-                                                                        line:line
-                                                                     origins:origins
-                                                                   lineIndex:i
-                                                                      inRect:rect
-                                                                       width:width
-                                                             moreThanOneLine:(_numberOfLines > 1)
-                                                          lineVerticalLayout:lineVerticalLayout
-                                                                     isImage:!CJLabelIsNull(imgInfoDic)
-                                                      imageVerticalAlignment:imageVerticalAlignment
-                                                                 lineDescent:descent
-                                                                 lineLeading:leading];
-            NSValue *value = array[0];
-            CGRect runBounds = [value CGRectValue];
-            CGFloat runHeight = [array[1] floatValue];
+            CGRect runBounds = [self getRunStrokeItemlocRunBoundsFromGlyphRun:glyphRun
+                                                                         line:line
+                                                                      origins:origins
+                                                                    lineIndex:i
+                                                                       inRect:rect
+                                                                        width:width
+                                                           lineVerticalLayout:lineVerticalLayout
+                                                                      isImage:isImage
+                                                       imageVerticalAlignment:imageVerticalAlignment
+                                                                  lineDescent:descent
+                                                                  lineLeading:leading];
             
             //转换为UIKit坐标系统
-            CGRect locBounds = [self convertRectFromLoc:runBounds runHeight:runHeight lineVerticalLayout:lineVerticalLayout isImage:isImage lineDescent:descent];
+            CGRect locBounds = [self convertRectFromLoc:runBounds];
 
             
             CJGlyphRunStrokeItem *runStrokeItem = [[CJGlyphRunStrokeItem alloc]init];
@@ -1060,25 +1086,25 @@ NSString * const kCJActiveBackgroundStrokeColorAttributeName = @"kCJActiveBackgr
 }
 
 //当前run相对于self的CGRect
-- (NSArray *)getRunStrokeItemlocRunBoundsFromGlyphRun:(id)glyphRun
-                                               line:(id)line
-                                            origins:(CGPoint[])origins
-                                          lineIndex:(CFIndex)lineIndex
-                                             inRect:(CGRect)rect
-                                              width:(CGFloat)width
-                                    moreThanOneLine:(BOOL)more
-                                 lineVerticalLayout:(CJCTLineVerticalLayout)lineVerticalLayout
-                                            isImage:(BOOL)isImage
-                             imageVerticalAlignment:(CJLabelVerticalAlignment)imageVerticalAlignment
-                                        lineDescent:(CGFloat)lineDescent
-                                        lineLeading:(CGFloat)lineLeading
-
+- (CGRect)getRunStrokeItemlocRunBoundsFromGlyphRun:(id)glyphRun
+                                              line:(id)line
+                                           origins:(CGPoint[])origins
+                                         lineIndex:(CFIndex)lineIndex
+                                            inRect:(CGRect)rect
+                                             width:(CGFloat)width
+                                lineVerticalLayout:(CJCTLineVerticalLayout)lineVerticalLayout
+                                           isImage:(BOOL)isImage
+                            imageVerticalAlignment:(CJLabelVerticalAlignment)imageVerticalAlignment
+                                       lineDescent:(CGFloat)lineDescent
+                                       lineLeading:(CGFloat)lineLeading
 {
     CGRect runBounds = CGRectZero;
     CGFloat runAscent = 0.0f;
     CGFloat runDescent = 0.0f;
-    runBounds.size.width = (CGFloat)CTRunGetTypographicBounds((__bridge CTRunRef)glyphRun, CFRangeMake(0, 0), &runAscent, &runDescent, NULL);
-    runBounds.size.height = runAscent + runDescent;
+    CGFloat runLeading = 0.0f;
+    runBounds.size.width = (CGFloat)CTRunGetTypographicBounds((__bridge CTRunRef)glyphRun, CFRangeMake(0, 0), &runAscent, &runDescent, &runLeading);
+    CGFloat runHeight = runAscent + fabs(runDescent);
+    runBounds.size.height = runHeight;
     
     CGFloat xOffset = 0.0f;
     CFRange glyphRange = CTRunGetStringRange((__bridge CTRunRef)glyphRun);
@@ -1094,19 +1120,17 @@ NSString * const kCJActiveBackgroundStrokeColorAttributeName = @"kCJActiveBackgr
     runBounds.origin.x = origins[lineIndex].x + rect.origin.x + xOffset;
     CGFloat y = origins[lineIndex].y;
     
-    CGFloat yy = [self yOffset:y lineVerticalLayout:lineVerticalLayout lineDescent:lineDescent isImage:isImage runHeight:runAscent + runDescent imageVerticalAlignment:imageVerticalAlignment];
-
-    //文字对应的runBounds 微调
-    if (!isImage) {
-        yy = yy - self.font.descender/2;
-    }
-    runBounds.origin.y = yy;
+    CGFloat yy = [self yOffset:y lineVerticalLayout:lineVerticalLayout isImage:isImage runHeight:runHeight imageVerticalAlignment:imageVerticalAlignment lineLeading:lineLeading runAscent:runAscent];
+    
+    // 这里的runBounds是用于背景色填充以及计算点击位置
+    // 此时应该将每个文字CTRun的下行高（runDescent）加上，而图片的runBounds = 0,所以忽略了
+    runBounds.origin.y = isImage?yy:(yy - fabs(runDescent));
     
     if (CGRectGetWidth(runBounds) > width) {
         runBounds.size.width = width;
     }
-
-    return @[[NSValue valueWithCGRect:runBounds],@(runAscent+runDescent)];
+    
+    return runBounds;
 }
 //判断是否有需要合并的runStrokeItems
 - (NSMutableArray <CJGlyphRunStrokeItem *>*)mergeLineSameStrokePathItems:(NSArray <CJGlyphRunStrokeItem *>*)lineStrokePathItems ascentAndDescent:(CGFloat)ascentAndDescent moreThanOneLine:(BOOL)more {
@@ -1235,7 +1259,6 @@ NSString * const kCJActiveBackgroundStrokeColorAttributeName = @"kCJActiveBackgr
     // runBounds小于 ascent + Descent 时，rect扩大 1
     if (item.runBounds.size.height < ascentAndDescent) {
         item.runBounds = CGRectInset(item.runBounds,-1,-1);
-//        item.locBounds = [self convertRectFromLoc:item.runBounds moreThanOneLine:more];
     }
     return item;
 }
@@ -1248,77 +1271,6 @@ NSString * const kCJActiveBackgroundStrokeColorAttributeName = @"kCJActiveBackgr
         }
     }
     return linkArray;
-}
-
-#pragma mark - 将系统坐标转换为屏幕坐标
-/**
- 将系统坐标转换为屏幕坐标
-
- @param rect 坐标原点在左下角的 rect
- @return 坐标原点在左上角的 rect
- */
-- (CGRect)convertRectFromLoc:(CGRect)rect runHeight:(CGFloat)runHeight lineVerticalLayout:(CJCTLineVerticalLayout)lineVerticalLayout isImage:(BOOL)isImage lineDescent:(CGFloat)lineDescent {
-
-    CJLabelVerticalAlignment verticalAlignment = lineVerticalLayout.verticalAlignment;
-    CGFloat lineHeight = lineVerticalLayout.lineHeight;
-    CGFloat maxRunHeight = lineVerticalLayout.maxRunHeight;
-    CGFloat maxImageHeight = lineVerticalLayout.maxImageHeight;
-    CGFloat maxH = MAX(lineHeight, maxRunHeight);
-    maxH = MAX(maxH, maxImageHeight);
-    maxH = MAX(maxH, lineVerticalLayout.lineRect.size.height);
-    
-    CGRect resultRect = CGRectZero;
-    CGFloat Y = lineVerticalLayout.lineRect.origin.y;
-    CGFloat lineRectH = lineVerticalLayout.lineRect.size.height;
-    
-    if (!isImage) {
-        if (lineRectH > runHeight) {
-            Y = Y + lineRectH - runHeight - self.font.descender;
-        }else if (lineRectH < runHeight) {
-            Y = Y + self.font.descender;
-        }
-    }
-    
-    if (isImage) {
-        if (lineRectH < runHeight) {
-            Y = Y - (runHeight - lineRectH) - self.font.descender/2;
-        }else {
-            Y = Y + lineRectH - runHeight - self.font.descender;
-        }
-    }
-    
-    //如果是图片
-    if (isImage) {
-        if (verticalAlignment == CJVerticalAlignmentCenter) {
-            if (runHeight < maxRunHeight) {
-                Y = Y - (maxH - runHeight)/2 - self.font.descender;
-            }
-        }
-        else if (verticalAlignment == CJVerticalAlignmentTop) {
-            if (runHeight < maxRunHeight) {
-                Y = Y - (maxH - runHeight) - 2*self.font.descender;
-            }
-        }
-        resultRect = CGRectMake(rect.origin.x ,Y,rect.size.width,rect.size.height);
-        return resultRect;
-    }
-    
-    //文字高度比图片高度大，且是最大文字
-    if (runHeight == maxRunHeight && maxRunHeight > maxImageHeight) {
-        Y = Y - lineDescent - self.font.descender;
-        resultRect = CGRectMake(rect.origin.x ,Y,rect.size.width,rect.size.height);
-        return resultRect;
-    }
-    //其他文字
-    if (verticalAlignment == CJVerticalAlignmentCenter) {
-        Y = Y - (maxH - runHeight)/2 + lineDescent - self.font.descender;
-    }
-    else if (verticalAlignment == CJVerticalAlignmentTop) {
-        Y = Y - (maxH - runHeight) + lineDescent - self.font.descender;
-    }
-    resultRect = CGRectMake(rect.origin.x ,Y,rect.size.width,rect.size.height);
-    return resultRect;
-    
 }
 
 #pragma mark - UIView

@@ -31,10 +31,15 @@ typedef NS_ENUM(NSInteger, CJLabelVerticalAlignment) {
  */
 struct CJCTLineVerticalLayout {
     CFIndex line;//第几行
-    CGFloat maxRunHeight;//当前行run的最大高度（不包括图片）
-    CGFloat lineHeight;//行高
-    CGFloat maxImageHeight;//图片的最大高度
+    CGFloat lineAscentAndDescent;//上行高和下行高
     CGRect  lineRect;//当前行对应的CGRect
+    
+    CGFloat maxRunHeight;//当前行run的最大高度（不包括图片）
+    CGFloat maxRunAscent;//CTRun的最大上行高
+    
+    CGFloat maxImageHeight;//图片的最大高度
+    CGFloat maxImageAscent;//图片的最大上行高
+    
     CJLabelVerticalAlignment verticalAlignment;//对齐方式（默认底部对齐）
 };
 typedef struct CJCTLineVerticalLayout CJCTLineVerticalLayout;

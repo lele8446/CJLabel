@@ -116,6 +116,7 @@
                                  sameStringEnable:(self.index==1?NO:YES)
                                         configure:configure];
             
+            self.firstLabel.textInsets = UIEdgeInsetsMake(2, 0, 0, 0);
             self.firstLabel.attributedText = attStr;
             if (self.index == 2) {
                 UIBarButtonItem *item = [[UIBarButtonItem alloc]initWithTitle:@"删除首个链点" style:UIBarButtonItemStylePlain target:self action:@selector(itemClick:)];
@@ -176,6 +177,7 @@
         }
         case 5:
         {
+            self.firstLabel.textInsets = UIEdgeInsetsMake(0, 0, 0, 0);
             [self configureLabelContent:attStr verticalAlignment:CJVerticalAlignmentBottom];
             UIBarButtonItem *item1 = [[UIBarButtonItem alloc]initWithTitle:@"居上" style:UIBarButtonItemStylePlain target:self action:@selector(itemClick:)];
             item1.tag = 300;
@@ -196,7 +198,7 @@
     CJLabelConfigure *configure =
     [CJLabel configureAttributes:@{
                                    NSForegroundColorAttributeName:[UIColor blueColor],
-                                   NSFontAttributeName:[UIFont boldSystemFontOfSize:15],
+                                   NSFontAttributeName:[UIFont boldSystemFontOfSize:45],
                                    kCJBackgroundStrokeColorAttributeName:[UIColor orangeColor],
                                    kCJBackgroundLineWidthAttributeName:@(self.index == 5?1:2),
                                    kCJBackgroundFillColorAttributeName:[UIColor lightGrayColor]
@@ -215,7 +217,7 @@
                   longPressBlock:^(CJLabelLinkModel *linkModel){
                       [self clicklongPressLink:linkModel isImage:NO];
                   }];
-    
+    //CJLabel
     attStr = [CJLabel configureAttrString:attStr
                                withString:@"CJLabel"
                          sameStringEnable:NO
@@ -236,7 +238,7 @@
                   longPressBlock:^(CJLabelLinkModel *linkModel){
                       [self clicklongPressLink:linkModel isImage:YES];
                   }];
-    attStr = [CJLabel insertImageAtAttrString:attStr image:@"CJLabel.png" imageSize:CGSizeMake(45, 38) atIndex:(imageRange.location+imageRange.length) imagelineAlignment:verticalAlignment configure:imgConfigure];
+    attStr = [CJLabel insertImageAtAttrString:attStr image:@"CJLabel.png" imageSize:CGSizeMake(45, 28) atIndex:(imageRange.location+imageRange.length) imagelineAlignment:verticalAlignment configure:imgConfigure];
 
     self.firstLabel.attributedText = attStr;
     self.firstLabel.extendsLinkTouchArea = YES;
