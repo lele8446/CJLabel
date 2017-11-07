@@ -1039,7 +1039,7 @@ typedef NS_ENUM(NSInteger, CJSelectViewAction) {
         CJCTLineVerticalLayout lineVerticalLayout = item.lineVerticalLayout;
         // Y 值往上偏移20 像素
         CGPoint selectPoint = CGPointMake(point.x, lineVerticalLayout.lineRect.origin.y-20);
-        CGPoint pointToMagnify = CGPointMake(point.x, lineVerticalLayout.lineRect.origin.y + lineVerticalLayout.lineRect.size.height/2);
+        CGPoint pointToMagnify = CGPointMake(point.x, item.locBounds.origin.y + item.locBounds.size.height/2);
         selectPoint = [self convertPoint:selectPoint toView:CJkeyWindow()];
         pointToMagnify = [self convertPoint:pointToMagnify toView:CJkeyWindow()];
         self.magnifierView.hidden = NO;

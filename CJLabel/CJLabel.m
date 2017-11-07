@@ -981,17 +981,7 @@ NSString * const kCJActiveBackgroundStrokeColorAttributeName = @"kCJActiveBackgr
     return verticalLayoutArray;
 }
 
-- (CJGlyphRunStrokeItem *)CJGlyphRunStrokeItemFromCTRunRef:(CTRunRef)glyphRun
-                                                    origin:(CGPoint)origin
-                                                      line:(CTLineRef)line
-                                                 lineIndex:(CFIndex)lineIndex
-                                                lineAscent:(CGFloat)lineAscent
-                                               lineDescent:(CGFloat)lineDescent
-                                               lineLeading:(CGFloat)lineLeading
-                                                 lineWidth:(CGFloat)lineWidth
-                                        lineVerticalLayout:(CJCTLineVerticalLayout)lineVerticalLayout
-                                                    inRect:(CGRect)rect
-                                                   context:(CGContextRef)c
+- (CJGlyphRunStrokeItem *)CJGlyphRunStrokeItemFromCTRunRef:(CTRunRef)glyphRun origin:(CGPoint)origin line:(CTLineRef)line lineIndex:(CFIndex)lineIndex lineAscent:(CGFloat)lineAscent lineDescent:(CGFloat)lineDescent lineLeading:(CGFloat)lineLeading lineWidth:(CGFloat)lineWidth lineVerticalLayout:(CJCTLineVerticalLayout)lineVerticalLayout inRect:(CGRect)rect context:(CGContextRef)c
 {
     
     NSDictionary *attributes = (__bridge NSDictionary *)CTRunGetAttributes(glyphRun);
@@ -1065,19 +1055,7 @@ NSString * const kCJActiveBackgroundStrokeColorAttributeName = @"kCJActiveBackgr
     runBounds.size.height = runHeight;
     
     //当前run相对于self的CGRect
-    runBounds = [self getRunStrokeItemlocRunBoundsFromGlyphRun:glyphRun
-                                                          line:line
-                                                        origin:origin
-                                                     lineIndex:lineIndex
-                                                        inRect:rect
-                                                         width:lineWidth
-                                            lineVerticalLayout:lineVerticalLayout
-                                                       isImage:isImage
-                                        imageVerticalAlignment:imageVerticalAlignment
-                                                   lineDescent:lineDescent
-                                                   lineLeading:lineLeading
-                                                     runBounds:runBounds
-                                                     runAscent:runAscent];
+    runBounds = [self getRunStrokeItemlocRunBoundsFromGlyphRun:glyphRun line:line origin:origin lineIndex:lineIndex inRect:rect width:lineWidth lineVerticalLayout:lineVerticalLayout isImage:isImage imageVerticalAlignment:imageVerticalAlignment lineDescent:lineDescent lineLeading:lineLeading runBounds:runBounds runAscent:runAscent];
 
     //转换为UIKit坐标系统
     CGRect locBounds = [self convertRectFromLoc:runBounds];
@@ -1144,19 +1122,7 @@ NSString * const kCJActiveBackgroundStrokeColorAttributeName = @"kCJActiveBackgr
 }
 
 //当前run相对于self的CGRect
-- (CGRect)getRunStrokeItemlocRunBoundsFromGlyphRun:(CTRunRef)glyphRun
-                                              line:(CTLineRef)line
-                                            origin:(CGPoint)origin
-                                         lineIndex:(CFIndex)lineIndex
-                                            inRect:(CGRect)rect
-                                             width:(CGFloat)width
-                                lineVerticalLayout:(CJCTLineVerticalLayout)lineVerticalLayout
-                                           isImage:(BOOL)isImage
-                            imageVerticalAlignment:(CJLabelVerticalAlignment)imageVerticalAlignment
-                                       lineDescent:(CGFloat)lineDescent
-                                       lineLeading:(CGFloat)lineLeading
-                                         runBounds:(CGRect)runBounds
-                                         runAscent:(CGFloat)runAscent
+- (CGRect)getRunStrokeItemlocRunBoundsFromGlyphRun:(CTRunRef)glyphRun line:(CTLineRef)line origin:(CGPoint)origin lineIndex:(CFIndex)lineIndex inRect:(CGRect)rect width:(CGFloat)width lineVerticalLayout:(CJCTLineVerticalLayout)lineVerticalLayout isImage:(BOOL)isImage imageVerticalAlignment:(CJLabelVerticalAlignment)imageVerticalAlignment lineDescent:(CGFloat)lineDescent lineLeading:(CGFloat)lineLeading runBounds:(CGRect)runBounds runAscent:(CGFloat)runAscent
 {
     CGFloat xOffset = 0.0f;
     CFRange glyphRange = CTRunGetStringRange(glyphRun);
