@@ -596,9 +596,9 @@ typedef NS_ENUM(NSInteger, CJSelectViewAction) {
 
 - (void)updateCJSelectViewHeight:(CGFloat)height showCJSelectViewIn:(CGPoint)showPoint {
     //高度限定为20
-//    if (height > 20) {
+    if (height > 20) {
         height = 20;
-//    }
+    }
     if (self.isLeft) {
         self.frame = CGRectMake(showPoint.x-5, showPoint.y-10, 10, height+10);
         self.lineLayer.frame = CGRectMake(4, 10, 2, height);
