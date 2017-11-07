@@ -1087,6 +1087,11 @@ typedef NS_ENUM(NSInteger, CJSelectViewAction) {
     CGFloat tailWidth = endCopyRunItem.withOutMergeBounds.origin.x+endCopyRunItem.withOutMergeBounds.size.width;
     CGFloat tailHeight = lineLayoutModel.selectCopyBackHeight;
     CGFloat tailY = lineLayoutModel.selectCopyBackY;
+    if (endCopyRunItem.lineVerticalLayout.line - 1 >= 0) {
+        CJCTLineLayoutModel *endLastlineLayoutModel = allCTLineVerticalArray[endCopyRunItem.lineVerticalLayout.line-1];
+        tailY = endLastlineLayoutModel.selectCopyBackY + endLastlineLayoutModel.selectCopyBackHeight;
+        tailHeight = tailHeight + lineLayoutModel.selectCopyBackY - tailY;
+    }
     tailRect = CGRectMake(0, tailY, tailWidth, tailHeight);
     
     CGFloat maxHeight = tailY + tailHeight - _startCopyRunItemY;
@@ -1098,7 +1103,7 @@ typedef NS_ENUM(NSInteger, CJSelectViewAction) {
         middleRect = CGRectMake(startCopyRunItem.withOutMergeBounds.origin.x,
                                 _startCopyRunItemY,
                                 endCopyRunItem.withOutMergeBounds.origin.x+endCopyRunItem.withOutMergeBounds.size.width-startCopyRunItem.withOutMergeBounds.origin.x,
-                                lineLayoutModel.selectCopyBackHeight);
+                                headHeight);
         tailRect = CGRectNull;
     }else{
         //相差一行

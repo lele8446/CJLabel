@@ -52,7 +52,7 @@
     [CJLabel configureAttributes:@{NSForegroundColorAttributeName:[UIColor blackColor],
                                    NSFontAttributeName:[UIFont boldSystemFontOfSize:16],
                                    }
-                          isLink:YES
+                          isLink:NO
             activeLinkAttributes:nil
                        parameter:nil
                   clickLinkBlock:^(CJLabelLinkModel *linkModel) {
