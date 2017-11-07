@@ -16,16 +16,16 @@
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
-            shouldBeEnabled = "No"
+            shouldBeEnabled = "Yes"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "../CJLabel/CJLabel.m"
-            timestampString = "531396586.967042"
+            timestampString = "531730828.216024"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "1328"
-            endingLineNumber = "1328"
-            landmarkName = "-clickLinkItemAtRadius:aroundPoint:"
+            startingLineNumber = "675"
+            endingLineNumber = "675"
+            landmarkName = "-drawCTLine:lineIndex:origin:context:lineAscent:lineDescent:lineLeading:lineWidth:rect:penOffsetX:lineLayoutModel:"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>

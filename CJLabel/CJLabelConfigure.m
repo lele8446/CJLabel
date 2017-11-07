@@ -405,10 +405,12 @@ UIWindow * CJkeyWindow(){
     CJGlyphRunStrokeItem *item = [[[self class] allocWithZone:zone] init];
     item.strokeColor = self.strokeColor;
     item.fillColor = self.fillColor;
-    item.lineWidth = self.lineWidth;
+    item.strokeLineWidth = self.strokeLineWidth;
     item.runBounds = self.runBounds;
     item.locBounds = self.locBounds;
     item.withOutMergeBounds = self.withOutMergeBounds;
+    item.runDescent = self.runDescent;
+    item.runRef = self.runRef;
     item.cornerRadius = self.cornerRadius;
     item.activeFillColor = self.activeFillColor;
     item.activeStrokeColor = self.activeStrokeColor;
@@ -425,6 +427,10 @@ UIWindow * CJkeyWindow(){
     item.characterRange = self.characterRange;
     return item;
 }
+
+@end
+
+@implementation CJCTLineLayoutModel
 
 @end
 
@@ -1065,58 +1071,41 @@ typedef NS_ENUM(NSInteger, CJSelectViewAction) {
     CGRect middleRect = CGRectNull;
     CGRect tailRect = CGRectNull;
     
+    CJCTLineLayoutModel *lineLayoutModel = nil;
+    
     CGFloat maxWidth = _lineVerticalMaxWidth;
     
     //headRect 坐标
-    CGFloat startCopyRunItemY = startCopyRunItem.lineVerticalLayout.lineRect.origin.y;
-    CGFloat startCopyLintHeight = startCopyRunItem.lineVerticalLayout.lineRect.size.height;
-    CGFloat headHeight = ({
-        CGFloat height = startCopyRunItem.lineVerticalLayout.lineRect.size.height;
-        height = MAX(height, startCopyRunItem.lineVerticalLayout.maxRunHeight);
-        height = MAX(height, startCopyRunItem.lineVerticalLayout.maxImageHeight);
-        height;
-    });
-    startCopyRunItemY = startCopyRunItemY - (headHeight - startCopyLintHeight);
-    _startCopyRunItemY = startCopyRunItemY;
+    lineLayoutModel = allCTLineVerticalArray[startCopyRunItem.lineVerticalLayout.line];
+    _startCopyRunItemY = lineLayoutModel.selectCopyBackY;
     CGFloat headWidth = maxWidth - startCopyRunItem.withOutMergeBounds.origin.x;
-    headRect = CGRectMake(startCopyRunItem.withOutMergeBounds.origin.x, startCopyRunItemY, headWidth, headHeight);
-    
-    CGFloat maxHeight = endCopyRunItem.lineVerticalLayout.lineRect.origin.y + endCopyRunItem.lineVerticalLayout.lineRect.size.height - startCopyRunItemY - self.font.descender;
+    CGFloat headHeight = lineLayoutModel.selectCopyBackHeight;
+    headRect = CGRectMake(startCopyRunItem.withOutMergeBounds.origin.x, _startCopyRunItemY, headWidth, headHeight);
     
     //tailRect 坐标
+    lineLayoutModel = allCTLineVerticalArray[endCopyRunItem.lineVerticalLayout.line];
     CGFloat tailWidth = endCopyRunItem.withOutMergeBounds.origin.x+endCopyRunItem.withOutMergeBounds.size.width;
-    CGFloat tailHeight = endCopyRunItem.lineVerticalLayout.lineRect.size.height - self.font.descender;
-    CGFloat endCopyRunItemY = endCopyRunItem.lineVerticalLayout.lineRect.origin.y;
-    CGFloat tailY = ({
-        CGFloat yy = endCopyRunItem.lineVerticalLayout.lineRect.origin.y;
-        for (NSValue *value in allCTLineVerticalArray) {
-            CJCTLineVerticalLayout themLineVerticalLayout;
-            [value getValue:&themLineVerticalLayout];
-            if (themLineVerticalLayout.line+1 == endCopyRunItem.lineVerticalLayout.line) {
-                yy = themLineVerticalLayout.lineRect.origin.y + themLineVerticalLayout.lineRect.size.height;
-                break;
-            }
-        }
-        yy;
-    });
-    tailHeight = tailHeight + (endCopyRunItemY - tailY);
+    CGFloat tailHeight = lineLayoutModel.selectCopyBackHeight;
+    CGFloat tailY = lineLayoutModel.selectCopyBackY;
     tailRect = CGRectMake(0, tailY, tailWidth, tailHeight);
+    
+    CGFloat maxHeight = tailY + tailHeight - _startCopyRunItemY;
     
     BOOL differentLine = YES;
     if (startCopyRunItem.lineVerticalLayout.line == endCopyRunItem.lineVerticalLayout.line) {
         differentLine = NO;
         headRect = CGRectNull;
         middleRect = CGRectMake(startCopyRunItem.withOutMergeBounds.origin.x,
-                                startCopyRunItemY,
+                                _startCopyRunItemY,
                                 endCopyRunItem.withOutMergeBounds.origin.x+endCopyRunItem.withOutMergeBounds.size.width-startCopyRunItem.withOutMergeBounds.origin.x,
-                                headHeight);
+                                lineLayoutModel.selectCopyBackHeight);
         tailRect = CGRectNull;
     }else{
         //相差一行
         if (startCopyRunItem.lineVerticalLayout.line + 1 == endCopyRunItem.lineVerticalLayout.line) {
             middleRect = CGRectNull;
         }else{
-            middleRect = CGRectMake(0, startCopyRunItemY+headHeight, maxWidth, maxHeight-headHeight-tailHeight);
+            middleRect = CGRectMake(0, _startCopyRunItemY+headHeight, maxWidth, maxHeight-headHeight-tailHeight);
         }
     }
     
@@ -1126,7 +1115,7 @@ typedef NS_ENUM(NSInteger, CJSelectViewAction) {
     [self bringSubviewToFront:self.textRangeView];
     
     finishBlock(headHeight,
-                CGPointMake(startCopyRunItem.withOutMergeBounds.origin.x, startCopyRunItemY),
+                CGPointMake(startCopyRunItem.withOutMergeBounds.origin.x, _startCopyRunItemY),
                 tailHeight,
                 CGPointMake(tailWidth,tailY+tailHeight));
 }
@@ -1136,35 +1125,21 @@ typedef NS_ENUM(NSInteger, CJSelectViewAction) {
         return nil;
     }
     
-    //leftRect 坐标
-    CGFloat startCopyRunItemY = _startCopyRunItem.lineVerticalLayout.lineRect.origin.y;
-    CGFloat startCopyLintHeight = _startCopyRunItem.lineVerticalLayout.lineRect.size.height;
-    CGFloat headHeight = ({
-        CGFloat height = _startCopyRunItem.lineVerticalLayout.lineRect.size.height;
-        height = MAX(height, _startCopyRunItem.lineVerticalLayout.maxRunHeight);
-        height = MAX(height, _startCopyRunItem.lineVerticalLayout.maxImageHeight);
-        height;
-    });
-    startCopyRunItemY = startCopyRunItemY - (headHeight - startCopyLintHeight);
-    CGRect leftRect = CGRectMake(_startCopyRunItem.withOutMergeBounds.origin.x-5, startCopyRunItemY-10, 10, headHeight+30);
+    
+    CJCTLineLayoutModel *lineLayoutModel = nil;
+    
+    //headRect 坐标
+    lineLayoutModel = _CTLineVerticalLayoutArray[_startCopyRunItem.lineVerticalLayout.line];
+    _startCopyRunItemY = lineLayoutModel.selectCopyBackY;
+    CGFloat headHeight = lineLayoutModel.selectCopyBackHeight;
+    CGRect leftRect = CGRectMake(_startCopyRunItem.withOutMergeBounds.origin.x-5, _startCopyRunItemY-10, 10, headHeight+30);
+    
     
     //rightRect 坐标
+    lineLayoutModel = _CTLineVerticalLayoutArray[_endCopyRunItem.lineVerticalLayout.line];
     CGFloat tailWidth = _endCopyRunItem.withOutMergeBounds.origin.x+_endCopyRunItem.withOutMergeBounds.size.width;
-    CGFloat tailHeight = _endCopyRunItem.lineVerticalLayout.lineRect.size.height - self.font.descender;
-    CGFloat endCopyRunItemY = _endCopyRunItem.lineVerticalLayout.lineRect.origin.y;
-    CGFloat tailY = ({
-        CGFloat yy = _endCopyRunItem.lineVerticalLayout.lineRect.origin.y;
-        for (NSValue *value in _CTLineVerticalLayoutArray) {
-            CJCTLineVerticalLayout themLineVerticalLayout;
-            [value getValue:&themLineVerticalLayout];
-            if (themLineVerticalLayout.line+1 == _endCopyRunItem.lineVerticalLayout.line) {
-                yy = themLineVerticalLayout.lineRect.origin.y + themLineVerticalLayout.lineRect.size.height;
-                break;
-            }
-        }
-        yy;
-    });
-    tailHeight = tailHeight + (endCopyRunItemY - tailY);
+    CGFloat tailHeight = lineLayoutModel.selectCopyBackHeight;
+    CGFloat tailY = lineLayoutModel.selectCopyBackY;
     CGRect rightRect = CGRectMake(tailWidth-5, tailY, 10, tailHeight+20);
     
     CJSelectView *selectView = [self choseSelectView:point inset:1 leftRect:leftRect rightRect:rightRect time:0];

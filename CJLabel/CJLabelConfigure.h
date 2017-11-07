@@ -31,7 +31,7 @@ typedef NS_ENUM(NSInteger, CJLabelVerticalAlignment) {
  */
 struct CJCTLineVerticalLayout {
     CFIndex line;//第几行
-    CGFloat lineAscentAndDescent;//上行高和下行高
+    CGFloat lineAscentAndDescent;//上行高和下行高之和
     CGRect  lineRect;//当前行对应的CGRect
     
     CGFloat maxRunHeight;//当前行run的最大高度（不包括图片）
@@ -184,24 +184,37 @@ typedef struct CJCTLineVerticalLayout CJCTLineVerticalLayout;
 @property (nonatomic, strong) UIColor *strokeColor;//描边边框色
 @property (nonatomic, strong) UIColor *activeFillColor;//点击选中时候的填充背景色
 @property (nonatomic, strong) UIColor *activeStrokeColor;//点击选中时候的描边边框色
-@property (nonatomic, assign) CGFloat lineWidth;//描边边框粗细
+@property (nonatomic, assign) CGFloat strokeLineWidth;//描边边框粗细
 @property (nonatomic, assign) CGFloat cornerRadius;//描边圆角
 @property (nonatomic, assign) CGRect runBounds;//描边区域在系统坐标下的rect（原点在左下角）
 @property (nonatomic, assign) CGRect locBounds;//描边区域在屏幕坐标下的rect（原点在左上角），相同的一组CTRun，发生了合并
 @property (nonatomic, assign) CGRect withOutMergeBounds;//每个字符对应的CTRun 在屏幕坐标下的rect（原点在左上角），没有发生合并
+
+@property (nonatomic, assign) CGFloat runDescent;//对应的CTRun的下行高
+@property (nonatomic, assign) CTRunRef runRef;//对应的CTRun
+
 @property (nonatomic, strong) id image;//插入图片
-@property (nonatomic, assign) BOOL isImage;//插入图片
+@property (nonatomic, assign) BOOL isImage;//是否是图片
 @property (nonatomic, assign) NSRange range;//链点在文本中的range
 @property (nonatomic, strong) id parameter;//链点自定义参数
-@property (nonatomic, assign) CJCTLineVerticalLayout lineVerticalLayout;//所在CTLine的信息结构体
-@property (nonatomic, copy) CJLabelLinkModelBlock linkBlock;//点击链点回调
-@property (nonatomic, copy) CJLabelLinkModelBlock longPressBlock;//长按点击链点回调
+@property (nonatomic, assign) CJCTLineVerticalLayout lineVerticalLayout;//所在CTLine的行高信息结构体
 @property (nonatomic, assign) BOOL isLink;//判断是否为点击链点
 @property (nonatomic, assign) BOOL needRedrawn;//标记点击该链点是否需要重绘文本
+@property (nonatomic, copy) CJLabelLinkModelBlock linkBlock;//点击链点回调
+@property (nonatomic, copy) CJLabelLinkModelBlock longPressBlock;//长按点击链点回调
+
 //与选择复制相关的属性
 @property (nonatomic, assign) NSInteger characterIndex;//字符在整段文本中的index值
 @property (nonatomic, assign) NSRange characterRange;//字符在整段文本中的range值
 
+@end
+
+@interface CJCTLineLayoutModel : NSObject
+@property (nonatomic, assign) CFIndex lineIndex;//第几行
+@property (nonatomic, assign) CJCTLineVerticalLayout lineVerticalLayout;//所在CTLine的行高信息结构体
+
+@property (nonatomic, assign) CGFloat selectCopyBackY;//选中后被填充背景色的复制视图的Y坐标
+@property (nonatomic, assign) CGFloat selectCopyBackHeight;//选中后被填充背景色的复制视图的高度
 @end
 
 /**

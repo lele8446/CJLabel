@@ -66,6 +66,7 @@
     self.attStr = attStr;
     switch (self.index) {
         case 0:
+        {
             self.firstLabel.hidden = YES;
             self.secondLabel = [[CJLabel alloc]initWithFrame:CGRectMake(10, 10, [[UIScreen mainScreen] bounds].size.width - 20, [[UIScreen mainScreen] bounds].size.height - 64 - 100)];
             self.secondLabel.backgroundColor = UIColorFromRGB(0xf0f0de);
@@ -78,14 +79,28 @@
             
             configure.attributes = @{
                                      NSForegroundColorAttributeName:[UIColor blueColor],
-                                     NSFontAttributeName:[UIFont boldSystemFontOfSize:15],
+                                     NSFontAttributeName:[UIFont boldSystemFontOfSize:26],
                                      kCJBackgroundStrokeColorAttributeName:[UIColor orangeColor],
                                      kCJBackgroundLineWidthAttributeName:@(2),
                                      kCJBackgroundFillColorAttributeName:[UIColor lightGrayColor]
                                      };
             attStr = [CJLabel configureAttrString:attStr withString:@"CJLabel" sameStringEnable:NO configure:configure];
             
+            NSRange imageRange = [attStr.string rangeOfString:@"😊指定"];
+            CJLabelConfigure *imgConfigure =
+            [CJLabel configureAttributes:@{kCJBackgroundStrokeColorAttributeName:[UIColor redColor],                                                         kCJBackgroundLineWidthAttributeName:@(2)} isLink:YES activeLinkAttributes:nil parameter:nil clickLinkBlock:^(CJLabelLinkModel *linkModel) {
+                [self clickLink:linkModel isImage:YES];
+            } longPressBlock:nil];
+            
+            attStr = [CJLabel insertImageAtAttrString:attStr
+                                                image:[UIImage imageNamed:@"CJLabel.png"]
+                                            imageSize:CGSizeMake(120, 85)
+                                              atIndex:(imageRange.location+imageRange.length)
+                                   imagelineAlignment:2
+                                            configure:imgConfigure];
+            
             self.secondLabel.attributedText = attStr;
+        }
             break;
             
         case 1:
