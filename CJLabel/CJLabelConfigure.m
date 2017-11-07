@@ -50,7 +50,7 @@ CGFloat RunDelegateGetWidthCallback(void * refCon) {
     return [(NSNumber *)[(__bridge NSDictionary *)refCon objectForKey:kCJImageWidth] floatValue];
 }
 
-UIWindow * keyWindow(){
+UIWindow * CJkeyWindow(){
     UIApplication *app = [UIApplication sharedApplication];
     if ([app.delegate respondsToSelector:@selector(window)]) {
         return [app.delegate window];
@@ -405,10 +405,12 @@ UIWindow * keyWindow(){
     CJGlyphRunStrokeItem *item = [[[self class] allocWithZone:zone] init];
     item.strokeColor = self.strokeColor;
     item.fillColor = self.fillColor;
-    item.lineWidth = self.lineWidth;
+    item.strokeLineWidth = self.strokeLineWidth;
     item.runBounds = self.runBounds;
     item.locBounds = self.locBounds;
     item.withOutMergeBounds = self.withOutMergeBounds;
+    item.runDescent = self.runDescent;
+    item.runRef = self.runRef;
     item.cornerRadius = self.cornerRadius;
     item.activeFillColor = self.activeFillColor;
     item.activeStrokeColor = self.activeStrokeColor;
@@ -428,6 +430,10 @@ UIWindow * keyWindow(){
 
 @end
 
+@implementation CJCTLineLayoutModel
+
+@end
+
 @interface CJContentLayer : CALayer
 @property (nonatomic, assign) CGPoint pointToMagnify;//放大点
 @end
@@ -437,8 +443,8 @@ UIWindow * keyWindow(){
     CGContextTranslateCTM(ctx, self.frame.size.width/2, self.frame.size.height/2);
     CGContextScaleCTM(ctx, 1.40, 1.40);
     CGContextTranslateCTM(ctx, -1 * self.pointToMagnify.x, -1 * self.pointToMagnify.y);
-    [keyWindow().layer renderInContext:ctx];
-    keyWindow().layer.contents = (id)nil;
+    [CJkeyWindow().layer renderInContext:ctx];
+    CJkeyWindow().layer.contents = (id)nil;
 }
 @end
 
@@ -589,10 +595,10 @@ typedef NS_ENUM(NSInteger, CJSelectViewAction) {
 }
 
 - (void)updateCJSelectViewHeight:(CGFloat)height showCJSelectViewIn:(CGPoint)showPoint {
-    //高度限定为20
-//    if (height > 20) {
+    //最大高度限定为20
+    if (height > 20) {
         height = 20;
-//    }
+    }
     if (self.isLeft) {
         self.frame = CGRectMake(showPoint.x-5, showPoint.y-10, 10, height+10);
         self.lineLayer.frame = CGRectMake(4, 10, 2, height);
@@ -867,7 +873,8 @@ typedef NS_ENUM(NSInteger, CJSelectViewAction) {
     if (unable) {
         for (NSDictionary *viewDic in self.scrlooViewArray) {
             UIScrollView *view = viewDic[@"ScrollView"];
-            view.scrollEnabled = [viewDic[@"unable"] boolValue];
+            view.delaysContentTouches = [viewDic[@"delaysContentTouches"] boolValue];
+            view.canCancelContentTouches = [viewDic[@"canCancelContentTouches"] boolValue];
         }
         [self.scrlooViewArray removeAllObjects];
     }
@@ -881,8 +888,12 @@ typedef NS_ENUM(NSInteger, CJSelectViewAction) {
     if (view.superview) {
         if ([view.superview isKindOfClass:[UIScrollView class]]) {
             UIScrollView *scrollView = (UIScrollView *)view.superview;
-            [self.scrlooViewArray addObject:@{@"ScrollView":scrollView,@"unable":@(scrollView.scrollEnabled)}];
-            scrollView.scrollEnabled = unable;
+            [self.scrlooViewArray addObject:@{@"ScrollView":scrollView,
+                                              @"delaysContentTouches":@(scrollView.delaysContentTouches),
+                                              @"canCancelContentTouches":@(scrollView.canCancelContentTouches)
+                                              }];
+            scrollView.delaysContentTouches = NO;
+            scrollView.canCancelContentTouches = NO;
         }
         [self setScrollView:view.superview scrollUnable:unable];
     }else{
@@ -905,7 +916,7 @@ typedef NS_ENUM(NSInteger, CJSelectViewAction) {
     [label addSubview:self];
     [label bringSubviewToFront:self];
     self.magnifierView.hidden = NO;
-    [keyWindow() addSubview:self.magnifierView];
+    [CJkeyWindow() addSubview:self.magnifierView];
     [self updateMagnifyPoint:point item:runItem];
     self.hideViewBlock = hideViewBlock;
 }
@@ -937,14 +948,14 @@ typedef NS_ENUM(NSInteger, CJSelectViewAction) {
     _endCopyRunItem = _startCopyRunItem;
     [self showCJSelectViewWithPoint:point selectType:ShowAllSelectView item:_startCopyRunItem startCopyRunItem:_startCopyRunItem endCopyRunItem:_startCopyRunItem allCTLineVerticalArray:_CTLineVerticalLayoutArray needShowMagnifyView:NO];
     
-    CGRect windowFrame = [label.superview convertRect:self.label.frame toView:keyWindow()];
+    CGRect windowFrame = [label.superview convertRect:self.label.frame toView:CJkeyWindow()];
     self.backWindView.frame = windowFrame;
     self.backWindView.hidden = NO;
-    [keyWindow() addSubview:self.backWindView];
+    [CJkeyWindow() addSubview:self.backWindView];
     
     [label addSubview:self];
     [label bringSubviewToFront:self];
-    [keyWindow() addSubview:self.magnifierView];
+    [CJkeyWindow() addSubview:self.magnifierView];
     [self showMenuView];
     [self scrollViewUnable:NO];
     self.hideViewBlock = hideViewBlock;
@@ -1028,9 +1039,9 @@ typedef NS_ENUM(NSInteger, CJSelectViewAction) {
         CJCTLineVerticalLayout lineVerticalLayout = item.lineVerticalLayout;
         // Y 值往上偏移20 像素
         CGPoint selectPoint = CGPointMake(point.x, lineVerticalLayout.lineRect.origin.y-20);
-        CGPoint pointToMagnify = CGPointMake(point.x, lineVerticalLayout.lineRect.origin.y + lineVerticalLayout.lineRect.size.height/2);
-        selectPoint = [self convertPoint:selectPoint toView:keyWindow()];
-        pointToMagnify = [self convertPoint:pointToMagnify toView:keyWindow()];
+        CGPoint pointToMagnify = CGPointMake(point.x, item.locBounds.origin.y + item.locBounds.size.height/2);
+        selectPoint = [self convertPoint:selectPoint toView:CJkeyWindow()];
+        pointToMagnify = [self convertPoint:pointToMagnify toView:CJkeyWindow()];
         self.magnifierView.hidden = NO;
         [self.magnifierView updateMagnifyPoint:pointToMagnify showMagnifyViewIn:selectPoint];
     }
@@ -1038,8 +1049,8 @@ typedef NS_ENUM(NSInteger, CJSelectViewAction) {
         // Y 值往上偏移20 像素
         CGPoint selectPoint = CGPointMake(point.x, point.y-20);
         CGPoint pointToMagnify = CGPointMake(point.x, point.y);
-        selectPoint = [self convertPoint:selectPoint toView:keyWindow()];
-        pointToMagnify = [self convertPoint:pointToMagnify toView:keyWindow()];
+        selectPoint = [self convertPoint:selectPoint toView:CJkeyWindow()];
+        pointToMagnify = [self convertPoint:pointToMagnify toView:CJkeyWindow()];
         self.magnifierView.hidden = NO;
         [self.magnifierView updateMagnifyPoint:pointToMagnify showMagnifyViewIn:selectPoint];
     }
@@ -1060,49 +1071,37 @@ typedef NS_ENUM(NSInteger, CJSelectViewAction) {
     CGRect middleRect = CGRectNull;
     CGRect tailRect = CGRectNull;
     
+    CJCTLineLayoutModel *lineLayoutModel = nil;
+    
     CGFloat maxWidth = _lineVerticalMaxWidth;
     
     //headRect 坐标
-    CGFloat startCopyRunItemY = startCopyRunItem.lineVerticalLayout.lineRect.origin.y;
-    CGFloat startCopyLintHeight = startCopyRunItem.lineVerticalLayout.lineRect.size.height;
-    CGFloat headHeight = ({
-        CGFloat height = startCopyRunItem.lineVerticalLayout.lineRect.size.height;
-        height = MAX(height, startCopyRunItem.lineVerticalLayout.maxRunHeight);
-        height = MAX(height, startCopyRunItem.lineVerticalLayout.maxImageHeight);
-        height;
-    });
-    startCopyRunItemY = startCopyRunItemY - (headHeight - startCopyLintHeight);
-    _startCopyRunItemY = startCopyRunItemY;
+    lineLayoutModel = allCTLineVerticalArray[startCopyRunItem.lineVerticalLayout.line];
+    _startCopyRunItemY = lineLayoutModel.selectCopyBackY;
     CGFloat headWidth = maxWidth - startCopyRunItem.withOutMergeBounds.origin.x;
-    headRect = CGRectMake(startCopyRunItem.withOutMergeBounds.origin.x, startCopyRunItemY, headWidth, headHeight);
-    
-    CGFloat maxHeight = endCopyRunItem.lineVerticalLayout.lineRect.origin.y + endCopyRunItem.lineVerticalLayout.lineRect.size.height - startCopyRunItemY - self.font.descender;
+    CGFloat headHeight = lineLayoutModel.selectCopyBackHeight;
+    headRect = CGRectMake(startCopyRunItem.withOutMergeBounds.origin.x, _startCopyRunItemY, headWidth, headHeight);
     
     //tailRect 坐标
+    lineLayoutModel = allCTLineVerticalArray[endCopyRunItem.lineVerticalLayout.line];
     CGFloat tailWidth = endCopyRunItem.withOutMergeBounds.origin.x+endCopyRunItem.withOutMergeBounds.size.width;
-    CGFloat tailHeight = endCopyRunItem.lineVerticalLayout.lineRect.size.height - self.font.descender;
-    CGFloat endCopyRunItemY = endCopyRunItem.lineVerticalLayout.lineRect.origin.y;
-    CGFloat tailY = ({
-        CGFloat yy = endCopyRunItem.lineVerticalLayout.lineRect.origin.y;
-        for (NSValue *value in allCTLineVerticalArray) {
-            CJCTLineVerticalLayout themLineVerticalLayout;
-            [value getValue:&themLineVerticalLayout];
-            if (themLineVerticalLayout.line+1 == endCopyRunItem.lineVerticalLayout.line) {
-                yy = themLineVerticalLayout.lineRect.origin.y + themLineVerticalLayout.lineRect.size.height;
-                break;
-            }
-        }
-        yy;
-    });
-    tailHeight = tailHeight + (endCopyRunItemY - tailY);
+    CGFloat tailHeight = lineLayoutModel.selectCopyBackHeight;
+    CGFloat tailY = lineLayoutModel.selectCopyBackY;
+    if (endCopyRunItem.lineVerticalLayout.line - 1 >= 0) {
+        CJCTLineLayoutModel *endLastlineLayoutModel = allCTLineVerticalArray[endCopyRunItem.lineVerticalLayout.line-1];
+        tailY = endLastlineLayoutModel.selectCopyBackY + endLastlineLayoutModel.selectCopyBackHeight;
+        tailHeight = tailHeight + lineLayoutModel.selectCopyBackY - tailY;
+    }
     tailRect = CGRectMake(0, tailY, tailWidth, tailHeight);
+    
+    CGFloat maxHeight = tailY + tailHeight - _startCopyRunItemY;
     
     BOOL differentLine = YES;
     if (startCopyRunItem.lineVerticalLayout.line == endCopyRunItem.lineVerticalLayout.line) {
         differentLine = NO;
         headRect = CGRectNull;
         middleRect = CGRectMake(startCopyRunItem.withOutMergeBounds.origin.x,
-                                startCopyRunItemY,
+                                _startCopyRunItemY,
                                 endCopyRunItem.withOutMergeBounds.origin.x+endCopyRunItem.withOutMergeBounds.size.width-startCopyRunItem.withOutMergeBounds.origin.x,
                                 headHeight);
         tailRect = CGRectNull;
@@ -1111,7 +1110,7 @@ typedef NS_ENUM(NSInteger, CJSelectViewAction) {
         if (startCopyRunItem.lineVerticalLayout.line + 1 == endCopyRunItem.lineVerticalLayout.line) {
             middleRect = CGRectNull;
         }else{
-            middleRect = CGRectMake(0, startCopyRunItemY+headHeight, maxWidth, maxHeight-headHeight-tailHeight);
+            middleRect = CGRectMake(0, _startCopyRunItemY+headHeight, maxWidth, maxHeight-headHeight-tailHeight);
         }
     }
     
@@ -1121,7 +1120,7 @@ typedef NS_ENUM(NSInteger, CJSelectViewAction) {
     [self bringSubviewToFront:self.textRangeView];
     
     finishBlock(headHeight,
-                CGPointMake(startCopyRunItem.withOutMergeBounds.origin.x, startCopyRunItemY),
+                CGPointMake(startCopyRunItem.withOutMergeBounds.origin.x, _startCopyRunItemY),
                 tailHeight,
                 CGPointMake(tailWidth,tailY+tailHeight));
 }
@@ -1131,35 +1130,21 @@ typedef NS_ENUM(NSInteger, CJSelectViewAction) {
         return nil;
     }
     
-    //leftRect 坐标
-    CGFloat startCopyRunItemY = _startCopyRunItem.lineVerticalLayout.lineRect.origin.y;
-    CGFloat startCopyLintHeight = _startCopyRunItem.lineVerticalLayout.lineRect.size.height;
-    CGFloat headHeight = ({
-        CGFloat height = _startCopyRunItem.lineVerticalLayout.lineRect.size.height;
-        height = MAX(height, _startCopyRunItem.lineVerticalLayout.maxRunHeight);
-        height = MAX(height, _startCopyRunItem.lineVerticalLayout.maxImageHeight);
-        height;
-    });
-    startCopyRunItemY = startCopyRunItemY - (headHeight - startCopyLintHeight);
-    CGRect leftRect = CGRectMake(_startCopyRunItem.withOutMergeBounds.origin.x-5, startCopyRunItemY-10, 10, headHeight+30);
+    
+    CJCTLineLayoutModel *lineLayoutModel = nil;
+    
+    //headRect 坐标
+    lineLayoutModel = _CTLineVerticalLayoutArray[_startCopyRunItem.lineVerticalLayout.line];
+    _startCopyRunItemY = lineLayoutModel.selectCopyBackY;
+    CGFloat headHeight = lineLayoutModel.selectCopyBackHeight;
+    CGRect leftRect = CGRectMake(_startCopyRunItem.withOutMergeBounds.origin.x-5, _startCopyRunItemY-10, 10, headHeight+30);
+    
     
     //rightRect 坐标
+    lineLayoutModel = _CTLineVerticalLayoutArray[_endCopyRunItem.lineVerticalLayout.line];
     CGFloat tailWidth = _endCopyRunItem.withOutMergeBounds.origin.x+_endCopyRunItem.withOutMergeBounds.size.width;
-    CGFloat tailHeight = _endCopyRunItem.lineVerticalLayout.lineRect.size.height - self.font.descender;
-    CGFloat endCopyRunItemY = _endCopyRunItem.lineVerticalLayout.lineRect.origin.y;
-    CGFloat tailY = ({
-        CGFloat yy = _endCopyRunItem.lineVerticalLayout.lineRect.origin.y;
-        for (NSValue *value in _CTLineVerticalLayoutArray) {
-            CJCTLineVerticalLayout themLineVerticalLayout;
-            [value getValue:&themLineVerticalLayout];
-            if (themLineVerticalLayout.line+1 == _endCopyRunItem.lineVerticalLayout.line) {
-                yy = themLineVerticalLayout.lineRect.origin.y + themLineVerticalLayout.lineRect.size.height;
-                break;
-            }
-        }
-        yy;
-    });
-    tailHeight = tailHeight + (endCopyRunItemY - tailY);
+    CGFloat tailHeight = lineLayoutModel.selectCopyBackHeight;
+    CGFloat tailY = lineLayoutModel.selectCopyBackY;
     CGRect rightRect = CGRectMake(tailWidth-5, tailY, 10, tailHeight+20);
     
     CJSelectView *selectView = [self choseSelectView:point inset:1 leftRect:leftRect rightRect:rightRect time:0];
