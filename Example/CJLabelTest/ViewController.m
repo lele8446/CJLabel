@@ -42,7 +42,7 @@
     self.tableView.tableFooterView = [[UIView alloc] init];
     [self.view addSubview:self.tableView];
     
-    [self handleData];
+    [self readFile];
 }
 
 - (void)didReceiveMemoryWarning {
@@ -50,13 +50,19 @@
     // Dispose of any resources that can be recreated.
 }
 
-- (void)handleData {
-    NSString *filePath = [[NSBundle mainBundle] pathForResource:@"Example" ofType:@"txt"];
-    NSArray *data = [[NSString stringWithContentsOfFile:filePath usedEncoding:nil error:nil] componentsSeparatedByCharactersInSet:[NSCharacterSet newlineCharacterSet]];
+- (void)readFile {
+    NSString *path = [[NSBundle mainBundle] pathForResource:@"Example" ofType:@"json"];
+    NSString *content = [[NSString alloc] initWithContentsOfFile:path encoding:NSUTF8StringEncoding error:nil];
+    
+    NSData *JSONData = [content dataUsingEncoding:NSUTF8StringEncoding];
+    NSArray *responseJSON = nil;
+    if (JSONData) {
+        responseJSON = [NSJSONSerialization JSONObjectWithData:JSONData options:NSJSONReadingMutableContainers error:nil];
+    }
     
     self.espressos = [NSMutableArray array];
-    for (int i = 0;i<data.count;i++) {
-        NSString *str = [data objectAtIndex:i];
+    for (int i = 0; i<responseJSON.count; i++) {
+        NSString *str = [[responseJSON objectAtIndex:i] objectForKey:@"text"];
         if (str.length == 0) {
             continue;
         }
@@ -65,17 +71,20 @@
         
         CJLabelConfigure *configure =
         [CJLabel configureAttributes:@{
-                                       NSForegroundColorAttributeName:[UIColor blueColor],
-                                       NSFontAttributeName:[UIFont boldSystemFontOfSize:15],
-//                                       kCJBackgroundFillColorAttributeName:[UIColor lightGrayColor]
+                                       NSFontAttributeName:[UIFont boldSystemFontOfSize:16],
                                        }
-                              isLink:YES
-                activeLinkAttributes:@{NSForegroundColorAttributeName:[UIColor redColor]}
+                              isLink:NO
+                activeLinkAttributes:nil
                            parameter:nil
                       clickLinkBlock:nil
                       longPressBlock:nil];
+        attStr = [CJLabel configureAttrString:attStr atRange:NSMakeRange(0, 3) configure:configure];
+        
+        configure.attributes = @{NSForegroundColorAttributeName:[UIColor blueColor],
+                                 NSFontAttributeName:[UIFont boldSystemFontOfSize:15]};
+        configure.activeLinkAttributes = @{NSForegroundColorAttributeName:[UIColor redColor]};
+        configure.isLink = YES;
         attStr = [CJLabel configureAttrString:attStr withString:@"CJLabel" sameStringEnable:YES configure:configure];
-//        attStr = [CJLabel initWithAttributedString:attStr strIdentifier:nil configure:configure];
         
         [self.espressos addObject:attStr];
     }
@@ -92,12 +101,12 @@
     // 方法一 systemLayoutSizeFittingSize:计算高度
     self.tempCell.label.text = content;
     CGSize size =[self.tempCell.contentView systemLayoutSizeFittingSize:UILayoutFittingCompressedSize];
-    return size.height+1;
+//    return size.height+1;
 
-//    // 方法二 CJLabel类方法计算高度
-//    CGSize size1 = [CJLabel sizeWithAttributedString:content withConstraints:CGSizeMake(ScreenWidth-20, CGFLOAT_MAX) limitedToNumberOfLines:0];
-//    // label垂直方向约束高度top=10，另外再 + 1
-//    return size1.height+11;
+    // 方法二 CJLabel类方法计算高度
+    CGSize size1 = [CJLabel sizeWithAttributedString:content withConstraints:CGSizeMake(ScreenWidth-20, CGFLOAT_MAX) limitedToNumberOfLines:3 textInsets:UIEdgeInsetsMake(5, 5, 5, 0)];
+    // label垂直方向约束高度top=10，另外再 + 1
+    return size1.height+11;
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {

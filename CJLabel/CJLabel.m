@@ -857,6 +857,13 @@ NSString * const kCJActiveBackgroundStrokeColorAttributeName = @"kCJActiveBackgr
     CGFloat y = runStrokeItem.runBounds.origin.y;
     
     CGRect roundedRect = CGRectMake(x,y,runStrokeItem.runBounds.size.width,runStrokeItem.runBounds.size.height);
+    if (isStrokeColor) {
+        CGFloat lineWidth = runStrokeItem.strokeLineWidth/2;
+        roundedRect = CGRectMake(x-lineWidth,
+                                 y-lineWidth,
+                                 runStrokeItem.runBounds.size.width + 2*lineWidth,
+                                 runStrokeItem.runBounds.size.height + 2*lineWidth);
+    }
     CGPathRef glyphRunpath = [[UIBezierPath bezierPathWithRoundedRect:roundedRect cornerRadius:runStrokeItem.cornerRadius] CGPath];
     CGContextAddPath(c, glyphRunpath);
     
@@ -1013,7 +1020,13 @@ NSString * const kCJActiveBackgroundStrokeColorAttributeName = @"kCJActiveBackgr
     //描边边线宽度
     CGFloat strokeLineWidth = [[attributes objectForKey:kCJBackgroundLineWidthAttributeName] floatValue];
     if (!CJLabelIsNull(attributes[kCJActiveLinkAttributesName]) && strokeLineWidth == 0) {
-        strokeLineWidth = [[attributes[kCJActiveLinkAttributesName] objectForKey:kCJBackgroundLineCornerRadiusAttributeName] floatValue];
+        strokeLineWidth = [[attributes[kCJActiveLinkAttributesName] objectForKey:kCJBackgroundLineWidthAttributeName] floatValue];
+    }
+    
+    //是否有设置圆角
+    BOOL haveCornerRadius = NO;
+    if (attributes[kCJBackgroundLineCornerRadiusAttributeName] || attributes[kCJActiveLinkAttributesName][kCJBackgroundLineCornerRadiusAttributeName]) {
+        haveCornerRadius = YES;
     }
     //填充背景色圆角
     CGFloat cornerRadius = [[attributes objectForKey:kCJBackgroundLineCornerRadiusAttributeName] floatValue];
@@ -1021,7 +1034,9 @@ NSString * const kCJActiveBackgroundStrokeColorAttributeName = @"kCJActiveBackgr
         cornerRadius = [[attributes[kCJActiveLinkAttributesName] objectForKey:kCJBackgroundLineCornerRadiusAttributeName] floatValue];
     }
     strokeLineWidth = strokeLineWidth == 0?1:strokeLineWidth;
-    cornerRadius = cornerRadius == 0?5:cornerRadius;
+    if (!haveCornerRadius) {
+        cornerRadius = cornerRadius == 0?5:cornerRadius;
+    }
     
     BOOL isLink = [attributes[kCJIsLinkAttributesName] boolValue];
     
@@ -1597,10 +1612,18 @@ NSString * const kCJActiveBackgroundStrokeColorAttributeName = @"kCJActiveBackgr
 
 #pragma mark - Public Method
 + (CGSize)sizeWithAttributedString:(NSAttributedString *)attributedString withConstraints:(CGSize)size limitedToNumberOfLines:(NSUInteger)numberOfLines {
+    return [CJLabel sizeWithAttributedString:attributedString withConstraints:size limitedToNumberOfLines:numberOfLines textInsets:UIEdgeInsetsZero];
+}
+
++ (CGSize)sizeWithAttributedString:(NSAttributedString *)attributedString
+                   withConstraints:(CGSize)size
+            limitedToNumberOfLines:(NSUInteger)numberOfLines
+                        textInsets:(UIEdgeInsets)textInsets {
     if (!attributedString || attributedString.length == 0) {
         return CGSizeZero;
     }
     
+    [CJLabel instance].textInsets = textInsets;
     [CJLabel instance].numberOfLines = numberOfLines;
     [CJLabel instance].attributedText = attributedString;
     CGSize caculateSize = [[CJLabel instance] sizeThatFits:size];

@@ -20,6 +20,7 @@
 		B40ACCA91EB30CF3006DB787 /* Example.txt in Resources */ = {isa = PBXBuildFile; fileRef = B40ACCA61EB30CF3006DB787 /* Example.txt */; };
 		B431D5321D0545E700228988 /* CJLabel.m in Sources */ = {isa = PBXBuildFile; fileRef = B431D52E1D0545E700228988 /* CJLabel.m */; };
 		B45AC7ED1F8A7181006B5336 /* CJLabelConfigure.m in Sources */ = {isa = PBXBuildFile; fileRef = B45AC7EC1F8A7181006B5336 /* CJLabelConfigure.m */; };
+		B4928B9F1FB4003D0017A25C /* Example.json in Resources */ = {isa = PBXBuildFile; fileRef = B4928B9E1FB4003D0017A25C /* Example.json */; };
 		B4C8931B1EB881EA00AC9E42 /* DetailViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = B4C893191EB881EA00AC9E42 /* DetailViewController.m */; };
 		B4C8931C1EB881EA00AC9E42 /* DetailViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = B4C8931A1EB881EA00AC9E42 /* DetailViewController.xib */; };
 /* End PBXBuildFile section */
@@ -66,6 +67,7 @@
 		B431D52E1D0545E700228988 /* CJLabel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CJLabel.m; sourceTree = "<group>"; };
 		B45AC7EB1F8A7181006B5336 /* CJLabelConfigure.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CJLabelConfigure.h; sourceTree = "<group>"; };
 		B45AC7EC1F8A7181006B5336 /* CJLabelConfigure.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CJLabelConfigure.m; sourceTree = "<group>"; };
+		B4928B9E1FB4003D0017A25C /* Example.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = Example.json; sourceTree = "<group>"; };
 		B4C893181EB881EA00AC9E42 /* DetailViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = DetailViewController.h; path = CJLabelTest/DetailViewController.h; sourceTree = SOURCE_ROOT; };
 		B4C893191EB881EA00AC9E42 /* DetailViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = DetailViewController.m; path = CJLabelTest/DetailViewController.m; sourceTree = SOURCE_ROOT; };
 		B4C8931A1EB881EA00AC9E42 /* DetailViewController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; name = DetailViewController.xib; path = CJLabelTest/DetailViewController.xib; sourceTree = SOURCE_ROOT; };
@@ -134,6 +136,7 @@
 			isa = PBXGroup;
 			children = (
 				B40ACCA61EB30CF3006DB787 /* Example.txt */,
+				B4928B9E1FB4003D0017A25C /* Example.json */,
 				4382578D1C1A6F5F00A3DA24 /* Main.storyboard */,
 				438257921C1A6F5F00A3DA24 /* LaunchScreen.storyboard */,
 				438257951C1A6F5F00A3DA24 /* Info.plist */,
@@ -303,6 +306,7 @@
 				438257941C1A6F5F00A3DA24 /* LaunchScreen.storyboard in Resources */,
 				B4C8931C1EB881EA00AC9E42 /* DetailViewController.xib in Resources */,
 				438257911C1A6F5F00A3DA24 /* Assets.xcassets in Resources */,
+				B4928B9F1FB4003D0017A25C /* Example.json in Resources */,
 				4382578F1C1A6F5F00A3DA24 /* Main.storyboard in Resources */,
 				B40ACCA91EB30CF3006DB787 /* Example.txt in Resources */,
 				B40ACCA81EB30CF3006DB787 /* AttributedTableViewCell.xib in Resources */,

@@ -62,7 +62,7 @@
     
     NSMutableAttributedString *attStr = content;
     [attStr addAttribute:NSParagraphStyleAttributeName value:paragraph range:NSMakeRange(0, attStr.length)];
-    attStr = [CJLabel configureAttrString:attStr atRange:NSMakeRange(0, 3) configure:configure];
+//    attStr = [CJLabel configureAttrString:attStr atRange:NSMakeRange(0, 3) configure:configure];
     self.attStr = attStr;
     switch (self.index) {
         case 0:
@@ -71,7 +71,7 @@
             self.secondLabel = [[CJLabel alloc]initWithFrame:CGRectMake(10, 10, [[UIScreen mainScreen] bounds].size.width - 20, [[UIScreen mainScreen] bounds].size.height - 64 - 100)];
             self.secondLabel.backgroundColor = UIColorFromRGB(0xf0f0de);
             self.secondLabel.numberOfLines = 0;
-            self.secondLabel.textInsets = UIEdgeInsetsMake(10, 15, 20, 0);
+//            self.secondLabel.textInsets = UIEdgeInsetsMake(10, 15, 20, 0);
             self.secondLabel.verticalAlignment = CJVerticalAlignmentBottom;
             self.secondLabel.enableCopy = YES;
 //            self.secondLabel.enableCopy = NO;
@@ -84,22 +84,9 @@
                                      kCJBackgroundLineWidthAttributeName:@(2),
                                      kCJBackgroundFillColorAttributeName:[UIColor lightGrayColor]
                                      };
-            attStr = [CJLabel configureAttrString:attStr withString:@"CJLabel" sameStringEnable:NO configure:configure];
+//            attStr = [CJLabel configureAttrString:attStr withString:@"CJLabel" sameStringEnable:NO configure:configure];
             
-            NSRange imageRange = [attStr.string rangeOfString:@"😊指定"];
-            CJLabelConfigure *imgConfigure =
-            [CJLabel configureAttributes:@{kCJBackgroundStrokeColorAttributeName:[UIColor redColor],                                                         kCJBackgroundLineWidthAttributeName:@(2)} isLink:YES activeLinkAttributes:nil parameter:nil clickLinkBlock:^(CJLabelLinkModel *linkModel) {
-                [self clickLink:linkModel isImage:YES];
-            } longPressBlock:nil];
-            
-            attStr = [CJLabel insertImageAtAttrString:attStr
-                                                image:[UIImage imageNamed:@"CJLabel.png"]
-                                            imageSize:CGSizeMake(120, 85)
-                                              atIndex:(imageRange.location+imageRange.length)
-                                   imagelineAlignment:2
-                                            configure:imgConfigure];
-            
-            self.secondLabel.attributedText = attStr;
+            self.secondLabel.text = attStr;
         }
             break;
             
@@ -214,16 +201,17 @@
     [CJLabel configureAttributes:@{
                                    NSForegroundColorAttributeName:[UIColor blueColor],
                                    NSFontAttributeName:[UIFont boldSystemFontOfSize:45],
-                                   kCJBackgroundStrokeColorAttributeName:[UIColor orangeColor],
+//                                   kCJBackgroundStrokeColorAttributeName:[UIColor orangeColor],
                                    kCJBackgroundLineWidthAttributeName:@(self.index == 5?1:2),
-                                   kCJBackgroundFillColorAttributeName:[UIColor lightGrayColor]
+//                                   kCJBackgroundFillColorAttributeName:[UIColor lightGrayColor]
                                    }
                           isLink:YES
             activeLinkAttributes:@{
                                    NSForegroundColorAttributeName:[UIColor redColor],
                                    NSFontAttributeName:[UIFont boldSystemFontOfSize:15],
                                    kCJActiveBackgroundStrokeColorAttributeName:[UIColor blackColor],
-                                   kCJActiveBackgroundFillColorAttributeName:UIRGBColor(247,231,121,1)
+                                   kCJActiveBackgroundFillColorAttributeName:UIRGBColor(247,231,121,1),
+                                   kCJBackgroundLineCornerRadiusAttributeName:@(0)
                                    }
                        parameter:@"字符串参数"
                   clickLinkBlock:^(CJLabelLinkModel *linkModel){
@@ -243,6 +231,7 @@
     [CJLabel configureAttributes:@{
                                    kCJBackgroundStrokeColorAttributeName:[UIColor blueColor],
                                    kCJBackgroundLineWidthAttributeName:@(self.index == 5?1:2),
+                                   kCJBackgroundLineCornerRadiusAttributeName:@(0)
                                    }
                           isLink:YES
             activeLinkAttributes:@{kCJActiveBackgroundStrokeColorAttributeName:[UIColor redColor]}

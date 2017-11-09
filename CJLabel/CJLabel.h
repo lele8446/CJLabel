@@ -34,7 +34,7 @@
 
 
 /**
- * CJLabel 继承自 UILabel，其文本绘制基于NSAttributedString实现，同时增加了图文混排、富文本展示以及添加自定义点击链点并设置点击链点文本属性的功能。
+ * CJLabel 继承自 UILabel，支持富文本展示、图文混排、添加自定义点击链点以及选择复制等功能。
  *
  *
  * CJLabel 与 UILabel 不同点：
@@ -56,14 +56,14 @@
    7. 新增`verticalAlignment` 设置垂直方向的文本对齐方式
  
    8. 新增`delegate` 点击链点代理
+ 
+   9. 新增`enableCopy` 支持文本选择复制功能
  *
  *
  * CJLabel 已知bug：
  *
    `numberOfLines`大于0且小于实际`label.numberOfLines`，同时`verticalAlignment`不等于`CJContentVerticalAlignmentTop`时:
-    1.文本显示位置有偏差
-    2.链点点击相应位置以及选择复制位置有偏差
-    （！！！推荐解决方案：使用AutoLayout布局，或者手动设置frame时请确保self.frame与文本区域大小相等）
+    文本显示位置有偏差
  *
  */
 @interface CJLabel : UILabel
@@ -104,12 +104,12 @@
  */
 @property (readwrite, nonatomic, weak) id<CJLabelLinkDelegate> delegate;
 /**
- 是否支持复制，默认NO
+ 是否支持选择复制，默认NO
  */
 @property (readwrite, nonatomic, assign) IBInspectable BOOL enableCopy;
 
 /**
- 计算NSAttributedString字符串的size大小
+ 根据NSAttributedString计算CJLabel的size大小
 
  @param attributedString NSAttributedString字符串
  @param size             预计大小（比如：CGSizeMake(320, CGFLOAT_MAX)）
@@ -119,6 +119,21 @@
 + (CGSize)sizeWithAttributedString:(NSAttributedString *)attributedString
                    withConstraints:(CGSize)size
             limitedToNumberOfLines:(NSUInteger)numberOfLines;
+
+
+/**
+ 根据NSAttributedString计算CJLabel的size大小
+
+ @param attributedString NSAttributedString字符串
+ @param size             预计大小（比如：CGSizeMake(320, CGFLOAT_MAX)）
+ @param numberOfLines    指定行数（0表示不限制）
+ @param textInsets       CJLabel的内边距
+ @return                 结果size
+ */
++ (CGSize)sizeWithAttributedString:(NSAttributedString *)attributedString
+                   withConstraints:(CGSize)size
+            limitedToNumberOfLines:(NSUInteger)numberOfLines
+                        textInsets:(UIEdgeInsets)textInsets;
 
 /**
  初始化配置实例

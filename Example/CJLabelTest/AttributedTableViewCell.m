@@ -13,6 +13,8 @@
 - (void)awakeFromNib {
     [super awakeFromNib];
     self.label.preferredMaxLayoutWidth = [[UIScreen mainScreen] bounds].size.width - 20;
+    self.label.numberOfLines = 3;
+    self.label.textInsets = UIEdgeInsetsMake(5, 5, 5, 0);
     self.label.enableCopy = YES;
 }
 
