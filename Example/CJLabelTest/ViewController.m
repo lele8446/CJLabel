@@ -7,8 +7,11 @@
 //
 
 #import "ViewController.h"
+#import "Common.h"
 #import "AttributedTableViewCell.h"
-#import "DetailViewController.h"
+#import "FirstDetailViewController.h"
+#import "SecondDetailViewController.h"
+
 
 @interface ViewController ()<UITableViewDelegate,UITableViewDataSource,CJLabelLinkDelegate>
 @property (nonatomic, strong) UITableView *tableView;
@@ -67,12 +70,10 @@
             continue;
         }
         NSMutableAttributedString *attStr = [[NSMutableAttributedString alloc]initWithString:str];
-        [attStr addAttribute:NSFontAttributeName value:[UIFont systemFontOfSize:14] range:NSMakeRange(0, str.length)];
+        [attStr addAttribute:NSFontAttributeName value:[UIFont systemFontOfSize:13] range:NSMakeRange(0, str.length)];
         
         CJLabelConfigure *configure =
-        [CJLabel configureAttributes:@{
-                                       NSFontAttributeName:[UIFont boldSystemFontOfSize:16],
-                                       }
+        [CJLabel configureAttributes:@{NSFontAttributeName:[UIFont boldSystemFontOfSize:15]}
                               isLink:NO
                 activeLinkAttributes:nil
                            parameter:nil
@@ -81,7 +82,7 @@
         attStr = [CJLabel configureAttrString:attStr atRange:NSMakeRange(0, 3) configure:configure];
         
         configure.attributes = @{NSForegroundColorAttributeName:[UIColor blueColor],
-                                 NSFontAttributeName:[UIFont boldSystemFontOfSize:15]};
+                                 NSFontAttributeName:[UIFont boldSystemFontOfSize:13]};
         configure.activeLinkAttributes = @{NSForegroundColorAttributeName:[UIColor redColor]};
         configure.isLink = YES;
         attStr = [CJLabel configureAttrString:attStr withString:@"CJLabel" sameStringEnable:YES configure:configure];
@@ -99,8 +100,8 @@
     NSAttributedString *content = [self.espressos objectAtIndex:(NSUInteger)indexPath.row];
     
     // 方法一 systemLayoutSizeFittingSize:计算高度
-    self.tempCell.label.text = content;
-    CGSize size =[self.tempCell.contentView systemLayoutSizeFittingSize:UILayoutFittingCompressedSize];
+//    self.tempCell.label.text = content;
+//    CGSize size =[self.tempCell.contentView systemLayoutSizeFittingSize:UILayoutFittingCompressedSize];
 //    return size.height+1;
 
     // 方法二 CJLabel类方法计算高度
@@ -125,7 +126,7 @@
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     //    NSLog(@"点击第 %@ 行cell",@(indexPath.row+1));
-    DetailViewController *detailCtr = [[DetailViewController alloc]initWithNibName:@"DetailViewController" bundle:nil];
+    SecondDetailViewController *detailCtr = [[SecondDetailViewController alloc]initWithNibName:@"SecondDetailViewController" bundle:nil];
     detailCtr.index = indexPath.row;
     detailCtr.content = self.espressos[indexPath.row];
     [self.navigationController pushViewController:detailCtr animated:YES];

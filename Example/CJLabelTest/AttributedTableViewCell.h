@@ -9,9 +9,6 @@
 #import <UIKit/UIKit.h>
 #import "CJLabel.h"
 
-#define ScreenWidth [[UIScreen mainScreen] bounds].size.width
-
-
 @interface AttributedTableViewCell : UITableViewCell
 @property (nonatomic,weak)IBOutlet CJLabel *label;
 

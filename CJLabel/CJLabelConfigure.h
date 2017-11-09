@@ -74,6 +74,33 @@ typedef struct CJCTLineVerticalLayout CJCTLineVerticalLayout;
 @property (nonatomic, copy) CJLabelLinkModelBlock longPressBlock;
 
 /**
+ 添加 attributes 属性
+
+ @param attributes 属性值
+ @param key        属性
+ */
+- (void)addAttributes:(id)attributes key:(NSString *)key;
+/**
+ 移除 attributes 指定属性
+
+ @param key 属性
+ */
+- (void)removeAttributesForKey:(NSString *)key;
+/**
+ 添加 activeAttributes 属性
+ 
+ @param activeAttributes 属性值
+ @param key              属性
+ */
+- (void)addActiveAttributes:(id)activeAttributes key:(NSString *)key;
+/**
+ 移除 activeAttributes 指定属性
+ 
+ @param key 属性
+ */
+- (void)removeActiveLinkAttributesForKey:(NSString *)key;
+
+/**
  在指定位置插入图片链点！！！
  */
 + (NSMutableAttributedString *)configureLinkAttributedString:(NSAttributedString *)attrStr

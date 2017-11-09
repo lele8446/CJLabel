@@ -861,7 +861,7 @@ NSString * const kCJActiveBackgroundStrokeColorAttributeName = @"kCJActiveBackgr
         CGFloat lineWidth = runStrokeItem.strokeLineWidth/2;
         roundedRect = CGRectMake(x-lineWidth,
                                  y-lineWidth,
-                                 runStrokeItem.runBounds.size.width + 2*lineWidth,
+                                 runStrokeItem.runBounds.size.width + 3*lineWidth,
                                  runStrokeItem.runBounds.size.height + 2*lineWidth);
     }
     CGPathRef glyphRunpath = [[UIBezierPath bezierPathWithRoundedRect:roundedRect cornerRadius:runStrokeItem.cornerRadius] CGPath];
@@ -1119,18 +1119,17 @@ NSString * const kCJActiveBackgroundStrokeColorAttributeName = @"kCJActiveBackgr
     else{
         //不是可点击链点。但存在自定义边框线或背景色
         if (isNotClearColor(strokeColor) || isNotClearColor(fillColor) || isNotClearColor(activeStrokeColor) || isNotClearColor(activeFillColor)) {
-            
             runStrokeItem.strokeColor = strokeColor;
             runStrokeItem.fillColor = fillColor;
             runStrokeItem.strokeLineWidth = strokeLineWidth;
             runStrokeItem.cornerRadius = cornerRadius;
             runStrokeItem.activeStrokeColor = activeStrokeColor;
             runStrokeItem.activeFillColor = activeFillColor;
-            runStrokeItem.isLink = NO;
-            if (imgInfoDic[kCJImage]) {
-                runStrokeItem.image = imgInfoDic[kCJImage];
-                runStrokeItem.isImage = YES;
-            }
+        }
+        runStrokeItem.isLink = NO;
+        if (imgInfoDic[kCJImage]) {
+            runStrokeItem.image = imgInfoDic[kCJImage];
+            runStrokeItem.isImage = YES;
         }
     }
     return runStrokeItem;
@@ -1232,9 +1231,12 @@ NSString * const kCJActiveBackgroundStrokeColorAttributeName = @"kCJActiveBackgr
                                    compareMaxNum(lastLocBounds.size.height,locBounds.size.height,YES));
                     }
                 }else if (!item.isLink && !_lastGlyphRunStrokeItem.isLink){
+                    
+                    //浮点数判断
+                    BOOL nextItem = (fabs((lastRunBounds.origin.x + lastRunBounds.size.width) - runBounds.origin.x)<=1e-6)?YES:NO;
                     //非点击链点，但是是需要合并的连续run
-                    if (sameColor && lineWidth == lastLineWidth && cornerRadius == lastCornerRadius &&
-                        lastRunBounds.origin.x + lastRunBounds.size.width == runBounds.origin.x) {
+                    if (sameColor && lineWidth == lastLineWidth && cornerRadius == lastCornerRadius && nextItem
+                        ) {
                         
                         needMerge = YES;
                         lastRunBounds = CGRectMake(compareMaxNum(lastRunBounds.origin.x,runBounds.origin.x,NO),
@@ -1541,17 +1543,19 @@ NSString * const kCJActiveBackgroundStrokeColorAttributeName = @"kCJActiveBackgr
                     [CATransaction flush];
                 }
             }else{
-                [self caculateCTRunCopySizeBlock:^(){
-                    //发生长按，显示放大镜
-                    CJGlyphRunStrokeItem *currentItem = [CJSelectBackView currentItem:point allRunItemArray:_allRunItemArray inset:0.5];
-                    if (currentItem) {
-                        [[CJSelectBackView instance] showMagnifyInCJLabel:self magnifyPoint:point runItem:currentItem hideViewBlock:nil];
-                    }else{
-                        if (CGRectContainsPoint(self.bounds, point)) {
-                            [[CJSelectBackView instance] showMagnifyInCJLabel:self magnifyPoint:point runItem:nil hideViewBlock:nil];
+                if (self.enableCopy) {
+                    [self caculateCTRunCopySizeBlock:^(){
+                        //发生长按，显示放大镜
+                        CJGlyphRunStrokeItem *currentItem = [CJSelectBackView currentItem:point allRunItemArray:_allRunItemArray inset:0.5];
+                        if (currentItem) {
+                            [[CJSelectBackView instance] showMagnifyInCJLabel:self magnifyPoint:point runItem:currentItem hideViewBlock:nil];
+                        }else{
+                            if (CGRectContainsPoint(self.bounds, point)) {
+                                [[CJSelectBackView instance] showMagnifyInCJLabel:self magnifyPoint:point runItem:nil hideViewBlock:nil];
+                            }
                         }
-                    }
-                }];
+                    }];
+                }
             }
             
             break;

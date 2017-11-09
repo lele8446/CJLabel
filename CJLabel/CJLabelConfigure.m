@@ -60,6 +60,43 @@ UIWindow * CJkeyWindow(){
 }
 
 @implementation CJLabelConfigure
+- (void)addAttributes:(id)attributes key:(NSString *)key {
+    NSMutableDictionary *attributesDic = [NSMutableDictionary dictionaryWithCapacity:3];
+    if (self.attributes) {
+        [attributesDic addEntriesFromDictionary:self.attributes];
+    }
+    if (attributes && key.length > 0) {
+        [attributesDic setObject:attributes forKey:key];
+        self.attributes = attributesDic;
+    }
+}
+
+- (void)removeAttributesForKey:(NSString *)key {
+    if (self.attributes && key.length > 0) {
+        NSMutableDictionary *attributes = [NSMutableDictionary dictionaryWithDictionary:self.attributes];
+        [attributes removeObjectForKey:key];
+        self.attributes = attributes;
+    }
+}
+
+- (void)addActiveAttributes:(id)activeAttributes key:(NSString *)key {
+    NSMutableDictionary *activeAttributesDic = [NSMutableDictionary dictionaryWithCapacity:3];
+    if (self.activeLinkAttributes) {
+        [activeAttributesDic addEntriesFromDictionary:self.activeLinkAttributes];
+    }
+    if (activeAttributes && key.length > 0) {
+        [activeAttributesDic setObject:activeAttributes forKey:key];
+        self.activeLinkAttributes = activeAttributesDic;
+    }
+}
+
+- (void)removeActiveLinkAttributesForKey:(NSString *)key {
+    if (self.activeLinkAttributes && key.length > 0) {
+        NSMutableDictionary *attributes = [NSMutableDictionary dictionaryWithDictionary:self.activeLinkAttributes];
+        [attributes removeObjectForKey:key];
+        self.activeLinkAttributes = attributes;
+    }
+}
 
 + (NSMutableAttributedString *)configureLinkAttributedString:(NSAttributedString *)attrStr
                                                     addImage:(id)image
@@ -375,6 +412,46 @@ UIWindow * CJkeyWindow(){
         [self getRangeArrayWithString:withString inString:tempString lastRange:curRange rangeArray:array];
         return array;
     }
+}
+
++ (BOOL)needMarkAttributesIdentifier:(NSDictionary *)attributes {
+    BOOL needMark = NO;
+    //背景色以及描边属性
+    UIColor *strokeColor = colorWithAttributeName(attributes, kCJBackgroundStrokeColorAttributeName);
+    if (!CJLabelIsNull(attributes[kCJLinkAttributesName]) && !isNotClearColor(strokeColor)) {
+        strokeColor = colorWithAttributeName(attributes[kCJLinkAttributesName], kCJBackgroundStrokeColorAttributeName);
+        if (strokeColor) {
+            needMark = YES;
+            return needMark;
+        }
+    }
+    UIColor *fillColor = colorWithAttributeName(attributes, kCJBackgroundFillColorAttributeName);
+    if (!CJLabelIsNull(attributes[kCJLinkAttributesName]) && !isNotClearColor(fillColor)) {
+        fillColor = colorWithAttributeName(attributes[kCJLinkAttributesName], kCJBackgroundFillColorAttributeName);
+        if (fillColor) {
+            needMark = YES;
+            return needMark;
+        }
+    }
+    //点击高亮背景色以及描边属性
+    UIColor *activeStrokeColor = colorWithAttributeName(attributes, kCJActiveBackgroundStrokeColorAttributeName);
+    if (!CJLabelIsNull(attributes[kCJActiveLinkAttributesName]) && !isNotClearColor(activeStrokeColor)) {
+        activeStrokeColor = colorWithAttributeName(attributes[kCJActiveLinkAttributesName], kCJActiveBackgroundStrokeColorAttributeName);
+        if (activeStrokeColor) {
+            needMark = YES;
+            return needMark;
+        }
+    }
+    
+    UIColor *activeFillColor = colorWithAttributeName(attributes, kCJActiveBackgroundFillColorAttributeName);
+    if (!CJLabelIsNull(attributes[kCJActiveLinkAttributesName]) && !isNotClearColor(activeFillColor)) {
+        activeFillColor = colorWithAttributeName(attributes[kCJActiveLinkAttributesName], kCJActiveBackgroundFillColorAttributeName);
+        if (activeFillColor) {
+            needMark = YES;
+            return needMark;
+        }
+    }
+    return needMark;
 }
 
 @end

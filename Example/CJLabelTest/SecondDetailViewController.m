@@ -6,30 +6,25 @@
 //  Copyright © 2017年 C.K.Lian. All rights reserved.
 //
 
-#import "DetailViewController.h"
+#import "SecondDetailViewController.h"
 #import "CJLabel.h"
+#import "Common.h"
 
-#define UIRGBColor(r,g,b,a) ([UIColor colorWithRed:r/255.0 green:g/255.0 blue:b/255.0 alpha:a])
-#define UIColorFromRGB(rgbValue) [UIColor colorWithRed:((float)((rgbValue & 0xFF0000) >> 16))/255.0 \
-                                                 green:((float)((rgbValue & 0xFF00) >> 8))/255.0 \
-                                                  blue:((float)(rgbValue & 0xFF))/255.0 alpha:1.0]
 
-@interface DetailViewController ()<UITextFieldDelegate>
+@interface SecondDetailViewController ()
 @property (nonatomic, weak) IBOutlet CJLabel *firstLabel;
 @property (nonatomic, strong) CJLabel *secondLabel;
 @property (nonatomic, strong) NSAttributedString *attStr;
 @end
 
-@implementation DetailViewController
+@implementation SecondDetailViewController
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    
     self.edgesForExtendedLayout = UIRectEdgeNone;
     self.automaticallyAdjustsScrollViewInsets = NO;
     
     self.firstLabel.numberOfLines = 0;
-    self.firstLabel.enableCopy = YES;
     
     NSMutableAttributedString *content = self.content;
     [self handleContent:content];
@@ -42,51 +37,48 @@
 
 - (void)handleContent:(NSMutableAttributedString *)content {
     /* 设置默认换行模式为：NSLineBreakByCharWrapping
-     * 当Label的宽度不够显示内容或图片的时候就自动换行, 不自动换行, 部分图片将会看不见
+     * 当Label的宽度不够显示内容或图片的时候就自动换行, 如果不自动换行, 超出一行的部分图片将不显示
      */
     NSMutableParagraphStyle *paragraph = [[NSMutableParagraphStyle alloc] init];
     paragraph.lineBreakMode = NSLineBreakByCharWrapping;
     paragraph.lineSpacing = 6;
-    
-    CJLabelConfigure *configure =
-    [CJLabel configureAttributes:@{NSForegroundColorAttributeName:[UIColor blackColor],
-                                   NSFontAttributeName:[UIFont boldSystemFontOfSize:16],
-                                   }
-                          isLink:NO
-            activeLinkAttributes:nil
-                       parameter:nil
-                  clickLinkBlock:^(CJLabelLinkModel *linkModel) {
-                      [self clickLink:linkModel isImage:NO];
-                  }
-                  longPressBlock:nil];
-    
     NSMutableAttributedString *attStr = content;
     [attStr addAttribute:NSParagraphStyleAttributeName value:paragraph range:NSMakeRange(0, attStr.length)];
-//    attStr = [CJLabel configureAttrString:attStr atRange:NSMakeRange(0, 3) configure:configure];
+    
     self.attStr = attStr;
+    
+    CJLabelConfigure *configure = [CJLabel configureAttributes:nil isLink:NO activeLinkAttributes:nil parameter:nil clickLinkBlock:nil longPressBlock:nil];
+    
     switch (self.index) {
         case 0:
         {
-            self.firstLabel.hidden = YES;
-            self.secondLabel = [[CJLabel alloc]initWithFrame:CGRectMake(10, 10, [[UIScreen mainScreen] bounds].size.width - 20, [[UIScreen mainScreen] bounds].size.height - 64 - 100)];
-            self.secondLabel.backgroundColor = UIColorFromRGB(0xf0f0de);
-            self.secondLabel.numberOfLines = 0;
-//            self.secondLabel.textInsets = UIEdgeInsetsMake(10, 15, 20, 0);
-            self.secondLabel.verticalAlignment = CJVerticalAlignmentBottom;
-            self.secondLabel.enableCopy = YES;
-//            self.secondLabel.enableCopy = NO;
-            [self.view addSubview:self.secondLabel];
+            //设置 CJLabel 不可点击
+            configure.isLink = NO;
+            attStr = [CJLabel configureAttrString:attStr withString:@"CJLabel" sameStringEnable:YES configure:configure];
             
-            configure.attributes = @{
-                                     NSForegroundColorAttributeName:[UIColor blueColor],
-                                     NSFontAttributeName:[UIFont boldSystemFontOfSize:26],
-                                     kCJBackgroundStrokeColorAttributeName:[UIColor orangeColor],
-                                     kCJBackgroundLineWidthAttributeName:@(2),
-                                     kCJBackgroundFillColorAttributeName:[UIColor lightGrayColor]
-                                     };
-//            attStr = [CJLabel configureAttrString:attStr withString:@"CJLabel" sameStringEnable:NO configure:configure];
+            //设置 `不同字体` 显示为粗体17的字号
+            configure.attributes = @{NSFontAttributeName:[UIFont boldSystemFontOfSize:18]};
+            attStr = [CJLabel configureAttrString:attStr withString:@"不同字体" sameStringEnable:NO configure:configure];
             
-            self.secondLabel.text = attStr;
+            //设置 `字体背景色` 填充背景色，以及填充区域圆角
+            configure.attributes = @{kCJBackgroundFillColorAttributeName:[UIColor colorWithWhite:0.5 alpha:1],kCJBackgroundLineCornerRadiusAttributeName:@(2)};
+//            configure.isLink = YES;
+            attStr = [CJLabel configureAttrString:attStr withString:@"字体背景色" sameStringEnable:NO configure:configure];
+            
+            //设置 `字体边框线` 边框线
+            configure.attributes = @{kCJBackgroundStrokeColorAttributeName:[UIColor orangeColor]};
+//            configure.isLink = YES;
+            attStr = [CJLabel configureAttrString:attStr withString:@"字体边框线" sameStringEnable:NO configure:configure];
+            
+            //指定位置插入图片
+            NSRange imgRange = [attStr.string rangeOfString:@"插入图片"];
+            [configure removeAttributesForKey:kCJBackgroundStrokeColorAttributeName];
+            attStr = [CJLabel insertImageAtAttrString:attStr image:@"CJLabel.png" imageSize:CGSizeMake(55, 45) atIndex:(imgRange.location+imgRange.length) imagelineAlignment:CJVerticalAlignmentBottom configure:configure];
+            
+            //设置内边距
+            self.firstLabel.textInsets = UIEdgeInsetsMake(10, 10, 10, 0);
+            self.firstLabel.attributedText = attStr;
+            self.firstLabel.enableCopy = YES;
         }
             break;
             
