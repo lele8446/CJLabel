@@ -28,7 +28,12 @@
 ##### CJLabel 已知 Bug
  
    `numberOfLines`大于0且小于实际`label.numberOfLines`，同时`verticalAlignment`不等于`CJContentVerticalAlignmentTop`时，文本显示位置有偏差。如下图所示:<br/>
-<img src="http://oz3eqyeso.bkt.clouddn.com/CJLabelBug.jpg" width="50%" />
+   ![](http://oz3eqyeso.bkt.clouddn.com/CJLabelBug.jpg)
+
+
+
+
+
 
 
 ## CJLabel引用
@@ -71,29 +76,18 @@ attStr = [CJLabel insertImageAtAttrString:attStr image:@"CJLabel.png" imageSize:
 //设置内边距
 self.label.textInsets = UIEdgeInsetsMake(10, 10, 10, 0);
 self.label.attributedText = attStr;
-  ```
-  
-  
-* `+ configureAttrString:atRange:configure:`
-根据指定NSRange配置富文本，可设置指定NSRange文本为可点击链点！！！<br/>
-```objective-c
-attStr = [CJLabel configureAttrString:attStr atRange:NSMakeRange(0, 3) configure:configure];
 ```
+* 垂直对齐
+ <center>
+ <img src="http://oz3eqyeso.bkt.clouddn.com/example1.gif" width="35%"/>
+ </center>
 
-* `+ configureAttrString:withString:sameStringEnable:configure:`
-对文本中跟withString相同的文字配置富文本，可设置指定的文字为可点击链点！！！<br/>
 ```objective-c
-attStr = [CJLabel configureAttrString:attStr
-                                       withString:@"CJLabel"
-                                 sameStringEnable:NO
-                                        configure:configure];
-```
-
-* 移除点击链点<br/>
-```objective-c
-- (void)removeLinkAtRange:(NSRange)range;
-
-- (void)removeAllLink;
+//设置垂直对齐方式
+self.label.verticalAlignment = CJVerticalAlignmentCenter;
+self.label.text = self.attStr;
+//支持选择复制
+self.label.enableCopy = YES;
 ```
 
 ## 版本说明
