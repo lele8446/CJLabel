@@ -59,27 +59,19 @@ CGSize size = [CJLabel sizeWithAttributedString:str withConstraints:CGSizeMake(3
 * 设置富文本展示
 ```objective-c
 //初始化配置
-            CJLabelConfigure *configure = [CJLabel configureAttributes:nil isLink:NO activeLinkAttributes:nil parameter:nil clickLinkBlock:nil longPressBlock:nil];
-            //设置 'CJLabel' 字符不可点击
-            configure.isLink = NO;
-            attStr = [CJLabel configureAttrString:attStr withString:@"CJLabel" sameStringEnable:YES configure:configure];
-            //设置 `不同字体` 显示为粗体17的字号
-            configure.attributes = @{NSFontAttributeName:[UIFont boldSystemFontOfSize:18]};
-            attStr = [CJLabel configureAttrString:attStr withString:@"不同字体" sameStringEnable:NO configure:configure];
-            //设置 `字体背景色` 填充背景色，以及填充区域圆角
-            configure.attributes = @{kCJBackgroundFillColorAttributeName:[UIColor colorWithWhite:0.5 alpha:1],kCJBackgroundLineCornerRadiusAttributeName:@(0)};
-            attStr = [CJLabel configureAttrString:attStr withString:@"字体背景色" sameStringEnable:NO configure:configure];
-            //设置 `字体边框线` 边框线
-            configure.attributes = @{kCJBackgroundStrokeColorAttributeName:[UIColor orangeColor]};
-            attStr = [CJLabel configureAttrString:attStr withString:@"字体边框线" sameStringEnable:NO configure:configure];
-            //指定位置插入图片
-            NSRange imgRange = [attStr.string rangeOfString:@"插入图片"];
-            [configure removeAttributesForKey:kCJBackgroundStrokeColorAttributeName];
-            attStr = [CJLabel insertImageAtAttrString:attStr image:@"CJLabel.png" imageSize:CGSizeMake(55, 45) atIndex:(imgRange.location+imgRange.length) imagelineAlignment:CJVerticalAlignmentBottom configure:configure];
-            //设置内边距
-            self.label.textInsets = UIEdgeInsetsMake(10, 10, 10, 0);
-            self.label.attributedText = attStr;
-            self.attStr = attStr;
+CJLabelConfigure *configure = [CJLabel configureAttributes:nil isLink:NO activeLinkAttributes:nil parameter:nil clickLinkBlock:nil longPressBlock:nil];
+//设置配置属性
+configure.attributes = @{NSFontAttributeName:[UIFont boldSystemFontOfSize:18]};
+//设置指定字符属性
+attStr = [CJLabel configureAttrString:attStr withString:@"不同字体" sameStringEnable:NO configure:configure];
+NSRange imgRange = [attStr.string rangeOfString:@"插入图片"];
+//移除指定属性
+[configure removeAttributesForKey:kCJBackgroundStrokeColorAttributeName];
+//指定位置插入图片
+attStr = [CJLabel insertImageAtAttrString:attStr image:@"CJLabel.png" imageSize:CGSizeMake(55, 45) atIndex:(imgRange.location+imgRange.length) imagelineAlignment:CJVerticalAlignmentBottom configure:configure];
+//设置内边距
+self.label.textInsets = UIEdgeInsetsMake(10, 10, 10, 0);
+self.label.attributedText = attStr;
   ```
   
 * `+ configureAttrString:atRange:configure:`
