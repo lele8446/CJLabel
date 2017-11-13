@@ -60,7 +60,6 @@ CGSize size = [CJLabel sizeWithAttributedString:str withConstraints:CGSizeMake(3
 <center>
  <img src="http://oz3eqyeso.bkt.clouddn.com/example0.png" width="50%"/>
  </center>
-
 ```objective-c
 //初始化配置
 CJLabelConfigure *configure = [CJLabel configureAttributes:nil isLink:NO activeLinkAttributes:nil parameter:nil clickLinkBlock:nil longPressBlock:nil];
@@ -81,11 +80,54 @@ self.label.attributedText = attStr;
  <center>
  <img src="http://oz3eqyeso.bkt.clouddn.com/example1.gif" width="35%"/>
  </center>
-
 ```objective-c
 //设置垂直对齐方式
 self.label.verticalAlignment = CJVerticalAlignmentCenter;
 self.label.text = self.attStr;
+//支持选择复制
+self.label.enableCopy = YES;
+```
+* 设置文字、图片点击链点
+ <center>
+ <img src="http://oz3eqyeso.bkt.clouddn.com/example2.gif" width="35%"/>
+ </center>
+```objective-c
+//设置点击链点属性
+configure.attributes = @{NSForegroundColorAttributeName:[UIColor blueColor]};
+//设置点击高亮属性
+configure.activeLinkAttributes = @{NSForegroundColorAttributeName:[UIColor redColor]};
+//链点自定义参数
+configure.parameter = @"参数为字符串";
+//点击回调（也可通过设置self.label.delegate = self代理，返回点击回调事件）
+configure.clickLinkBlock = ^(CJLabelLinkModel *linkModel) {
+//do something
+};
+//长按回调
+configure.longPressBlock = ^(CJLabelLinkModel *linkModel) {
+//do something
+};
+//设置为可点击链点
+configure.isLink = YES;
+//设置点击链点
+attStr = [CJLabel configureAttrString:attStr
+                           withString:@"CJLabel"
+                     sameStringEnable:YES
+                            configure:configure];
+//设置图片点击链点属性
+NSRange imageRange = [attStr.string rangeOfString:@"图片"];
+CJLabelConfigure *imgConfigure =
+[CJLabel configureAttributes:@{kCJBackgroundStrokeColorAttributeName:[UIColor redColor]}
+                      isLink:YES
+            activeLinkAttributes:@{kCJActiveBackgroundStrokeColorAttributeName:[UIColor lightGrayColor]}
+                       parameter:@"图片参数"
+                  clickLinkBlock:^(CJLabelLinkModel *linkModel){
+                      [self clickLink:linkModel isImage:YES];
+                  }
+                  longPressBlock:^(CJLabelLinkModel *linkModel){
+                      [self clicklongPressLink:linkModel isImage:YES];
+                  }];
+attStr = [CJLabel insertImageAtAttrString:attStr image:@"CJLabel.png" imageSize:CGSizeMake(45, 35) atIndex:(imageRange.location+imageRange.length) imagelineAlignment:verticalAlignment configure:imgConfigure];
+self.label.attributedText = attStr;
 //支持选择复制
 self.label.enableCopy = YES;
 ```
