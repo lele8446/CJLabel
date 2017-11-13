@@ -1,74 +1,102 @@
 # CJLabel
 
-***注意***
+`CJLabel`继承自`UILabel`，在支持`UILabel`所有属性的基础上，还提供富文本展示、图文混排、自定义点击链点设置、长按（双击）唤起`UIMenuController`选择复制文本等功能。
 
-**V3.0.0** 版本引入CJLabelConfigure类，优化了NSAttributedString的设置，旧的配置API不再支持。相关调用请参照以下相关方法<br/>
-`+ initWithImageName:imageSize:imagelineAlignment:configure:`<br/>
-`+ initWithString:configure:`<br/>
-`+ initWithAttributedString:strIdentifier:configure:`<br/>
-
-
-点击链点效果图：<br/>
-![点击链点](http://7xnrwl.com1.z0.glb.clouddn.com/CJLabel1.gif)
-![点击链点](http://7xnrwl.com1.z0.glb.clouddn.com/CJLabel2.gif)
-
-## 功能简介
-
- * CJLabel 继承自 UILabel，其文本绘制基于NSAttributedString实现，同时增加了图文混排、富文本展示以及添加自定义点击链点并设置点击链点文本属性的功能。
- *
- * CJLabel 与 UILabel 不同点：
- *
-   1. `- init` 不可直接调用init初始化，请使用`initWithFrame:` 或 `initWithCoder:`，以便完成相关初始属性设置
- 
-   2. `attributedText` 与 `text` 均可设置文本，注意 [self setText:text]中 text类型只能是NSAttributedString或NSString
- 
-   3. `NSAttributedString`不再通过`NSTextAttachment`显示图片（使用`NSTextAttachment`不会起效），请调用
-      `+ initWithImageName:imageSize:imagelineAlignment:configure:`或者
-      `+ insertImageAtAttrString:imageName:imageSize:imagelineAlignment:atIndex:configure:`方法添加图片
- 
-   4. 新增`extendsLinkTouchArea`， 设置是否加大点击响应范围，类似于UIWebView的链点点击效果
- 
-   5. 新增`shadowRadius`， 设置文本阴影模糊半径，可与 `shadowColor`、`shadowOffset` 配合设置，注意改设置将对全局文本起效
- 
-   6. 新增`textInsets` 设置文本内边距
- 
-   7. 新增`verticalAlignment` 设置垂直方向的文本对齐方式
+## 特性简介
+   * 禁止使用`-init`初始化！！<br/>请调用`-initWithFrame:`或者从nib初始化
    
-   8. 新增`delegate` 点击链点代理
- *
- * CJLabel 已知bug：
- *
-   `numberOfLines`大于0且小于实际`label.numberOfLines`，同时`verticalAlignment`不等于`CJContentVerticalAlignmentTop`时，文本显示位置有偏差
+   * `enableCopy` 默认 NO，开启（YES）后长按或者双击可唤起`UIMenuController`进行选择复制文本的操作，类似`UITextView`的选择、全选、复制效果
+   
+   * `attributedText` 与 `text` 均可设置文本，注意`[self setText:text]`中 text类型只能是NSAttributedString或NSString
+ 
+   * 不支持`NSAttachmentAttributeName``NSTextAttachment`！！<br/>显示图片请调用:<br/>
+   `+ initWithImage:imageSize:imagelineAlignment:configure:`或者<br/>
+   `+ insertImageAtAttrString:image:imageSize:atIndex:imagelineAlignment:configure:`方法初始化`NSAttributedString`后显示
+ 
+   * 新增`extendsLinkTouchArea`设置是否扩大链点点击识别范围 
+   
+   * 新增`shadowRadius`设置文本阴影模糊半径，可与 `shadowColor``shadowOffset` 配合设置，注意该设置将对全局文本起效
+ 
+   * 新增`textInsets` 设置文本内边距
+ 
+   * 新增`verticalAlignment` 设置垂直方向的文本对齐方式。注意与显示图片时候的`imagelineAlignment`作区分，`self.verticalAlignment`对应的是整体文本在垂直方向的对齐方式，而`imagelineAlignment`只对图片所在行的垂直对齐方式有效
+   
+   * 新增`delegate` 点击链点代理
+   
+   * 新增`kCJBackgroundFillColorAttributeName` 背景填充颜色，值为UIColor，默认 `nil`。
+ 该属性优先级低于`NSBackgroundColorAttributeName`如果设置`NSBackgroundColorAttributeName`会忽略`kCJBackgroundFillColorAttributeName`的设置
+ 
+   * 新增`kCJBackgroundStrokeColorAttributeName ` 背景边框线颜色，值为UIColor，默认 `nil`
+ 
+   * 新增`kCJBackgroundLineWidthAttributeName ` 背景边框线宽度，值为NSNumber，默认 `1.0f`
+
+   * 新增`kCJBackgroundLineCornerRadiusAttributeName ` 背景边框线圆角弧度，值为NSNumber，默认 `5.0f`
+
+   * 新增`kCJActiveBackgroundFillColorAttributeName ` 点击时候的背景填充颜色，值为UIColor，默认 `nil`。
+ 该属性优先级低于`NSBackgroundColorAttributeName`如果设置`NSBackgroundColorAttributeName`会忽略`kCJActiveBackgroundFillColorAttributeName`的设置
+
+   * 新增`kCJActiveBackgroundStrokeColorAttributeName ` 点击时候的背景边框线颜色，值为UIColor，默认 `nil`
+   
+   * 支持添加自定义样式、可点击（长按）的文本点击链点
+   
+   * 支持 Interface Builder
+
+
+##### CJLabel 已知 Bug
+ 
+   `numberOfLines`大于0且小于实际`label.numberOfLines`，同时`verticalAlignment`不等于`CJContentVerticalAlignmentTop`时，文本显示位置有偏差。如下图所示:<br/>
+   ![](http://oz3eqyeso.bkt.clouddn.com/LabelBug.jpg)
+
+
+
+
+
+
 
 ## CJLabel引用
-### 一、直接导入
-下载demo，将CJLabel文件夹导入项目，引用头文件`#import "CJLabel.h"`
-### 二、CocoaPods安装
-* Podfile<br/>
+##### 1. 直接导入
+下载demo，将CJLabel文件夹导入项目，引用头文件 `#import "CJLabel.h"`
+##### 2. CocoaPods安装
 ```ruby
-platform :ios, '7.0'
-target 'CJLabelDemo' do
-   pod 'CJLabel', '~> 3.0.0'
-end
+pod 'CJLabel', '~> 3.0.0'
+
 ```
 
-## 若干API介绍
-* `+ sizeWithAttributedString:withConstraints:limitedToNumberOfLines:`
-  计算指定NSAttributedString的size大小
+## 用法
+* 根据NSAttributedString计算CJLabel的size大小
+  
 ```objective-c
-CGSize size = [CJLabel sizeWithAttributedString:str withConstraints:CGSizeMake(320, CGFLOAT_MAX) limitedToNumberOfLines:0]
+CGSize size = [CJLabel sizeWithAttributedString:str withConstraints:CGSizeMake(320, CGFLOAT_MAX) limitedToNumberOfLines:0];
+```
+* 指定内边距以及限定行数计算CJLabel的size大小
+```objective-c
+CGSize size = [CJLabel sizeWithAttributedString:str withConstraints:CGSizeMake(320, CGFLOAT_MAX) limitedToNumberOfLines:0 textInsets:3];
   ```
   
-* `+ insertImageAtAttrString:imageName:imageSize:imagelineAlignment:atIndex:configure:` 
-插入图片链点
-在指定位置插入图片，插入图片为可点击的链点！！！返回插入图片后的NSMutableAttributedString（图片占位符所占的NSRange={loc,1}）
+* 设置富文本展示
 ```objective-c
-attStr = [CJLabel insertImageAtAttrString:attStr
-                                            imageName:@"CJLabel.png"
-                                            imageSize:CGSizeMake(120, 85)
-                                              atIndex:3
-                                   imagelineAlignment:CJVerticalAlignmentBottom
-                                            configure:imgConfigure];
+//初始化配置
+            CJLabelConfigure *configure = [CJLabel configureAttributes:nil isLink:NO activeLinkAttributes:nil parameter:nil clickLinkBlock:nil longPressBlock:nil];
+            //设置 'CJLabel' 字符不可点击
+            configure.isLink = NO;
+            attStr = [CJLabel configureAttrString:attStr withString:@"CJLabel" sameStringEnable:YES configure:configure];
+            //设置 `不同字体` 显示为粗体17的字号
+            configure.attributes = @{NSFontAttributeName:[UIFont boldSystemFontOfSize:18]};
+            attStr = [CJLabel configureAttrString:attStr withString:@"不同字体" sameStringEnable:NO configure:configure];
+            //设置 `字体背景色` 填充背景色，以及填充区域圆角
+            configure.attributes = @{kCJBackgroundFillColorAttributeName:[UIColor colorWithWhite:0.5 alpha:1],kCJBackgroundLineCornerRadiusAttributeName:@(0)};
+            attStr = [CJLabel configureAttrString:attStr withString:@"字体背景色" sameStringEnable:NO configure:configure];
+            //设置 `字体边框线` 边框线
+            configure.attributes = @{kCJBackgroundStrokeColorAttributeName:[UIColor orangeColor]};
+            attStr = [CJLabel configureAttrString:attStr withString:@"字体边框线" sameStringEnable:NO configure:configure];
+            //指定位置插入图片
+            NSRange imgRange = [attStr.string rangeOfString:@"插入图片"];
+            [configure removeAttributesForKey:kCJBackgroundStrokeColorAttributeName];
+            attStr = [CJLabel insertImageAtAttrString:attStr image:@"CJLabel.png" imageSize:CGSizeMake(55, 45) atIndex:(imgRange.location+imgRange.length) imagelineAlignment:CJVerticalAlignmentBottom configure:configure];
+            //设置内边距
+            self.label.textInsets = UIEdgeInsetsMake(10, 10, 10, 0);
+            self.label.attributedText = attStr;
+            self.attStr = attStr;
   ```
   
 * `+ configureAttrString:atRange:configure:`
@@ -117,6 +145,13 @@ attStr = [CJLabel configureAttrString:attStr
   
 * ***V1.0.0***<br/>
   注意：文本内存在相同链点时只有首次出现的链点能够响应点击
+  
+  ***注意***
+
+**V3.0.0** 版本引入CJLabelConfigure类，优化了NSAttributedString的设置，旧的配置API不再支持。相关调用请参照以下相关方法<br/>
+`+ initWithImageName:imageSize:imagelineAlignment:configure:`<br/>
+`+ initWithString:configure:`<br/>
+`+ initWithAttributedString:strIdentifier:configure:`<br/>
 
 ## 相关介绍
 [CJLabel图文混排二 —— UILabel插入图片以及精确链点点击](http://www.jianshu.com/p/9a70533d217e)
