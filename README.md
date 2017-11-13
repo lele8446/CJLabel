@@ -103,11 +103,11 @@ configure.activeLinkAttributes = @{NSForegroundColorAttributeName:[UIColor redCo
 configure.parameter = @"参数为字符串";
 //点击回调（也可通过设置self.label.delegate = self代理，返回点击回调事件）
 configure.clickLinkBlock = ^(CJLabelLinkModel *linkModel) {
-//do something
+   //do something
 };
 //长按回调
 configure.longPressBlock = ^(CJLabelLinkModel *linkModel) {
-//do something
+   //do something
 };
 //设置为可点击链点
 configure.isLink = YES;
@@ -121,14 +121,14 @@ NSRange imageRange = [attStr.string rangeOfString:@"图片"];
 CJLabelConfigure *imgConfigure =
 [CJLabel configureAttributes:@{kCJBackgroundStrokeColorAttributeName:[UIColor redColor]}
                       isLink:YES
-            activeLinkAttributes:@{kCJActiveBackgroundStrokeColorAttributeName:[UIColor lightGrayColor]}
-                       parameter:@"图片参数"
-                  clickLinkBlock:^(CJLabelLinkModel *linkModel){
-                      [self clickLink:linkModel isImage:YES];
-                  }
-                  longPressBlock:^(CJLabelLinkModel *linkModel){
-                      [self clicklongPressLink:linkModel isImage:YES];
-                  }];
+         activeLinkAttributes:@{kCJActiveBackgroundStrokeColorAttributeName:[UIColor lightGrayColor]}
+                    parameter:@"图片参数"
+               clickLinkBlock:^(CJLabelLinkModel *linkModel){
+                   [self clickLink:linkModel isImage:YES];
+               }
+               longPressBlock:^(CJLabelLinkModel *linkModel){
+                   [self clicklongPressLink:linkModel isImage:YES];
+               }];
 attStr = [CJLabel insertImageAtAttrString:attStr image:@"CJLabel.png" imageSize:CGSizeMake(45, 35) atIndex:(imageRange.location+imageRange.length) imagelineAlignment:verticalAlignment configure:imgConfigure];
 self.label.attributedText = attStr;
 //支持选择复制
