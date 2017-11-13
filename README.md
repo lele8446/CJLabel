@@ -73,7 +73,7 @@ CGSize size = [CJLabel sizeWithAttributedString:str withConstraints:CGSizeMake(3
             self.label.textInsets = UIEdgeInsetsMake(10, 10, 10, 0);
             self.label.attributedText = attStr;
   ```
-  ![](http://oz3eqyeso.bkt.clouddn.com/%E5%AF%8C%E6%96%87%E6%9C%AC%E5%B1%95%)
+  ![](http://oz3eqyeso.bkt.clouddn.com/example0.png)
   
   
 * `+ configureAttrString:atRange:configure:`
