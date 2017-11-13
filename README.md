@@ -59,23 +59,23 @@ CGSize size = [CJLabel sizeWithAttributedString:str withConstraints:CGSizeMake(3
 * 设置富文本展示
 <center>
  <img src="http://oz3eqyeso.bkt.clouddn.com/example0.png" width="50%"/>
- 示例一：富文本展示
  </center>
+
 ```objective-c
 //初始化配置
-            CJLabelConfigure *configure = [CJLabel configureAttributes:nil isLink:NO activeLinkAttributes:nil parameter:nil clickLinkBlock:nil longPressBlock:nil];
-            //设置配置属性
-           configure.attributes = @{NSFontAttributeName:[UIFont boldSystemFontOfSize:18]};
-           //设置指定字符属性
-            attStr = [CJLabel configureAttrString:attStr withString:@"不同字体" sameStringEnable:NO configure:configure];
-            NSRange imgRange = [attStr.string rangeOfString:@"插入图片"];
-            //移除指定属性
-            [configure removeAttributesForKey:kCJBackgroundStrokeColorAttributeName];
-            //指定位置插入图片
-            attStr = [CJLabel insertImageAtAttrString:attStr image:@"CJLabel.png" imageSize:CGSizeMake(55, 45) atIndex:(imgRange.location+imgRange.length) imagelineAlignment:CJVerticalAlignmentBottom configure:configure];
-            //设置内边距
-            self.label.textInsets = UIEdgeInsetsMake(10, 10, 10, 0);
-            self.label.attributedText = attStr;
+CJLabelConfigure *configure = [CJLabel configureAttributes:nil isLink:NO activeLinkAttributes:nil parameter:nil clickLinkBlock:nil longPressBlock:nil];
+//设置配置属性
+configure.attributes = @{NSFontAttributeName:[UIFont boldSystemFontOfSize:18]};
+//设置指定字符属性
+attStr = [CJLabel configureAttrString:attStr withString:@"不同字体" sameStringEnable:NO configure:configure];
+NSRange imgRange = [attStr.string rangeOfString:@"插入图片"];
+//移除指定属性
+[configure removeAttributesForKey:kCJBackgroundStrokeColorAttributeName];
+//指定位置插入图片
+attStr = [CJLabel insertImageAtAttrString:attStr image:@"CJLabel.png" imageSize:CGSizeMake(55, 45) atIndex:(imgRange.location+imgRange.length) imagelineAlignment:CJVerticalAlignmentBottom configure:configure];
+//设置内边距
+self.label.textInsets = UIEdgeInsetsMake(10, 10, 10, 0);
+self.label.attributedText = attStr;
   ```
   
   
