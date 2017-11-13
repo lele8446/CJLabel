@@ -60,6 +60,7 @@ CGSize size = [CJLabel sizeWithAttributedString:str withConstraints:CGSizeMake(3
 <center>
  <img src="http://oz3eqyeso.bkt.clouddn.com/example0.png" width="50%"/>
  </center>
+ 
 ```objective-c
 //初始化配置
 CJLabelConfigure *configure = [CJLabel configureAttributes:nil isLink:NO activeLinkAttributes:nil parameter:nil clickLinkBlock:nil longPressBlock:nil];
@@ -80,6 +81,7 @@ self.label.attributedText = attStr;
  <center>
  <img src="http://oz3eqyeso.bkt.clouddn.com/example1.gif" width="35%"/>
  </center>
+ 
 ```objective-c
 //设置垂直对齐方式
 self.label.verticalAlignment = CJVerticalAlignmentCenter;
@@ -91,6 +93,7 @@ self.label.enableCopy = YES;
  <center>
  <img src="http://oz3eqyeso.bkt.clouddn.com/example2.gif" width="35%"/>
  </center>
+ 
 ```objective-c
 //设置点击链点属性
 configure.attributes = @{NSForegroundColorAttributeName:[UIColor blueColor]};
