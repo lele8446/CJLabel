@@ -252,7 +252,7 @@ typedef struct CJCTLineVerticalLayout CJCTLineVerticalLayout;
 /**
  选择复制时候的操作视图
  CJSelectBackView 在 window 层，全局只有一个
- CJMagnifierView（放大镜）、CJSelectView（大头针）、CJSelectTextRangeView（填充背景色的view）都在 CJSelectBackView上面
+ CJSelectTextRangeView（选中填充背景色的view）在 CJSelectBackView上，CJMagnifierView（放大镜）则在window上
  */
 @interface CJSelectBackView : UIView
 @property (nonatomic, strong) CJMagnifierView *magnifierView;//放大镜
@@ -287,8 +287,7 @@ typedef struct CJCTLineVerticalLayout CJCTLineVerticalLayout;
  */
 - (void)showMagnifyInCJLabel:(CJLabel *)label
                 magnifyPoint:(CGPoint)point
-                     runItem:(CJGlyphRunStrokeItem *)runItem
-               hideViewBlock:(void(^)(void))hideViewBlock;
+                     runItem:(CJGlyphRunStrokeItem *)runItem;
 
 /**
  隐藏选择复制相关的view
@@ -444,4 +443,12 @@ static inline BOOL isSameColor(UIColor *color1, UIColor *color2){
     return same;
 }
 
+static inline UIWindow * CJkeyWindow() {
+    UIApplication *app = [UIApplication sharedApplication];
+    if ([app.delegate respondsToSelector:@selector(window)]) {
+        return [app.delegate window];
+    } else {
+        return [app keyWindow];
+    }
+}
 

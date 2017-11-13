@@ -50,15 +50,6 @@ CGFloat RunDelegateGetWidthCallback(void * refCon) {
     return [(NSNumber *)[(__bridge NSDictionary *)refCon objectForKey:kCJImageWidth] floatValue];
 }
 
-UIWindow * CJkeyWindow(){
-    UIApplication *app = [UIApplication sharedApplication];
-    if ([app.delegate respondsToSelector:@selector(window)]) {
-        return [app.delegate window];
-    } else {
-        return [app keyWindow];
-    }
-}
-
 @implementation CJLabelConfigure
 - (void)addAttributes:(id)attributes key:(NSString *)key {
     NSMutableDictionary *attributesDic = [NSMutableDictionary dictionaryWithCapacity:3];
@@ -904,7 +895,6 @@ typedef NS_ENUM(NSInteger, CJSelectViewAction) {
 - (void)showMagnifyInCJLabel:(CJLabel *)label
                 magnifyPoint:(CGPoint)point
                      runItem:(CJGlyphRunStrokeItem *)runItem
-               hideViewBlock:(void(^)(void))hideViewBlock
 {
     self.label = label;
     self.attributedText = label.attributedText;
@@ -916,7 +906,6 @@ typedef NS_ENUM(NSInteger, CJSelectViewAction) {
     self.magnifierView.hidden = NO;
     [CJkeyWindow() addSubview:self.magnifierView];
     [self updateMagnifyPoint:point item:runItem];
-    self.hideViewBlock = hideViewBlock;
 }
 #pragma mark - 显示选择视图
 - (void)showSelectViewInCJLabel:(CJLabel *)label

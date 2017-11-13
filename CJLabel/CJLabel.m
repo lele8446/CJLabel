@@ -1495,9 +1495,22 @@ NSString * const kCJActiveBackgroundStrokeColorAttributeName = @"kCJActiveBackgr
             [self caculateCTRunCopySizeBlock:^(){
                 CJGlyphRunStrokeItem *currentItem = [CJSelectBackView currentItem:point allRunItemArray:_allRunItemArray inset:1];
                 if (currentItem) {
+                    
+                    UIViewController *topVC = [self topViewController];
+                    UINavigationController *navCtr = nil;
+                    BOOL popGestureEnable = NO;
+                    if (topVC.navigationController) {
+                        navCtr = topVC.navigationController;
+                        popGestureEnable = navCtr.interactivePopGestureRecognizer.enabled;
+                        navCtr.interactivePopGestureRecognizer.enabled = NO;
+                    }
+                    
                     //唤起 选择复制视图
                     [[CJSelectBackView instance]showSelectViewInCJLabel:self atPoint:point runItem:[currentItem copy] maxLineWidth:_lineVerticalMaxWidth allCTLineVerticalArray:_CTLineVerticalLayoutArray allRunItemArray:_allRunItemArray hideViewBlock:^(){
                         self.caculateCopySize = NO;
+                        if (navCtr) {
+                            navCtr.interactivePopGestureRecognizer.enabled = popGestureEnable;
+                        }
                     }];
                 }
             }];
@@ -1548,10 +1561,10 @@ NSString * const kCJActiveBackgroundStrokeColorAttributeName = @"kCJActiveBackgr
                         //发生长按，显示放大镜
                         CJGlyphRunStrokeItem *currentItem = [CJSelectBackView currentItem:point allRunItemArray:_allRunItemArray inset:0.5];
                         if (currentItem) {
-                            [[CJSelectBackView instance] showMagnifyInCJLabel:self magnifyPoint:point runItem:currentItem hideViewBlock:nil];
+                            [[CJSelectBackView instance] showMagnifyInCJLabel:self magnifyPoint:point runItem:currentItem];
                         }else{
                             if (CGRectContainsPoint(self.bounds, point)) {
-                                [[CJSelectBackView instance] showMagnifyInCJLabel:self magnifyPoint:point runItem:nil hideViewBlock:nil];
+                                [[CJSelectBackView instance] showMagnifyInCJLabel:self magnifyPoint:point runItem:nil];
                             }
                         }
                     }];
@@ -1575,10 +1588,25 @@ NSString * const kCJActiveBackgroundStrokeColorAttributeName = @"kCJActiveBackgr
             if (self.enableCopy) {
                 CJGlyphRunStrokeItem *currentItem = [CJSelectBackView currentItem:point allRunItemArray:_allRunItemArray inset:1];
                 if (currentItem) {
+                    
+                    UIViewController *topVC = [self topViewController];
+                    UINavigationController *navCtr = nil;
+                    BOOL popGestureEnable = NO;
+                    if (topVC.navigationController) {
+                        navCtr = topVC.navigationController;
+                        popGestureEnable = navCtr.interactivePopGestureRecognizer.enabled;
+                        navCtr.interactivePopGestureRecognizer.enabled = NO;
+                    }
+                    
                     //唤起 选择复制视图
                     [[CJSelectBackView instance]showSelectViewInCJLabel:self atPoint:point runItem:[currentItem copy] maxLineWidth:_lineVerticalMaxWidth allCTLineVerticalArray:_CTLineVerticalLayoutArray allRunItemArray:_allRunItemArray hideViewBlock:^(){
                         self.caculateCopySize = NO;
+                        if (navCtr) {
+                            navCtr.interactivePopGestureRecognizer.enabled = popGestureEnable;
+                        }
                     }];
+                }else{
+                    [[CJSelectBackView instance] hideView];
                 }
             }
             break;
@@ -1590,10 +1618,10 @@ NSString * const kCJActiveBackgroundStrokeColorAttributeName = @"kCJActiveBackgr
                 //发生长按，显示放大镜
                 CJGlyphRunStrokeItem *currentItem = [CJSelectBackView currentItem:point allRunItemArray:_allRunItemArray inset:1];
                 if (currentItem) {
-                    [[CJSelectBackView instance] showMagnifyInCJLabel:self magnifyPoint:point runItem:currentItem hideViewBlock:nil];
+                    [[CJSelectBackView instance] showMagnifyInCJLabel:self magnifyPoint:point runItem:currentItem];
                 }else{
                     if (CGRectContainsPoint(self.bounds, point)) {
-                        [[CJSelectBackView instance] showMagnifyInCJLabel:self magnifyPoint:point runItem:nil hideViewBlock:nil];
+                        [[CJSelectBackView instance] showMagnifyInCJLabel:self magnifyPoint:point runItem:nil];
                     }
                 }
             }
@@ -1612,6 +1640,26 @@ NSString * const kCJActiveBackgroundStrokeColorAttributeName = @"kCJActiveBackgr
         [manager setValue:@(YES) forKey:@"caculateSizeOnly"];
     });
     return manager;
+}
+
+- (UIViewController *)topViewController {
+    UIViewController *resultVC = nil;
+    resultVC = [self _topViewController:[CJkeyWindow() rootViewController]];
+    while (resultVC.presentedViewController) {
+        resultVC = [self _topViewController:resultVC.presentedViewController];
+    }
+    return resultVC;
+}
+
+- (UIViewController *)_topViewController:(UIViewController *)vc {
+    if ([vc isKindOfClass:[UINavigationController class]]) {
+        return [self _topViewController:[(UINavigationController *)vc topViewController]];
+    } else if ([vc isKindOfClass:[UITabBarController class]]) {
+        return [self _topViewController:[(UITabBarController *)vc selectedViewController]];
+    } else {
+        return vc;
+    }
+    return nil;
 }
 
 #pragma mark - Public Method
