@@ -66,6 +66,7 @@ NSString * const kCJActiveBackgroundStrokeColorAttributeName = @"kCJActiveBackgr
     CGRect _insetRect;//实际绘制文本区域大小
     NSMutableArray <CJGlyphRunStrokeItem *>*_allRunItemArray;//enableCopy=YES时，包含所有CTRun信息的数组
     CGFloat _lineVerticalMaxWidth;//每一行文字中的最大宽度
+    BOOL _afterLongPressEnd;//用于判断长按复制判断
 }
 
 
@@ -130,6 +131,15 @@ NSString * const kCJActiveBackgroundStrokeColorAttributeName = @"kCJActiveBackgr
     _delegate = nil;
 }
 
+- (void)setVerticalAlignment:(CJLabelVerticalAlignment)verticalAlignment {
+    _verticalAlignment = verticalAlignment;
+    [self setNeedsFramesetter];
+    [_allRunItemArray removeAllObjects];
+    [self setNeedsDisplay];
+    //立即刷新界面
+    [CATransaction flush];
+}
+
 - (void)setEnableCopy:(BOOL)enableCopy {
     _enableCopy = enableCopy;
     if (_enableCopy) {
@@ -137,6 +147,12 @@ NSString * const kCJActiveBackgroundStrokeColorAttributeName = @"kCJActiveBackgr
         self.doubleTapGes.numberOfTapsRequired = 2;
         self.doubleTapGes.delegate = self;
         [self addGestureRecognizer:self.doubleTapGes];
+        
+        if (_allRunItemArray.count == 0) {
+            self.caculateCopySize = YES;
+            self.attributedText = self.attributedText;
+        }
+        
     }
 }
 
@@ -212,13 +228,9 @@ NSString * const kCJActiveBackgroundStrokeColorAttributeName = @"kCJActiveBackgr
                 [attText removeAttribute:kCJLinkRangeAttributesName range:range];
             }
             
-            //当text包含图片，且对齐方式不是底部对齐时，标记拆分每个CTRun，以便在绘制时候能够准确实现居中、居上对齐
+            //当text包含图片，标记拆分每个CTRun，以便在绘制时候能够准确实现居中、居上、居下对齐
             NSDictionary *imgInfoDic = attrs[kCJImageAttributeName];
-            CJLabelVerticalAlignment imageVerticalAlignment = CJVerticalAlignmentBottom;
             if (!CJLabelIsNull(imgInfoDic)) {
-                imageVerticalAlignment = [imgInfoDic[kCJImageLineVerticalAlignment] integerValue];
-            }
-            if (imageVerticalAlignment != CJVerticalAlignmentBottom) {
                 needEnumerateAllCharacter = YES;
             }
         }];
@@ -247,6 +259,7 @@ NSString * const kCJActiveBackgroundStrokeColorAttributeName = @"kCJActiveBackgr
                                  range:substringRange];
                  index++;
              }];
+            [_allRunItemArray removeAllObjects];
         }
     }
     
@@ -535,7 +548,11 @@ NSString * const kCJActiveBackgroundStrokeColorAttributeName = @"kCJActiveBackgr
         _CTLineVerticalLayoutArray = [self allCTLineVerticalLayoutArray:lines origins:lineOrigins inRect:rect context:c textRange:textRange attributedString:attributedString truncateLastLine:truncateLastLine];
     }
     
-    for (CFIndex lineIndex = 0; lineIndex < MIN(_numberOfLines, CFArrayGetCount(lines)); lineIndex++) {
+    // 根据水平对齐方式调整偏移量
+    CGFloat flushFactor = CJFlushFactorForTextAlignment(self.textAlignment);
+    
+    CFIndex count =  CFArrayGetCount(lines);
+    for (CFIndex lineIndex = 0; lineIndex < MIN(_numberOfLines,count); lineIndex++) {
         CGPoint lineOrigin = lineOrigins[lineIndex];
         CGContextSetTextPosition(c, lineOrigin.x, lineOrigin.y);
         CTLineRef line = CFArrayGetValueAtIndex(lines, lineIndex);
@@ -543,14 +560,13 @@ NSString * const kCJActiveBackgroundStrokeColorAttributeName = @"kCJActiveBackgr
         CGFloat lineAscent = 0.0f, lineDescent = 0.0f, lineLeading = 0.0f;
         CGFloat lineWidth = CTLineGetTypographicBounds(line, &lineAscent, &lineDescent, &lineLeading);
         
-        // 根据水平对齐方式调整偏移量
-        CGFloat flushFactor = CJFlushFactorForTextAlignment(self.textAlignment);
+        
         
         CJCTLineLayoutModel *lineLayoutModel = _CTLineVerticalLayoutArray[lineIndex];
         
-        if (lineIndex == _numberOfLines - 1 && truncateLastLine) {
+        if (lineIndex == count-1 && truncateLastLine) {
             
-            CTLineRef lastLine = [self handleLastCTLine:line textRange:textRange attributedString:attributedString rect:rect];
+            CTLineRef lastLine = [self handleLastCTLine:line textRange:textRange attributedString:attributedString rect:rect context:c];
             //当前最后一行的宽度
             lineWidth = CTLineGetTypographicBounds(lastLine, &lineAscent, &lineDescent, &lineLeading);
             CGFloat penOffset = (CGFloat)CTLineGetPenOffsetForFlush(lastLine, flushFactor, rect.size.width);
@@ -570,11 +586,16 @@ NSString * const kCJActiveBackgroundStrokeColorAttributeName = @"kCJActiveBackgr
     CGPathRelease(path);
 }
 //处理最后一行CTLine
-- (CTLineRef)handleLastCTLine:(CTLineRef)line textRange:(CFRange)textRange attributedString:(NSAttributedString *)attributedString rect:(CGRect)rect {
+- (CTLineRef)handleLastCTLine:(CTLineRef)line textRange:(CFRange)textRange attributedString:(NSAttributedString *)attributedString rect:(CGRect)rect context:(CGContextRef)c {
     // 判断最后一行是否占满整行
     CFRange lastLineRange = CTLineGetStringRange(line);
     
-    if (!(lastLineRange.length == 0 && lastLineRange.location == 0) && lastLineRange.location + lastLineRange.length < textRange.location + textRange.length) {
+    CGRect lineBounds = CTLineGetImageBounds(line, c);
+    
+//    if (!(lastLineRange.length == 0 && lastLineRange.location == 0) && lastLineRange.location + lastLineRange.length < textRange.location + textRange.length) {
+    CGFloat textWidth = self.bounds.size.width - self.textInsets.left - self.textInsets.right;
+    CGFloat lineWidth = lineBounds.size.width;
+    if (!(lastLineRange.length == 0 && lastLineRange.location == 0) && lineWidth >= textWidth - 15) {
         
         CTLineTruncationType truncationType;
         CFIndex truncationAttributePosition = lastLineRange.location;
@@ -643,7 +664,7 @@ NSString * const kCJActiveBackgroundStrokeColorAttributeName = @"kCJActiveBackgr
         return lastLine;
     }
 }
-
+//绘制CTLine
 - (void)drawCTLine:(CTLineRef)line
          lineIndex:(CFIndex)lineIndex
             origin:(CGPoint)lineOrigin
@@ -703,7 +724,8 @@ NSString * const kCJActiveBackgroundStrokeColorAttributeName = @"kCJActiveBackgr
                 image = [UIImage imageNamed:runItem.image];
             }
             if (image) {
-                runBounds.origin.x = lineOrigin.x + CTLineGetOffsetForStringIndex(line, CTRunGetStringRange(runItem.runRef).location, NULL) + penOffsetX;
+                
+                runBounds.origin.x = lineOrigin.x + CTLineGetOffsetForStringIndex(line, CTRunGetStringRange(runItem.runRef).location, NULL) + penOffsetX - runItem.strokeLineWidth/2;
                 CGContextDrawImage(c, runBounds, image.CGImage);
             }
         }
@@ -859,14 +881,26 @@ NSString * const kCJActiveBackgroundStrokeColorAttributeName = @"kCJActiveBackgr
     CGRect roundedRect = CGRectMake(x,y,runStrokeItem.runBounds.size.width,runStrokeItem.runBounds.size.height);
     if (isStrokeColor) {
         CGFloat lineWidth = runStrokeItem.strokeLineWidth/2;
+        CGFloat width = runStrokeItem.runBounds.size.width + ((runStrokeItem.isImage)?3*lineWidth:2*lineWidth);
         roundedRect = CGRectMake(x-lineWidth,
                                  y-lineWidth,
-                                 runStrokeItem.runBounds.size.width + 3*lineWidth,
+                                 width,
                                  runStrokeItem.runBounds.size.height + 2*lineWidth);
     }
-    CGPathRef glyphRunpath = [[UIBezierPath bezierPathWithRoundedRect:roundedRect cornerRadius:runStrokeItem.cornerRadius] CGPath];
+    
+    CGFloat cornerRadius = runStrokeItem.cornerRadius;
+    if (!isStrokeColor && runStrokeItem.strokeLineWidth > 1) {
+        if (active) {
+            cornerRadius = (isNotClearColor(runStrokeItem.activeFillColor) && isNotClearColor(runStrokeItem.activeStrokeColor))?0:cornerRadius;
+        }else{
+            cornerRadius = (isNotClearColor(runStrokeItem.fillColor) && isNotClearColor(runStrokeItem.strokeColor))?0:cornerRadius;
+        }
+    }
+    
+    CGPathRef glyphRunpath = [[UIBezierPath bezierPathWithRoundedRect:roundedRect cornerRadius:cornerRadius] CGPath];
     CGContextAddPath(c, glyphRunpath);
     
+    //边框线
     if (isStrokeColor) {
         UIColor *color = (active?runStrokeItem.activeStrokeColor:runStrokeItem.strokeColor);
         if (CJLabelIsNull(color)) {
@@ -876,7 +910,11 @@ NSString * const kCJActiveBackgroundStrokeColorAttributeName = @"kCJActiveBackgr
         CGContextSetLineWidth(c, runStrokeItem.strokeLineWidth);
         CGContextStrokePath(c);
     }
+    //背景色
     else {
+        if (runStrokeItem.isImage) {
+            return;
+        }
         UIColor *color = (active?runStrokeItem.activeFillColor:runStrokeItem.fillColor);
         if (CJLabelIsNull(color)) {
             color = [UIColor clearColor];
@@ -963,7 +1001,7 @@ NSString * const kCJActiveBackgroundStrokeColorAttributeName = @"kCJActiveBackgr
         
         if (lineIndex == _numberOfLines - 1 && truncateLastLine) {
             
-            CTLineRef lastLine = [self handleLastCTLine:line textRange:textRange attributedString:attributedString rect:rect];
+            CTLineRef lastLine = [self handleLastCTLine:line textRange:textRange attributedString:attributedString rect:rect context:c];
             CTLineGetTypographicBounds(lastLine, &lineAscent, &lineDescent, &lineLeading);
             
             CJCTLineVerticalLayout lineVerticalLayout = [self CJCTLineVerticalLayoutFromLine:lastLine lineIndex:lineIndex origin:origins[lineIndex] context:c lineAscent:lineAscent lineDescent:lineDescent lineLeading:lineLeading];
@@ -1078,11 +1116,13 @@ NSString * const kCJActiveBackgroundStrokeColorAttributeName = @"kCJActiveBackgr
     CJGlyphRunStrokeItem *runStrokeItem = [[CJGlyphRunStrokeItem alloc]init];
     runStrokeItem.runBounds = runBounds;
     runStrokeItem.locBounds = locBounds;
-    CGFloat withOutMergeBoundsY = locBounds.origin.y - (MAX(lineVerticalLayout.maxRunAscent, lineVerticalLayout.maxImageAscent) - runAscent);
+    CGFloat withOutMergeBoundsY = lineVerticalLayout.lineRect.origin.y - (MAX(lineVerticalLayout.maxRunAscent, lineVerticalLayout.maxImageAscent) - lineVerticalLayout.lineRect.size.height);
+//    CGFloat withOutMergeBoundsY = locBounds.origin.y;
     runStrokeItem.withOutMergeBounds =
     CGRectMake(locBounds.origin.x,
                withOutMergeBoundsY,
                locBounds.size.width,
+//               locBounds.size.height);
                MAX(lineVerticalLayout.maxRunHeight, lineVerticalLayout.maxImageHeight));
     runStrokeItem.lineVerticalLayout = lineVerticalLayout;
     runStrokeItem.characterIndex = characterIndex;
@@ -1557,14 +1597,17 @@ NSString * const kCJActiveBackgroundStrokeColorAttributeName = @"kCJActiveBackgr
                 }
             }else{
                 if (self.enableCopy) {
+                    _afterLongPressEnd = NO;
                     [self caculateCTRunCopySizeBlock:^(){
-                        //发生长按，显示放大镜
-                        CJGlyphRunStrokeItem *currentItem = [CJSelectBackView currentItem:point allRunItemArray:_allRunItemArray inset:0.5];
-                        if (currentItem) {
-                            [[CJSelectBackView instance] showMagnifyInCJLabel:self magnifyPoint:point runItem:currentItem];
-                        }else{
-                            if (CGRectContainsPoint(self.bounds, point)) {
-                                [[CJSelectBackView instance] showMagnifyInCJLabel:self magnifyPoint:point runItem:nil];
+                        if (!_afterLongPressEnd) {
+                            //发生长按，显示放大镜
+                            CJGlyphRunStrokeItem *currentItem = [CJSelectBackView currentItem:point allRunItemArray:_allRunItemArray inset:0.5];
+                            if (currentItem) {
+                                [[CJSelectBackView instance] showMagnifyInCJLabel:self magnifyPoint:point runItem:currentItem];
+                            }else{
+                                if (CGRectContainsPoint(self.bounds, point)) {
+                                    [[CJSelectBackView instance] showMagnifyInCJLabel:self magnifyPoint:point runItem:nil];
+                                }
                             }
                         }
                     }];
@@ -1574,6 +1617,7 @@ NSString * const kCJActiveBackgroundStrokeColorAttributeName = @"kCJActiveBackgr
             break;
         }
         case UIGestureRecognizerStateEnded:{
+            _afterLongPressEnd = YES;
             [[CJSelectBackView instance] hideView];
             if (isLinkItem) {
                 _longPress = NO;
@@ -1785,25 +1829,27 @@ NSString * const kCJActiveBackgroundStrokeColorAttributeName = @"kCJActiveBackgr
     NSMutableAttributedString *attText = [[NSMutableAttributedString alloc]initWithAttributedString:self.attributedText];
     [attText enumerateAttributesInRange:NSMakeRange(0, attText.length) options:NSAttributedStringEnumerationLongestEffectiveRangeNotRequired usingBlock:^(NSDictionary<NSString *, id> *attrs, NSRange range, BOOL *stop){
         BOOL isLink = [attrs[kCJIsLinkAttributesName] boolValue];
-        if (isLink &&
-            (linkRange.location >= range.location) &&
-            (linkRange.location <= range.location+range.length) &&
-            (linkRange.location+linkRange.length <= range.location + range.length))
-        {
-            [attText removeAttribute:kCJLinkAttributesName range:linkRange];
-            [attText removeAttribute:kCJActiveLinkAttributesName range:linkRange];
-            [attText removeAttribute:kCJIsLinkAttributesName range:linkRange];
-            [attText removeAttribute:kCJLinkRangeAttributesName range:linkRange];
-            [attText removeAttribute:kCJLinkNeedRedrawnAttributesName range:linkRange];
-            
-            [attText removeAttribute:kCJBackgroundFillColorAttributeName range:linkRange];
-            [attText removeAttribute:kCJBackgroundStrokeColorAttributeName range:linkRange];
-            [attText removeAttribute:kCJBackgroundLineWidthAttributeName range:linkRange];
-            [attText removeAttribute:kCJBackgroundLineCornerRadiusAttributeName range:linkRange];
-            [attText removeAttribute:kCJActiveBackgroundFillColorAttributeName range:linkRange];
-            [attText removeAttribute:kCJActiveBackgroundStrokeColorAttributeName range:linkRange];
-            
+        if (isLink) {
+            if ((linkRange.location <= range.location + range.length) &&
+                (linkRange.location+linkRange.length <= range.location + range.length))
+            {
+                [attText removeAttribute:kCJLinkAttributesName range:linkRange];
+                [attText removeAttribute:kCJActiveLinkAttributesName range:linkRange];
+                [attText removeAttribute:kCJIsLinkAttributesName range:linkRange];
+                [attText removeAttribute:kCJLinkRangeAttributesName range:linkRange];
+                [attText removeAttribute:kCJLinkLengthAttributesName range:linkRange];
+                [attText removeAttribute:kCJLinkNeedRedrawnAttributesName range:linkRange];
+                
+                [attText removeAttribute:kCJBackgroundFillColorAttributeName range:linkRange];
+                [attText removeAttribute:kCJBackgroundStrokeColorAttributeName range:linkRange];
+                [attText removeAttribute:kCJBackgroundLineWidthAttributeName range:linkRange];
+                [attText removeAttribute:kCJBackgroundLineCornerRadiusAttributeName range:linkRange];
+                [attText removeAttribute:kCJActiveBackgroundFillColorAttributeName range:linkRange];
+                [attText removeAttribute:kCJActiveBackgroundStrokeColorAttributeName range:linkRange];
+                
+            }
         }
+        
     }];
     
     [self setNeedsFramesetter];

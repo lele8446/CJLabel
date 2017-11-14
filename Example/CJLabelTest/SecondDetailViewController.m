@@ -12,9 +12,10 @@
 
 
 @interface SecondDetailViewController ()
-@property (nonatomic, weak) IBOutlet CJLabel *firstLabel;
+@property (nonatomic, weak) IBOutlet CJLabel *label;
 @property (nonatomic, strong) CJLabel *secondLabel;
-@property (nonatomic, strong) NSAttributedString *attStr;
+@property (nonatomic, strong) NSMutableAttributedString *attStr;
+@property (nonatomic, strong) CJLabelConfigure *configure;
 @end
 
 @implementation SecondDetailViewController
@@ -24,10 +25,9 @@
     self.edgesForExtendedLayout = UIRectEdgeNone;
     self.automaticallyAdjustsScrollViewInsets = NO;
     
-    self.firstLabel.numberOfLines = 0;
-    
-    NSMutableAttributedString *content = self.content;
-    [self handleContent:content];
+    self.label.numberOfLines = 0;
+
+    [self handleContent:self.content];
 
 }
 
@@ -36,197 +36,121 @@
 }
 
 - (void)handleContent:(NSMutableAttributedString *)content {
-    /* 设置默认换行模式为：NSLineBreakByCharWrapping
-     * 当Label的宽度不够显示内容或图片的时候就自动换行, 如果不自动换行, 超出一行的部分图片将不显示
-     */
-    NSMutableParagraphStyle *paragraph = [[NSMutableParagraphStyle alloc] init];
-    paragraph.lineBreakMode = NSLineBreakByCharWrapping;
-    paragraph.lineSpacing = 6;
     NSMutableAttributedString *attStr = content;
-    [attStr addAttribute:NSParagraphStyleAttributeName value:paragraph range:NSMakeRange(0, attStr.length)];
-    
-    self.attStr = attStr;
     
     CJLabelConfigure *configure = [CJLabel configureAttributes:nil isLink:NO activeLinkAttributes:nil parameter:nil clickLinkBlock:nil longPressBlock:nil];
     
     switch (self.index) {
         case 0:
         {
-            //设置 CJLabel 不可点击
+            self.navigationItem.title = @"富文本展示";
+            
+            //初始化配置
+            CJLabelConfigure *configure = [CJLabel configureAttributes:nil isLink:NO activeLinkAttributes:nil parameter:nil clickLinkBlock:nil longPressBlock:nil];
+            //设置 'CJLabel' 字符不可点击
             configure.isLink = NO;
             attStr = [CJLabel configureAttrString:attStr withString:@"CJLabel" sameStringEnable:YES configure:configure];
-            
             //设置 `不同字体` 显示为粗体17的字号
             configure.attributes = @{NSFontAttributeName:[UIFont boldSystemFontOfSize:18]};
             attStr = [CJLabel configureAttrString:attStr withString:@"不同字体" sameStringEnable:NO configure:configure];
-            
             //设置 `字体背景色` 填充背景色，以及填充区域圆角
-            configure.attributes = @{kCJBackgroundFillColorAttributeName:[UIColor colorWithWhite:0.5 alpha:1],kCJBackgroundLineCornerRadiusAttributeName:@(2)};
-//            configure.isLink = YES;
+            configure.attributes = @{kCJBackgroundFillColorAttributeName:[UIColor colorWithWhite:0.5 alpha:1],kCJBackgroundLineCornerRadiusAttributeName:@(0)};
             attStr = [CJLabel configureAttrString:attStr withString:@"字体背景色" sameStringEnable:NO configure:configure];
-            
             //设置 `字体边框线` 边框线
             configure.attributes = @{kCJBackgroundStrokeColorAttributeName:[UIColor orangeColor]};
-//            configure.isLink = YES;
             attStr = [CJLabel configureAttrString:attStr withString:@"字体边框线" sameStringEnable:NO configure:configure];
-            
             //指定位置插入图片
             NSRange imgRange = [attStr.string rangeOfString:@"插入图片"];
             [configure removeAttributesForKey:kCJBackgroundStrokeColorAttributeName];
             attStr = [CJLabel insertImageAtAttrString:attStr image:@"CJLabel.png" imageSize:CGSizeMake(55, 45) atIndex:(imgRange.location+imgRange.length) imagelineAlignment:CJVerticalAlignmentBottom configure:configure];
-            
             //设置内边距
-            self.firstLabel.textInsets = UIEdgeInsetsMake(10, 10, 10, 0);
-            self.firstLabel.attributedText = attStr;
-            self.firstLabel.enableCopy = YES;
+            self.label.textInsets = UIEdgeInsetsMake(10, 10, 10, 0);
+            self.label.attributedText = attStr;
+            self.attStr = attStr;
         }
             break;
             
-        case 1:
         case 2:
         {
-            configure.attributes = @{
-                                     NSForegroundColorAttributeName:[UIColor blueColor],
-                                     NSFontAttributeName:[UIFont boldSystemFontOfSize:15],
-                                     kCJBackgroundStrokeColorAttributeName:[UIColor orangeColor],
-                                     kCJBackgroundLineWidthAttributeName:@((self.index==1?2:1)),
-                                     kCJBackgroundFillColorAttributeName:[UIColor lightGrayColor]
-                                     };
-            configure.activeLinkAttributes = @{
-                                               NSForegroundColorAttributeName:[UIColor redColor],
-                                               kCJActiveBackgroundStrokeColorAttributeName:[UIColor blackColor],
-                                               kCJActiveBackgroundFillColorAttributeName:UIRGBColor(247,231,121,1)
-                                               };
-            configure.parameter = @"参数为字符串";
-            configure.clickLinkBlock = ^(CJLabelLinkModel *linkModel) {
-                [self clickLink:linkModel isImage:NO];
-            };
-            configure.longPressBlock = ^(CJLabelLinkModel *linkModel) {
-                [self clicklongPressLink:linkModel isImage:NO];
-            };
-            configure.isLink = YES;
-            attStr = [CJLabel configureAttrString:attStr
-                                       withString:@"CJLabel"
-                                 sameStringEnable:(self.index==1?NO:YES)
-                                        configure:configure];
+            self.navigationItem.title = @"点击链点";
+            UIBarButtonItem *item = [[UIBarButtonItem alloc]initWithTitle:@"删除链点" style:UIBarButtonItemStylePlain target:self action:@selector(itemClick:)];
+            item.tag = 100;
+            self.navigationItem.rightBarButtonItem = item;
             
-            self.firstLabel.textInsets = UIEdgeInsetsMake(2, 0, 0, 0);
-            self.firstLabel.attributedText = attStr;
-            if (self.index == 2) {
-                UIBarButtonItem *item = [[UIBarButtonItem alloc]initWithTitle:@"删除首个链点" style:UIBarButtonItemStylePlain target:self action:@selector(itemClick:)];
-                item.tag = 100;
-                self.navigationItem.rightBarButtonItem = item;
-            }
-            
-        }
-            break;
-            
-        case 3:
-        {
-            self.firstLabel.hidden = YES;
-            self.secondLabel = [[CJLabel alloc]initWithFrame:CGRectMake(10, 10, [[UIScreen mainScreen] bounds].size.width - 20, [[UIScreen mainScreen] bounds].size.height - 64 - 100)];
-            self.secondLabel.backgroundColor = UIColorFromRGB(0xf0f0de);
-            self.secondLabel.numberOfLines = 0;
-            self.secondLabel.textInsets = UIEdgeInsetsMake(100, 50, 0, 0);
-            self.secondLabel.verticalAlignment = CJVerticalAlignmentTop;
-            self.secondLabel.enableCopy = YES;
-            [self.view addSubview:self.secondLabel];
-            
-            NSRange imageRange = [attStr.string rangeOfString:@"插入图片"];
-            CJLabelConfigure *imgConfigure =
-            [CJLabel configureAttributes:@{kCJBackgroundStrokeColorAttributeName:[UIColor redColor],                                                         kCJBackgroundLineWidthAttributeName:@(2)} isLink:YES activeLinkAttributes:nil parameter:nil clickLinkBlock:^(CJLabelLinkModel *linkModel) {
-                [self clickLink:linkModel isImage:YES];
-            } longPressBlock:nil];
-            
-            attStr = [CJLabel insertImageAtAttrString:attStr
-                                                image:[UIImage imageNamed:@"CJLabel.png"]
-                                            imageSize:CGSizeMake(120, 85)
-                                              atIndex:(imageRange.location+imageRange.length)
-                                   imagelineAlignment:CJVerticalAlignmentBottom
-                                            configure:imgConfigure];
-            
-            configure.attributes = @{
-                                     NSForegroundColorAttributeName:[UIColor blueColor],
-                                     NSFontAttributeName:[UIFont boldSystemFontOfSize:15],
-                                     kCJBackgroundStrokeColorAttributeName:[UIColor orangeColor],
-                                     kCJBackgroundLineWidthAttributeName:@(2),
-                                     kCJBackgroundFillColorAttributeName:[UIColor lightGrayColor]
-                                     };
-            attStr = [CJLabel configureAttrString:attStr
-                                       withString:@"CJLabel"
-                                 sameStringEnable:NO
-                                        configure:configure];
-            
-            self.secondLabel.attributedText = attStr;
+            attStr = [self configureLabelContent:attStr configure:configure];
+            self.label.attributedText = attStr;
+            self.label.enableCopy = YES;
+            self.attStr = attStr;
         }
             break;
             
         case 4:
         {
-            [self configureLabelContent:attStr verticalAlignment:CJVerticalAlignmentBottom];
-            UIBarButtonItem *item = [[UIBarButtonItem alloc]initWithTitle:@"删除全部链点" style:UIBarButtonItemStylePlain target:self action:@selector(itemClick:)];
+            self.navigationItem.title = @"图文混排";
+            
+            UIBarButtonItem *item = [[UIBarButtonItem alloc]initWithTitle:@"···" style:UIBarButtonItemStylePlain target:self action:@selector(itemClick:)];
             item.tag = 200;
             self.navigationItem.rightBarButtonItem = item;
+            
+            self.attStr = attStr;
+            self.configure = configure;
+            
+            [self configureLabelContent:attStr verticalAlignment:CJVerticalAlignmentBottom configure:configure];
+            self.label.enableCopy = YES;
             break;
         }
-        case 5:
-        {
-            self.firstLabel.textInsets = UIEdgeInsetsMake(0, 0, 0, 0);
-            [self configureLabelContent:attStr verticalAlignment:CJVerticalAlignmentBottom];
-            UIBarButtonItem *item1 = [[UIBarButtonItem alloc]initWithTitle:@"居上" style:UIBarButtonItemStylePlain target:self action:@selector(itemClick:)];
-            item1.tag = 300;
-            UIBarButtonItem *item2 = [[UIBarButtonItem alloc]initWithTitle:@"居中" style:UIBarButtonItemStylePlain target:self action:@selector(itemClick:)];
-            item2.tag = 400;
-            UIBarButtonItem *item3 = [[UIBarButtonItem alloc]initWithTitle:@"居下" style:UIBarButtonItemStylePlain target:self action:@selector(itemClick:)];
-            item3.tag = 500;
-            self.navigationItem.rightBarButtonItems = @[item1,item2,item3];
-        }
-            break;
             
         default:
             break;
     }
 }
 
-- (void)configureLabelContent:(NSAttributedString *)attStr verticalAlignment:(CJLabelVerticalAlignment)verticalAlignment {
-    CJLabelConfigure *configure =
-    [CJLabel configureAttributes:@{
-                                   NSForegroundColorAttributeName:[UIColor blueColor],
-                                   NSFontAttributeName:[UIFont boldSystemFontOfSize:45],
-//                                   kCJBackgroundStrokeColorAttributeName:[UIColor orangeColor],
-                                   kCJBackgroundLineWidthAttributeName:@(self.index == 5?1:2),
-//                                   kCJBackgroundFillColorAttributeName:[UIColor lightGrayColor]
-                                   }
-                          isLink:YES
-            activeLinkAttributes:@{
-                                   NSForegroundColorAttributeName:[UIColor redColor],
-                                   NSFontAttributeName:[UIFont boldSystemFontOfSize:15],
-                                   kCJActiveBackgroundStrokeColorAttributeName:[UIColor blackColor],
-                                   kCJActiveBackgroundFillColorAttributeName:UIRGBColor(247,231,121,1),
-                                   kCJBackgroundLineCornerRadiusAttributeName:@(0)
-                                   }
-                       parameter:@"字符串参数"
-                  clickLinkBlock:^(CJLabelLinkModel *linkModel){
-                      [self clickLink:linkModel isImage:NO];
-                  }
-                  longPressBlock:^(CJLabelLinkModel *linkModel){
-                      [self clicklongPressLink:linkModel isImage:NO];
-                  }];
-    //CJLabel
+- (NSMutableAttributedString *)configureLabelContent:(NSMutableAttributedString *)attStr configure:(CJLabelConfigure *)configure {
+    //设置点击链点属性
+    configure.attributes = @{
+                             NSForegroundColorAttributeName:[UIColor blueColor],
+                             NSFontAttributeName:[UIFont boldSystemFontOfSize:15],
+                             kCJBackgroundStrokeColorAttributeName:[UIColor orangeColor],
+                             kCJBackgroundLineWidthAttributeName:@(1),
+                             kCJBackgroundFillColorAttributeName:[UIColor lightGrayColor]
+                             };
+    //设置点击高亮属性
+    configure.activeLinkAttributes = @{
+                                       NSForegroundColorAttributeName:[UIColor redColor],
+                                       kCJActiveBackgroundStrokeColorAttributeName:[UIColor redColor],
+                                       kCJActiveBackgroundFillColorAttributeName:UIRGBColor(247,231,121,1)
+                                       };
+    //链点自定义参数
+    configure.parameter = @"参数为字符串";
+    //点击回调
+    configure.clickLinkBlock = ^(CJLabelLinkModel *linkModel) {
+        [self clickLink:linkModel isImage:NO];
+    };
+    //长按回调
+    configure.longPressBlock = ^(CJLabelLinkModel *linkModel) {
+        [self clicklongPressLink:linkModel isImage:NO];
+    };
+    //设置为可点击链点
+    configure.isLink = YES;
     attStr = [CJLabel configureAttrString:attStr
                                withString:@"CJLabel"
-                         sameStringEnable:NO
+                         sameStringEnable:YES
                                 configure:configure];
+    return attStr;
+}
 
+- (void)configureLabelContent:(NSMutableAttributedString *)attStr verticalAlignment:(CJLabelVerticalAlignment)verticalAlignment configure:(CJLabelConfigure *)configure {
+    
+    attStr = [self configureLabelContent:attStr configure:configure];
+    
+    //设置图片点击链点属性
     NSRange imageRange = [attStr.string rangeOfString:@"图片"];
     CJLabelConfigure *imgConfigure =
-    [CJLabel configureAttributes:@{
-                                   kCJBackgroundStrokeColorAttributeName:[UIColor blueColor],
-                                   kCJBackgroundLineWidthAttributeName:@(self.index == 5?1:2),
-                                   kCJBackgroundLineCornerRadiusAttributeName:@(0)
-                                   }
+    [CJLabel configureAttributes:@{kCJBackgroundStrokeColorAttributeName:[UIColor redColor],
+                                   kCJBackgroundLineWidthAttributeName:@(1),
+                                   kCJBackgroundLineCornerRadiusAttributeName:@(2)}
                           isLink:YES
-            activeLinkAttributes:@{kCJActiveBackgroundStrokeColorAttributeName:[UIColor redColor]}
+            activeLinkAttributes:@{kCJActiveBackgroundStrokeColorAttributeName:[UIColor lightGrayColor]}
                        parameter:@"图片参数"
                   clickLinkBlock:^(CJLabelLinkModel *linkModel){
                       [self clickLink:linkModel isImage:YES];
@@ -234,27 +158,32 @@
                   longPressBlock:^(CJLabelLinkModel *linkModel){
                       [self clicklongPressLink:linkModel isImage:YES];
                   }];
-    attStr = [CJLabel insertImageAtAttrString:attStr image:@"CJLabel.png" imageSize:CGSizeMake(45, 28) atIndex:(imageRange.location+imageRange.length) imagelineAlignment:verticalAlignment configure:imgConfigure];
-
-    self.firstLabel.attributedText = attStr;
-    self.firstLabel.extendsLinkTouchArea = YES;
+    attStr = [CJLabel insertImageAtAttrString:attStr image:@"CJLabel.png" imageSize:CGSizeMake(45, 35) atIndex:(imageRange.location+imageRange.length) imagelineAlignment:verticalAlignment configure:imgConfigure];
+    
+    self.label.attributedText = attStr;
 }
 
 - (void)itemClick:(UIBarButtonItem *)item {
-    
     if (item.tag == 100) {
-        NSRange labelRange = [self.firstLabel.attributedText.string rangeOfString:@"CJLabel"];
-        [self.firstLabel removeLinkAtRange:labelRange];
+        //移除指定链点
+        NSArray *linkRangeArray = [CJLabel sameLinkStringRangeArray:@"CJLabel" inAttString:self.attStr];
+        [self.label removeLinkAtRange:NSRangeFromString(linkRangeArray[0])];
         item.enabled = NO;
-    }else if (item.tag == 200) {
-        [self.firstLabel removeAllLink];
-        item.enabled = NO;
-    }else if (item.tag == 300) {
-        [self configureLabelContent:self.attStr verticalAlignment:CJVerticalAlignmentTop];
-    }else if (item.tag == 400) {
-        [self configureLabelContent:self.attStr verticalAlignment:CJVerticalAlignmentCenter];
-    }else if (item.tag == 500) {
-        [self configureLabelContent:self.attStr verticalAlignment:CJVerticalAlignmentBottom];
+    }
+    else if (item.tag == 200) {
+        UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"图片所在行垂直对齐方式" message:nil preferredStyle:UIAlertControllerStyleActionSheet];
+        [alert addAction:[UIAlertAction actionWithTitle:@"取消" style:UIAlertActionStyleCancel handler:^(UIAlertAction * _Nonnull action) {
+        }]];
+        [alert addAction:[UIAlertAction actionWithTitle:@"顶部对齐" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+            [self configureLabelContent:self.attStr verticalAlignment:CJVerticalAlignmentTop configure:self.configure];
+        }]];
+        [alert addAction:[UIAlertAction actionWithTitle:@"居中对齐" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+            [self configureLabelContent:self.attStr verticalAlignment:CJVerticalAlignmentCenter configure:self.configure];
+        }]];
+        [alert addAction:[UIAlertAction actionWithTitle:@"底部对齐" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+            [self configureLabelContent:self.attStr verticalAlignment:CJVerticalAlignmentBottom configure:self.configure];
+        }]];
+        [self presentViewController:alert animated:YES completion:nil];
     }
 }
 

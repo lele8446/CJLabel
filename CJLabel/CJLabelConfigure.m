@@ -1005,10 +1005,29 @@ typedef NS_ENUM(NSInteger, CJSelectViewAction) {
 //更新放大镜的位置
 - (void)updateMagnifyPoint:(CGPoint)point item:(CJGlyphRunStrokeItem *)item {
     if (item) {
+        
         CJCTLineVerticalLayout lineVerticalLayout = item.lineVerticalLayout;
+        
+        CGFloat selectPointY = item.locBounds.origin.y - 20;
+        CGFloat pointToMagnifyY = item.locBounds.origin.y + item.locBounds.size.height/2;
+        
+        if (lineVerticalLayout.maxImageHeight != 0) {
+            CJCTLineLayoutModel *lineLayoutModel = _CTLineVerticalLayoutArray[item.lineVerticalLayout.line];
+            if (lineVerticalLayout.verticalAlignment == CJVerticalAlignmentTop) {
+                pointToMagnifyY = lineLayoutModel.selectCopyBackY + item.locBounds.size.height/2;
+            }
+            else if (lineVerticalLayout.verticalAlignment == CJVerticalAlignmentCenter) {
+                pointToMagnifyY = lineLayoutModel.selectCopyBackY + (lineLayoutModel.selectCopyBackHeight - item.locBounds.size.height)/2 + item.locBounds.size.height/2;
+            }
+            else if (lineVerticalLayout.verticalAlignment == CJVerticalAlignmentBottom) {
+                pointToMagnifyY = lineLayoutModel.selectCopyBackY + (lineLayoutModel.selectCopyBackHeight - item.locBounds.size.height) + item.locBounds.size.height/2;
+            }
+            selectPointY = pointToMagnifyY - 20;
+        }
+        
         // Y 值往上偏移20 像素
-        CGPoint selectPoint = CGPointMake(point.x, lineVerticalLayout.lineRect.origin.y-20);
-        CGPoint pointToMagnify = CGPointMake(point.x, item.locBounds.origin.y + item.locBounds.size.height/2);
+        CGPoint selectPoint = CGPointMake(point.x, selectPointY);
+        CGPoint pointToMagnify = CGPointMake(point.x, pointToMagnifyY);
         selectPoint = [self convertPoint:selectPoint toView:CJkeyWindow()];
         pointToMagnify = [self convertPoint:pointToMagnify toView:CJkeyWindow()];
         self.magnifierView.hidden = NO;

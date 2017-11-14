@@ -63,6 +63,13 @@
         responseJSON = [NSJSONSerialization JSONObjectWithData:JSONData options:NSJSONReadingMutableContainers error:nil];
     }
     
+    /* 设置默认换行模式为：NSLineBreakByCharWrapping
+     * 当Label的宽度不够显示内容或图片的时候就自动换行, 如果不自动换行, 超出一行的部分图片将不显示
+     */
+    NSMutableParagraphStyle *paragraph = [[NSMutableParagraphStyle alloc] init];
+    paragraph.lineBreakMode = NSLineBreakByCharWrapping;
+    paragraph.lineSpacing = 6;
+    
     self.espressos = [NSMutableArray array];
     for (int i = 0; i<responseJSON.count; i++) {
         NSString *str = [[responseJSON objectAtIndex:i] objectForKey:@"text"];
@@ -87,6 +94,7 @@
         configure.isLink = YES;
         attStr = [CJLabel configureAttrString:attStr withString:@"CJLabel" sameStringEnable:YES configure:configure];
         
+        [attStr addAttribute:NSParagraphStyleAttributeName value:paragraph range:NSMakeRange(0, attStr.length)];
         [self.espressos addObject:attStr];
     }
 }
@@ -105,7 +113,7 @@
 //    return size.height+1;
 
     // 方法二 CJLabel类方法计算高度
-    CGSize size1 = [CJLabel sizeWithAttributedString:content withConstraints:CGSizeMake(ScreenWidth-20, CGFLOAT_MAX) limitedToNumberOfLines:3 textInsets:UIEdgeInsetsMake(5, 5, 5, 0)];
+    CGSize size1 = [CJLabel sizeWithAttributedString:content withConstraints:CGSizeMake(ScreenWidth-20, CGFLOAT_MAX) limitedToNumberOfLines:4 textInsets:UIEdgeInsetsMake(5, 5, 5, 0)];
     // label垂直方向约束高度top=10，另外再 + 1
     return size1.height+11;
 }
@@ -126,10 +134,32 @@
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     //    NSLog(@"点击第 %@ 行cell",@(indexPath.row+1));
-    SecondDetailViewController *detailCtr = [[SecondDetailViewController alloc]initWithNibName:@"SecondDetailViewController" bundle:nil];
-    detailCtr.index = indexPath.row;
-    detailCtr.content = self.espressos[indexPath.row];
-    [self.navigationController pushViewController:detailCtr animated:YES];
+    
+    switch (indexPath.row) {
+        case 0:
+        case 2:
+        case 4:
+        {
+            SecondDetailViewController *detailCtr = [[SecondDetailViewController alloc]initWithNibName:@"SecondDetailViewController" bundle:nil];
+            detailCtr.index = indexPath.row;
+            detailCtr.content = self.espressos[indexPath.row];
+            [self.navigationController pushViewController:detailCtr animated:YES];
+        }
+            break;
+        case 1:
+        case 3:
+        {
+            FirstDetailViewController *detailCtr = [[FirstDetailViewController alloc]initWithNibName:@"FirstDetailViewController" bundle:nil];
+            detailCtr.index = indexPath.row;
+            detailCtr.content = self.espressos[indexPath.row];
+            [self.navigationController pushViewController:detailCtr animated:YES];
+        }
+            
+        default:
+            break;
+    }
+    
+    
 }
 
 #pragma mark - CJLabelLinkDelegate

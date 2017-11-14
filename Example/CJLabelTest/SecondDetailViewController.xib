@@ -11,7 +11,7 @@
     <objects>
         <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="SecondDetailViewController">
             <connections>
-                <outlet property="firstLabel" destination="15A-8M-wn0" id="YV4-xn-1TM"/>
+                <outlet property="label" destination="15A-8M-wn0" id="ot2-X2-NkK"/>
                 <outlet property="view" destination="i5M-Pr-FkT" id="sfx-zR-JGt"/>
             </connections>
         </placeholder>

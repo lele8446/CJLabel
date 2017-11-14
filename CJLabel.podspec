@@ -9,7 +9,7 @@
 Pod::Spec.new do |s|
 
   s.name         = "CJLabel"
-  s.version      = "3.0.0"
+  s.version      = "3.1.0"
   s.summary      = "A drop-in replacement for UILabel that supports NSAttributedString, rich text, links, select copy and more."
   s.homepage     = "https://github.com/lele8446/CJLabelTest"
   # s.license      = "MIT"
@@ -29,7 +29,7 @@ Pod::Spec.new do |s|
   }
   s.author       = { "ChiJinLian" => "lele8446@foxmail.com" }
   s.platform     = :ios, "7.0"
-  s.source       = { :git => "https://github.com/lele8446/CJLabelTest.git", :tag => "3.0.0" }
+  s.source       = { :git => "https://github.com/lele8446/CJLabelTest.git", :tag => "3.1.0" }
   s.source_files  = "CJLabel/*"
 
 end

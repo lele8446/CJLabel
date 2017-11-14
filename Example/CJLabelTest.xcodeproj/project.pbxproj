@@ -20,6 +20,7 @@
 		B40ACCA91EB30CF3006DB787 /* Example.txt in Resources */ = {isa = PBXBuildFile; fileRef = B40ACCA61EB30CF3006DB787 /* Example.txt */; };
 		B431D5321D0545E700228988 /* CJLabel.m in Sources */ = {isa = PBXBuildFile; fileRef = B431D52E1D0545E700228988 /* CJLabel.m */; };
 		B45AC7ED1F8A7181006B5336 /* CJLabelConfigure.m in Sources */ = {isa = PBXBuildFile; fileRef = B45AC7EC1F8A7181006B5336 /* CJLabelConfigure.m */; };
+		B483EC831FB944D0000FCE06 /* FirstDetailViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = B483EC821FB944D0000FCE06 /* FirstDetailViewController.xib */; };
 		B4928B9F1FB4003D0017A25C /* Example.json in Resources */ = {isa = PBXBuildFile; fileRef = B4928B9E1FB4003D0017A25C /* Example.json */; };
 		B4928BA31FB442D60017A25C /* FirstDetailViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = B4928BA11FB442D60017A25C /* FirstDetailViewController.m */; };
 		B4C8931B1EB881EA00AC9E42 /* SecondDetailViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = B4C893191EB881EA00AC9E42 /* SecondDetailViewController.m */; };
@@ -68,6 +69,7 @@
 		B431D52E1D0545E700228988 /* CJLabel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CJLabel.m; sourceTree = "<group>"; };
 		B45AC7EB1F8A7181006B5336 /* CJLabelConfigure.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CJLabelConfigure.h; sourceTree = "<group>"; };
 		B45AC7EC1F8A7181006B5336 /* CJLabelConfigure.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CJLabelConfigure.m; sourceTree = "<group>"; };
+		B483EC821FB944D0000FCE06 /* FirstDetailViewController.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = FirstDetailViewController.xib; sourceTree = "<group>"; };
 		B4928B9E1FB4003D0017A25C /* Example.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = Example.json; sourceTree = "<group>"; };
 		B4928BA01FB442D60017A25C /* FirstDetailViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FirstDetailViewController.h; sourceTree = "<group>"; };
 		B4928BA11FB442D60017A25C /* FirstDetailViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FirstDetailViewController.m; sourceTree = "<group>"; };
@@ -185,6 +187,7 @@
 				4382578B1C1A6F5F00A3DA24 /* ViewController.m */,
 				B4928BA01FB442D60017A25C /* FirstDetailViewController.h */,
 				B4928BA11FB442D60017A25C /* FirstDetailViewController.m */,
+				B483EC821FB944D0000FCE06 /* FirstDetailViewController.xib */,
 				B4C893181EB881EA00AC9E42 /* SecondDetailViewController.h */,
 				B4C893191EB881EA00AC9E42 /* SecondDetailViewController.m */,
 				B4C8931A1EB881EA00AC9E42 /* SecondDetailViewController.xib */,
@@ -310,6 +313,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B483EC831FB944D0000FCE06 /* FirstDetailViewController.xib in Resources */,
 				438257941C1A6F5F00A3DA24 /* LaunchScreen.storyboard in Resources */,
 				B4C8931C1EB881EA00AC9E42 /* SecondDetailViewController.xib in Resources */,
 				438257911C1A6F5F00A3DA24 /* Assets.xcassets in Resources */,

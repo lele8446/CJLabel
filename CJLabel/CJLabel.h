@@ -39,25 +39,26 @@
  *
  * CJLabel 与 UILabel 不同点：
  *
-   1. `- init` 不可直接调用init初始化，请使用`initWithFrame:` 或 `initWithCoder:`，以便完成相关初始属性设置
- 
-   2. `attributedText` 与 `text` 均可设置文本，注意 [self setText:text]中 text类型只能是NSAttributedString或NSString
- 
-   3. `NSAttributedString`不再通过`NSTextAttachment`显示图片（使用`NSTextAttachment`不会起效），请调用
-      `+ initWithImageName:imageSize:imagelineAlignment:configure:`或者
-      `+ insertImageAtAttrString:imageName:imageSize:imagelineAlignment:atIndex:configure:`方法添加图片
- 
-   4. 新增`extendsLinkTouchArea`， 设置是否加大点击响应范围，类似于UIWebView的链点点击效果
- 
-   5. 新增`shadowRadius`， 设置文本阴影模糊半径，可与 `shadowColor`、`shadowOffset` 配合设置，注意改设置将对全局文本起效
- 
-   6. 新增`textInsets` 设置文本内边距
- 
-   7. 新增`verticalAlignment` 设置垂直方向的文本对齐方式
- 
-   8. 新增`delegate` 点击链点代理
- 
-   9. 新增`enableCopy` 支持文本选择复制功能
+     1. 禁止使用`-init`初始化！！
+     2. `enableCopy` 长按或双击可唤起`UIMenuController`进行选择、全选、复制文本操作
+     3. `attributedText` 与 `text` 均可设置富文本
+     4. 不支持`NSAttachmentAttributeName`,`NSTextAttachment`！！显示图片请调用:
+         `+ initWithImage:imageSize:imagelineAlignment:configure:`或者
+         `+ insertImageAtAttrString:image:imageSize:atIndex:imagelineAlignment:configure:`方法初始化`NSAttributedString`后显示
+     5. `extendsLinkTouchArea`设置是否扩大链点点击识别范围
+     6. `shadowRadius`设置文本阴影模糊半径
+     7. `textInsets` 设置文本内边距
+     8. `verticalAlignment` 设置垂直方向的文本对齐方式。
+         注意与显示图片时候的`imagelineAlignment`作区分，`self.verticalAlignment`对应的是整体文本在垂直方向的对齐方式，而`imagelineAlignment`只对图片所在行的垂直对齐方式有效
+     9. `delegate` 点击链点代理
+     10. `kCJBackgroundFillColorAttributeName` 背景填充颜色，属性优先级低于`NSBackgroundColorAttributeName`,如果设置`NSBackgroundColorAttributeName`会忽略`kCJBackgroundFillColorAttributeName`的设置
+     11. `kCJBackgroundStrokeColorAttributeName ` 背景边框线颜色
+     12. `kCJBackgroundLineWidthAttributeName ` 背景边框线宽度
+     13. `kCJBackgroundLineCornerRadiusAttributeName ` 背景边框线圆角弧度
+     14. `kCJActiveBackgroundFillColorAttributeName ` 点击时候的背景填充颜色属性优先级同
+         `kCJBackgroundFillColorAttributeName`
+     15. `kCJActiveBackgroundStrokeColorAttributeName ` 点击时候的背景边框线颜色
+     16. 支持添加自定义样式、可点击（长按）的文本点击链点
  *
  *
  * CJLabel 已知bug：
@@ -69,7 +70,7 @@
 @interface CJLabel : UILabel
 
 /**
- * 指定初始化函数为 initWithFrame: 或 initWithCoder:
+ * 指定初始化函数为 -initWithFrame: 或 -initWithCoder:
  * 直接调用 init 会忽略相关属性的设置，所以不能直接调用 init 初始化.
  */
 - (instancetype)init NS_UNAVAILABLE;
@@ -220,9 +221,9 @@
  @return                 NSAttributedString
  */
 + (NSMutableAttributedString *)configureAttrString:(NSAttributedString *)attrStr
-                                 withString:(NSString *)string
-                           sameStringEnable:(BOOL)sameStringEnable
-                                  configure:(CJLabelConfigure *)configure;
+                                        withString:(NSString *)string
+                                  sameStringEnable:(BOOL)sameStringEnable
+                                         configure:(CJLabelConfigure *)configure;
 /**
  根据NSAttributedString初始化NSAttributedString
  
@@ -232,8 +233,8 @@
  @return                    NSAttributedString
  */
 + (NSMutableAttributedString *)initWithAttributedString:(NSAttributedString *)attributedString
-                                   strIdentifier:(NSString *)strIdentifier
-                                       configure:(CJLabelConfigure *)configure;
+                                          strIdentifier:(NSString *)strIdentifier
+                                              configure:(CJLabelConfigure *)configure;
 
 /**
  对跟attributedString相同的文本设置链点属性
@@ -245,10 +246,10 @@
  @return                    NSAttributedString
  */
 + (NSMutableAttributedString *)configureAttrString:(NSAttributedString *)attrString
-                       withAttributedString:(NSAttributedString *)attributedString
-                              strIdentifier:(NSString *)strIdentifier
-                           sameStringEnable:(BOOL)sameStringEnable
-                                  configure:(CJLabelConfigure *)configure;
+                              withAttributedString:(NSAttributedString *)attributedString
+                                     strIdentifier:(NSString *)strIdentifier
+                                  sameStringEnable:(BOOL)sameStringEnable
+                                         configure:(CJLabelConfigure *)configure;
 
 /**
  获取指定NSAttributedString中跟linkString相同的NSRange数组
