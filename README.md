@@ -30,12 +30,6 @@
    `numberOfLines`大于0且小于实际`label.numberOfLines`，同时`verticalAlignment`不等于`CJContentVerticalAlignmentTop`时，文本显示位置有偏差。如下图所示:<br/>
    ![](http://oz3eqyeso.bkt.clouddn.com/CJLabelBug.jpg)
 
-
-
-
-
-
-
 ## CJLabel引用
 ##### 1. 直接导入
 下载demo，将CJLabel文件夹导入项目，引用头文件 `#import "CJLabel.h"`
@@ -91,7 +85,7 @@ self.label.enableCopy = YES;
 ```
 * 设置文字、图片点击链点
  <center>
- <img src="http://oz3eqyeso.bkt.clouddn.com/example2.gif" width="35%"/>
+ <img src="http://oz3eqyeso.bkt.clouddn.com/example4.gif" width="35%"/>
  </center>
  
 ```objective-c
