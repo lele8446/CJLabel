@@ -71,7 +71,7 @@ attStr = [CJLabel insertImageAtAttrString:attStr image:@"CJLabel.png" imageSize:
 self.label.textInsets = UIEdgeInsetsMake(10, 10, 10, 0);
 self.label.attributedText = attStr;
 ```
-* 垂直对齐
+* 垂直对齐、选择复制
  <center>
  <img src="http://oz3eqyeso.bkt.clouddn.com/example1.gif" width="35%"/>
  </center>
