@@ -130,7 +130,7 @@ self.label.enableCopy = YES;
 ```
 
 ## 版本说明
-* ***V3.1.0***<br/>
+* ***V4.0.0***<br/>
  新增`enableCopy`属性，支持选择、全选、复制功能，类似`UITextView`的选择复制效果。
 * ***V3.0.0***<br/>
  优化富文本配置方法，新增CJLabelConfigure类，简化方法调用，增加对NSAttributedString点击链点的判断（比如对于两个重名用户：@lele 和 @lele，可以分别设置不同的点击响应事件）<br/>
