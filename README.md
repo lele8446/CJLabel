@@ -35,7 +35,7 @@
 下载demo，将CJLabel文件夹导入项目，引用头文件 `#import "CJLabel.h"`
 ##### 2. CocoaPods安装
 ```ruby
-pod 'CJLabel', '~> 3.0.0'
+pod 'CJLabel'
 
 ```
 
@@ -85,7 +85,7 @@ self.label.enableCopy = YES;
 ```
 * 设置文字、图片点击链点
  <center>
- <img src="http://oz3eqyeso.bkt.clouddn.com/example4.gif" width="35%"/>
+ <img src="http://oz3eqyeso.bkt.clouddn.com/example4.gif" width="25%"/>
  </center>
  
 ```objective-c
