@@ -130,6 +130,8 @@ self.label.enableCopy = YES;
 ```
 
 ## 版本说明
+* ***V4.2.0***<br/>
+ 优化NSAttributedString链点属性设置
 * ***V4.0.0***<br/>
  新增`enableCopy`属性，支持选择、全选、复制功能，类似`UITextView`的选择复制效果。
 * ***V3.0.0***<br/>
