@@ -1829,7 +1829,7 @@ NSString * const kCJLinkStringIdentifierAttributesName       = @"kCJLinkStringId
     if (strIdentifier.length > 0) {
         NSAssert([linkIdentifier isEqualToString:strIdentifier], @"\"withAttributedString\"必须包含\"kCJLinkStringIdentifierAttributesName\"属性；并且如果属性值为\"linkIdentifier\"，则必须保证\"[linkIdentifier isEqualToString:strIdentifier]\"");
         
-        NSAttributedString *linkStr = [CJLabelConfigure linkAttStr:attributedString.string attributes:strDic identifier:strIdentifier];
+        NSAttributedString *linkStr = [CJLabelConfigure linkAttStr:attributedString.string attributes:strDic identifier:linkIdentifier];
         BOOL isLink = configure.isLink;
         NSMutableAttributedString *result = [CJLabelConfigure configureLinkAttributedString:attrString withAttString:linkStr sameStringEnable:sameStringEnable linkAttributes:configure.attributes activeLinkAttributes:configure.activeLinkAttributes parameter:configure.parameter clickLinkBlock:configure.clickLinkBlock longPressBlock:configure.longPressBlock islink:isLink];
         return result;
