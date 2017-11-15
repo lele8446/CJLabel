@@ -204,7 +204,7 @@ NSString * const kCJLinkStringIdentifierAttributesName       = @"kCJLinkStringId
     
     //获取点击链点的NSRange
     NSMutableAttributedString *attText = [[NSMutableAttributedString alloc]initWithAttributedString:text];
-
+    
     __block BOOL needEnumerateAllCharacter = NO;
     if (!self.caculateSizeOnly) {
         __block NSRange linkRange = NSMakeRange(0, 0);
@@ -312,7 +312,7 @@ NSString * const kCJLinkStringIdentifierAttributesName       = @"kCJLinkStringId
         NSAttributedString *string = [[NSAttributedString alloc] initWithAttributedString:fullString];
         self.renderedAttributedText = string;
     }
-        
+    
     return _renderedAttributedText;
 }
 
@@ -411,7 +411,7 @@ NSString * const kCJLinkStringIdentifierAttributesName       = @"kCJLinkStringId
     
     _yOffset = 0.0f;
     if (textSize.height < bounds.size.height) {
-         _yOffset = 0.0f;
+        _yOffset = 0.0f;
         switch (self.verticalAlignment) {
             case CJVerticalAlignmentCenter:
                 _yOffset = CGFloat_floor((bounds.size.height - textSize.height) / 2.0f);
@@ -512,7 +512,7 @@ NSString * const kCJLinkStringIdentifierAttributesName       = @"kCJLinkStringId
             _attributedText = originalAttributedText;
         }
     }
-
+    
     CGContextRestoreGState(c);
     _needRedrawn = NO;
     self.caculateCopySize = NO;
@@ -577,7 +577,7 @@ NSString * const kCJLinkStringIdentifierAttributesName       = @"kCJLinkStringId
             CFRelease(lastLine);
         }
         else {
-        
+            
             CGFloat penOffset = (CGFloat)CTLineGetPenOffsetForFlush(line, flushFactor, rect.size.width);
             [self drawCTLine:line lineIndex:lineIndex origin:lineOrigin context:c lineAscent:lineAscent lineDescent:lineDescent lineLeading:lineLeading lineWidth:lineWidth rect:rect penOffsetX:penOffset lineLayoutModel:lineLayoutModel];
         }
@@ -593,10 +593,12 @@ NSString * const kCJLinkStringIdentifierAttributesName       = @"kCJLinkStringId
     
     CGRect lineBounds = CTLineGetImageBounds(line, c);
     
-//    if (!(lastLineRange.length == 0 && lastLineRange.location == 0) && lastLineRange.location + lastLineRange.length < textRange.location + textRange.length) {
+    
     CGFloat textWidth = self.bounds.size.width - self.textInsets.left - self.textInsets.right;
     CGFloat lineWidth = lineBounds.size.width;
-    if (!(lastLineRange.length == 0 && lastLineRange.location == 0) && lineWidth >= textWidth - 15) {
+    //    if (!(lastLineRange.length == 0 && lastLineRange.location == 0) && (lineWidth >= textWidth - 15)) {
+    
+    if (!(lastLineRange.length == 0 && lastLineRange.location == 0) && lastLineRange.location + lastLineRange.length < textRange.location + textRange.length  && (lineWidth >= textWidth - 15)) {
         
         CTLineTruncationType truncationType;
         CFIndex truncationAttributePosition = lastLineRange.location;
@@ -687,26 +689,26 @@ NSString * const kCJLinkStringIdentifierAttributesName       = @"kCJLinkStringId
     
     //当前行的所有CTRunItem数组
     NSMutableArray *lineRunItems = [self lineRunItemsFromCTLineRef:line lineIndex:lineIndex lineOrigin:lineOrigin inRect:rect context:c lineAscent:lineAscent lineDescent:lineDescent lineLeading:lineLeading lineWidth:lineWidth lineVerticalLayout:lineVerticalLayout];
-
+    
     //需要计算复制数组，则添加
     if (self.enableCopy && self.caculateCopySize) {
         [_allRunItemArray addObjectsFromArray:lineRunItems];
     }
     //进行点击，填充背景色CTRunItem数组的合并
     NSArray *lineStrokrArray = [self mergeLineSameStrokePathItems:lineRunItems ascentAndDescent:(lineAscent + fabs(lineDescent))];
-
+    
     //获取点击链点对应的数组
     for (CJGlyphRunStrokeItem *runItem in lineStrokrArray) {
         if (runItem.isLink) {
             [_linkStrokeItemArray addObject:runItem];
         }
     }
-
+    
     //填充背景色
     if (!self.caculateSizeOnly) {
         [self drawBackgroundColor:c runStrokeItems:lineStrokrArray isStrokeColor:NO];
     }
-
+    
     //绘制文字、图片
     for (CJGlyphRunStrokeItem *runItem in lineRunItems) {
         CGRect runBounds = runItem.runBounds;
@@ -743,7 +745,7 @@ NSString * const kCJLinkStringIdentifierAttributesName       = @"kCJLinkStringId
         CGFloat heightDif = (runItem.locBounds.size.height + runItem.locBounds.origin.y) - (lineVerticalLayout.lineRect.size.height + lineVerticalLayout.lineRect.origin.y);
         selectCopyHeightDif = MAX(selectCopyHeightDif, heightDif);
     }
-
+    
     //填充描边
     if (!self.caculateSizeOnly) {
         [self drawBackgroundColor:c runStrokeItems:lineStrokrArray isStrokeColor:YES];
@@ -755,15 +757,15 @@ NSString * const kCJLinkStringIdentifierAttributesName       = @"kCJLinkStringId
 
 //获取CTLineRef行所对应的CJGlyphRunStrokeItem数组
 - (NSMutableArray <CJGlyphRunStrokeItem *>*)lineRunItemsFromCTLineRef:(CTLineRef)line
-                                                     lineIndex:(CFIndex)lineIndex
-                                                    lineOrigin:(CGPoint)lineOrigin
-                                                        inRect:(CGRect)rect
-                                                       context:(CGContextRef)c
-                                                    lineAscent:(CGFloat)lineAscent
-                                                   lineDescent:(CGFloat)lineDescent
-                                                   lineLeading:(CGFloat)lineLeading
-                                                     lineWidth:(CGFloat)lineWidth
-                                            lineVerticalLayout:(CJCTLineVerticalLayout)lineVerticalLayout
+                                                            lineIndex:(CFIndex)lineIndex
+                                                           lineOrigin:(CGPoint)lineOrigin
+                                                               inRect:(CGRect)rect
+                                                              context:(CGContextRef)c
+                                                           lineAscent:(CGFloat)lineAscent
+                                                          lineDescent:(CGFloat)lineDescent
+                                                          lineLeading:(CGFloat)lineLeading
+                                                            lineWidth:(CGFloat)lineWidth
+                                                   lineVerticalLayout:(CJCTLineVerticalLayout)lineVerticalLayout
 {
     // 先获取每一行所有的runStrokeItems数组
     NSMutableArray *lineRunItems = [NSMutableArray arrayWithCapacity:3];
@@ -792,7 +794,7 @@ NSString * const kCJLinkStringIdentifierAttributesName       = @"kCJLinkStringId
     CGRect resultRect = CGRectZero;
     CGFloat labelRectHeight = self.bounds.size.height - self.textInsets.top - self.textInsets.bottom - _translateCTMty;
     CGFloat y = labelRectHeight - rect.origin.y - rect.size.height;
-
+    
     resultRect = CGRectMake(rect.origin.x, y, rect.size.width, rect.size.height);
     return resultRect;
 }
@@ -985,12 +987,12 @@ NSString * const kCJLinkStringIdentifierAttributesName       = @"kCJLinkStringId
 
 //记录 所有CTLine在垂直方向的对齐方式的数组
 - (NSArray <CJCTLineLayoutModel *>*)allCTLineVerticalLayoutArray:(CFArrayRef)lines
-                                  origins:(CGPoint[])origins
-                                   inRect:(CGRect)rect
-                                  context:(CGContextRef)c
-                                textRange:(CFRange)textRange
-                         attributedString:(NSAttributedString *)attributedString
-                         truncateLastLine:(BOOL)truncateLastLine
+                                                         origins:(CGPoint[])origins
+                                                          inRect:(CGRect)rect
+                                                         context:(CGContextRef)c
+                                                       textRange:(CFRange)textRange
+                                                attributedString:(NSAttributedString *)attributedString
+                                                truncateLastLine:(BOOL)truncateLastLine
 {
     NSMutableArray *verticalLayoutArray = [NSMutableArray arrayWithCapacity:3];
     // 遍历所有行
@@ -1110,7 +1112,7 @@ NSString * const kCJLinkStringIdentifierAttributesName       = @"kCJLinkStringId
     
     //当前run相对于self的CGRect
     runBounds = [self getRunStrokeItemlocRunBoundsFromGlyphRun:glyphRun line:line origin:origin lineIndex:lineIndex inRect:rect width:lineWidth lineVerticalLayout:lineVerticalLayout isImage:isImage imageVerticalAlignment:imageVerticalAlignment lineDescent:lineDescent lineLeading:lineLeading runBounds:runBounds runAscent:runAscent];
-
+    
     //转换为UIKit坐标系统
     CGRect locBounds = [self convertRectFromLoc:runBounds];
     
@@ -1118,12 +1120,12 @@ NSString * const kCJLinkStringIdentifierAttributesName       = @"kCJLinkStringId
     runStrokeItem.runBounds = runBounds;
     runStrokeItem.locBounds = locBounds;
     CGFloat withOutMergeBoundsY = lineVerticalLayout.lineRect.origin.y - (MAX(lineVerticalLayout.maxRunAscent, lineVerticalLayout.maxImageAscent) - lineVerticalLayout.lineRect.size.height);
-//    CGFloat withOutMergeBoundsY = locBounds.origin.y;
+    //    CGFloat withOutMergeBoundsY = locBounds.origin.y;
     runStrokeItem.withOutMergeBounds =
     CGRectMake(locBounds.origin.x,
                withOutMergeBoundsY,
                locBounds.size.width,
-//               locBounds.size.height);
+               //               locBounds.size.height);
                MAX(lineVerticalLayout.maxRunHeight, lineVerticalLayout.maxImageHeight));
     runStrokeItem.lineVerticalLayout = lineVerticalLayout;
     runStrokeItem.characterIndex = characterIndex;
@@ -1354,11 +1356,11 @@ NSString * const kCJLinkStringIdentifierAttributesName       = @"kCJLinkStringId
         return [super sizeThatFits:size];
     } else {
         NSAttributedString *string = [self renderedAttributedText];
-
+        
         CGSize labelSize = CTFramesetterSuggestFrameSizeForAttributedStringWithConstraints([self framesetter], string, size, (NSUInteger)self.numberOfLines);
         labelSize.width += self.textInsets.left + self.textInsets.right;
         labelSize.height += self.textInsets.top + self.textInsets.bottom;
-
+        
         return labelSize;
     }
 }
@@ -1578,7 +1580,7 @@ NSString * const kCJLinkStringIdentifierAttributesName       = @"kCJLinkStringId
                                                             imageRect:_currentClickRunStrokeItem.locBounds
                                                             parameter:_currentClickRunStrokeItem.parameter
                                                             linkRange:_currentClickRunStrokeItem.range];
-
+                    
                     
                     if (_currentClickRunStrokeItem.longPressBlock) {
                         _currentClickRunStrokeItem.longPressBlock(linkModel);
