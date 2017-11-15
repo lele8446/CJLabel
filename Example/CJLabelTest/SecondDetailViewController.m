@@ -132,10 +132,10 @@
     };
     //设置为可点击链点
     configure.isLink = YES;
-    attStr = [CJLabel configureAttrString:attStr
-                               withString:@"CJLabel"
-                         sameStringEnable:YES
-                                configure:configure];
+    
+    NSAttributedString *link = [CJLabel initWithNSString:@"CJLabel" strIdentifier:@"aa" configure:configure];
+    attStr = [CJLabel configureAttrString:attStr withAttributedString:link strIdentifier:@"aa" sameStringEnable:YES configure:configure];
+    
     return attStr;
 }
 
@@ -167,7 +167,7 @@
     if (item.tag == 100) {
         //移除指定链点
         NSArray *linkRangeArray = [CJLabel sameLinkStringRangeArray:@"CJLabel" inAttString:self.attStr];
-        [self.label removeLinkAtRange:NSRangeFromString(linkRangeArray[0])];
+        [self.label removeLinkAtRange:[linkRangeArray[0] rangeValue]];
         item.enabled = NO;
     }
     else if (item.tag == 200) {

@@ -1818,8 +1818,6 @@ NSString * const kCJLinkStringIdentifierAttributesName       = @"kCJLinkStringId
 
 + (NSMutableAttributedString *)configureAttrString:(NSAttributedString *)attrString withAttributedString:(NSAttributedString *)attributedString strIdentifier:(NSString *)strIdentifier sameStringEnable:(BOOL)sameStringEnable configure:(CJLabelConfigure *)configure {
     
-    
-    
     NSRange strRange = NSMakeRange(0, attributedString.length);
     NSDictionary *strDic = nil;
     if (strRange.length > 0) {

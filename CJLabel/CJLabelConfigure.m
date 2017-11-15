@@ -375,9 +375,14 @@ CGFloat RunDelegateGetWidthCallback(void * refCon) {
             }
             NSString *key = strDic[kCJLinkStringIdentifierAttributesName];
             
-            
-            if (key && withKey && [key isEqualToString:withKey]) {
-                [array addObject:rangeValue];
+            if (key.length > 0) {
+                if ([key isEqualToString:withKey]) {
+                    [array addObject:rangeValue];
+                }
+            }else{
+                if (withKey.length > 0) {
+                    [array addObject:rangeValue];
+                }
             }
         }
     }

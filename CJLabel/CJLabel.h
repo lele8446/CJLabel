@@ -238,6 +238,18 @@
                                              attributes:(NSDictionary<NSString *, id> *)attributes;
 
 /**
+ 根据NSAttributedString初始化NSAttributedString
+ 
+ @param attributedString    指定的NSAttributedString
+ @param configure           链点配置
+ @param strIdentifier       设置链点的唯一标识（用来区分不同的NSAttributedString，比如重名的 "@王小明" ,此时代表了不同的用户，不应该设置相同属性）
+ @return                    NSAttributedString
+ */
++ (NSMutableAttributedString *)initWithAttributedString:(NSAttributedString *)attributedString
+                                          strIdentifier:(NSString *)strIdentifier
+                                              configure:(CJLabelConfigure *)configure;
+
+/**
  对指定strIdentifier标识的attributedString设置链点属性，如果存在多个相同的文本，可以同时设置
  
  @param attrString          需要设置的源NSAttributedString
