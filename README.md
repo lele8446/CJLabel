@@ -6,7 +6,7 @@
    1. 禁止使用`-init`初始化！！
    2. `enableCopy` 长按或双击可唤起`UIMenuController`进行选择、全选、复制文本操作   
    3. `attributedText` 与 `text` 均可设置富文本
-   4. 不支持`NSAttachmentAttributeName`，`NSTextAttachment`！！<br/>显示图片请调用:<br/>
+   4. 不支持`NSAttachmentAttributeName``NSTextAttachment`！！<br/>显示图片请调用:<br/>
    `+ initWithImage:imageSize:imagelineAlignment:configure:`或者<br/>
    `+ insertImageAtAttrString:image:imageSize:atIndex:imagelineAlignment:configure:`方法初始化`NSAttributedString`后显示
    5. `extendsLinkTouchArea`设置是否扩大链点点击识别范围 
