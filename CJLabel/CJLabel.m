@@ -565,7 +565,7 @@ NSString * const kCJLinkStringIdentifierAttributesName       = @"kCJLinkStringId
         
         CJCTLineLayoutModel *lineLayoutModel = _CTLineVerticalLayoutArray[lineIndex];
         
-        if (lineIndex == count-1 && truncateLastLine) {
+        if (lineIndex == _numberOfLines-1 && truncateLastLine) {
             
             CTLineRef lastLine = [self handleLastCTLine:line textRange:textRange attributedString:attributedString rect:rect context:c];
             //当前最后一行的宽度
@@ -591,23 +591,21 @@ NSString * const kCJLinkStringIdentifierAttributesName       = @"kCJLinkStringId
     // 判断最后一行是否占满整行
     CFRange lastLineRange = CTLineGetStringRange(line);
     
-    CGRect lineBounds = CTLineGetImageBounds(line, c);
+//    CGRect lineBounds = CTLineGetImageBounds(line, c);
+//    CGFloat textWidth = self.bounds.size.width - self.textInsets.left - self.textInsets.right;
+//    CGFloat lineWidth = lineBounds.size.width;
+//    if (!(lastLineRange.length == 0 && lastLineRange.location == 0) && lastLineRange.location + lastLineRange.length < textRange.location + textRange.length && (lineWidth >= textWidth - 15)) {
     
-    
-    CGFloat textWidth = self.bounds.size.width - self.textInsets.left - self.textInsets.right;
-    CGFloat lineWidth = lineBounds.size.width;
-    //    if (!(lastLineRange.length == 0 && lastLineRange.location == 0) && (lineWidth >= textWidth - 15)) {
-    
-    if (!(lastLineRange.length == 0 && lastLineRange.location == 0) && lastLineRange.location + lastLineRange.length < textRange.location + textRange.length  && (lineWidth >= textWidth - 15)) {
+    if (!(lastLineRange.length == 0 && lastLineRange.location == 0) && lastLineRange.location + lastLineRange.length < textRange.location + textRange.length) {
         
         CTLineTruncationType truncationType;
         CFIndex truncationAttributePosition = lastLineRange.location;
         NSLineBreakMode lineBreakMode = self.lineBreakMode;
         
         // 多行时lineBreakMode默认为NSLineBreakByTruncatingTail
-        if (_numberOfLines != 1) {
-            lineBreakMode = NSLineBreakByTruncatingTail;
-        }
+//        if (_numberOfLines != 1) {
+//            lineBreakMode = NSLineBreakByTruncatingTail;
+//        }
         
         switch (lineBreakMode) {
             case NSLineBreakByTruncatingHead:
@@ -624,11 +622,16 @@ NSString * const kCJLinkStringIdentifierAttributesName       = @"kCJLinkStringId
                 break;
         }
         
-        NSString *truncationTokenString = @"\u2026"; // \u2026 对应"..."的Unicode编码
-        
-        NSDictionary *truncationTokenStringAttributes = truncationTokenStringAttributes = [attributedString attributesAtIndex:(NSUInteger)truncationAttributePosition effectiveRange:NULL];
-        
-        NSAttributedString *attributedTruncationString = [[NSAttributedString alloc] initWithString:truncationTokenString attributes:truncationTokenStringAttributes];
+        NSMutableAttributedString *attributedTruncationString = [[NSMutableAttributedString alloc]init];
+        if (!self.attributedTruncationToken) {
+            NSString *truncationTokenString = @"\u2026"; // \u2026 对应"..."的Unicode编码
+            
+            NSDictionary *truncationTokenStringAttributes = truncationTokenStringAttributes = [attributedString attributesAtIndex:(NSUInteger)truncationAttributePosition effectiveRange:NULL];
+            
+            attributedTruncationString = [[NSMutableAttributedString alloc] initWithString:truncationTokenString attributes:truncationTokenStringAttributes];
+        }else{
+            [attributedTruncationString appendAttributedString:self.attributedTruncationToken];
+        }
         
         CTLineRef truncationToken = CTLineCreateWithAttributedString((__bridge CFAttributedStringRef)attributedTruncationString);
         
@@ -638,14 +641,42 @@ NSString * const kCJLinkStringIdentifierAttributesName       = @"kCJLinkStringId
                                                         NSMakeRange((NSUInteger)lastLineRange.location,
                                                                     (NSUInteger)lastLineRange.length)]];
         if (lastLineRange.length > 0) {
-            // 判断最后一行的最后是不是完整单词，避免出现 "..." 前十不完整单词的情况
+            // 判断最后一行的最后是不是完整单词，避免出现 "..." 前面是一个不完整单词的情况
             unichar lastCharacter = [[truncationString string] characterAtIndex:(NSUInteger)(lastLineRange.length - 1)];
             if ([[NSCharacterSet newlineCharacterSet] characterIsMember:lastCharacter]) {
                 [truncationString deleteCharactersInRange:NSMakeRange((NSUInteger)(lastLineRange.length - 1), 1)];
             }
         }
-        [truncationString appendAttributedString:attributedTruncationString];
-        CTLineRef truncationLine = CTLineCreateWithAttributedString((__bridge CFAttributedStringRef)truncationString);
+        
+        NSMutableAttributedString *lastAttStr = [[NSMutableAttributedString alloc]initWithAttributedString:truncationString];
+        switch (lineBreakMode) {
+            case NSLineBreakByTruncatingHead:
+                lastAttStr = [[NSMutableAttributedString alloc]initWithAttributedString:attributedTruncationString];
+                [lastAttStr appendAttributedString:truncationString];
+                break;
+            case NSLineBreakByTruncatingMiddle:
+            {
+                NSInteger truncationTokenLength = attributedTruncationString.length;
+                NSInteger allLineLength = truncationString.length - truncationTokenLength + 1;
+                NSAttributedString *headStr = [truncationString attributedSubstringFromRange:NSMakeRange(0, truncationString.length - allLineLength/2 + 1)];
+                NSAttributedString *tailStr = [attributedString attributedSubstringFromRange:
+                                               NSMakeRange(attributedString.length - allLineLength/2,
+                                                           allLineLength/2)];
+                
+                
+                
+                lastAttStr = [[NSMutableAttributedString alloc]initWithAttributedString:headStr];
+                [lastAttStr appendAttributedString:attributedTruncationString];
+                [lastAttStr appendAttributedString:tailStr];
+            }
+                break;
+            case NSLineBreakByTruncatingTail:
+            default:
+                [lastAttStr appendAttributedString:attributedTruncationString];
+                break;
+        }
+        
+        CTLineRef truncationLine = CTLineCreateWithAttributedString((__bridge CFAttributedStringRef)lastAttStr);
         
         // 截取CTLine，以防其过长
         CTLineRef truncatedLine = CTLineCreateTruncatedLine(truncationLine, rect.size.width, truncationType, truncationToken);
