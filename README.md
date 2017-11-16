@@ -14,19 +14,19 @@
    7. `textInsets` 设置文本内边距
    8. `verticalAlignment` 设置垂直方向的文本对齐方式。注意与显示图片时候的`imagelineAlignment`作区分，`self.verticalAlignment`对应的是整体文本在垂直方向的对齐方式，而`imagelineAlignment`只对图片所在行的垂直对齐方式有效
    9. `delegate` 点击链点代理
-   10. `attributedTruncationToken`自定义截断字符，只针对`self.lineBreakMode`的以下三种值有效，假如`attributedTruncationToken`=`***`，则： <br/>
- `NSLineBreakByTruncatingHead,    // 头部截断: "***wxyz"`<br/>
- `NSLineBreakByTruncatingTail,    // 中间截断: "abcd***"`<br/>
- `NSLineBreakByTruncatingMiddle   // 尾部截断:  "ab***yz"`
-   10. `kCJBackgroundFillColorAttributeName` 背景填充颜色，属性优先级低于`NSBackgroundColorAttributeName`如果设置`NSBackgroundColorAttributeName`会忽略`kCJBackgroundFillColorAttributeName`的设置
-   11. `kCJBackgroundStrokeColorAttributeName ` 背景边框线颜色
-   12. `kCJBackgroundLineWidthAttributeName ` 背景边框线宽度
-   13. `kCJBackgroundLineCornerRadiusAttributeName ` 背景边框线圆角弧度
-   14. `kCJActiveBackgroundFillColorAttributeName ` 点击时候的背景填充颜色属性优先级同
+   10. `attributedTruncationToken`自定义截断字符，只针对`self.lineBreakMode`的以下三种值有效，假如`attributedTruncationToken`=`*`，则： <br/>
+ `NSLineBreakByTruncatingHead,    // 头部截断: "...wxyz"`<br/>
+ `NSLineBreakByTruncatingTail,    // 中间截断: "abcd..."`<br/>
+ `NSLineBreakByTruncatingMiddle   // 尾部截断:  "ab...yz"`
+   11. `kCJBackgroundFillColorAttributeName` 背景填充颜色，属性优先级低于`NSBackgroundColorAttributeName`如果设置`NSBackgroundColorAttributeName`会忽略`kCJBackgroundFillColorAttributeName`的设置
+   12. `kCJBackgroundStrokeColorAttributeName ` 背景边框线颜色
+   13. `kCJBackgroundLineWidthAttributeName ` 背景边框线宽度
+   14. `kCJBackgroundLineCornerRadiusAttributeName ` 背景边框线圆角弧度
+   15. `kCJActiveBackgroundFillColorAttributeName ` 点击时候的背景填充颜色属性优先级同
 `kCJBackgroundFillColorAttributeName`
-   15. `kCJActiveBackgroundStrokeColorAttributeName ` 点击时候的背景边框线颜色
-   16. 支持添加自定义样式、可点击（长按）的文本点击链点
-   17. 支持 Interface Builder
+   16. `kCJActiveBackgroundStrokeColorAttributeName ` 点击时候的背景边框线颜色
+   17. 支持添加自定义样式、可点击（长按）的文本点击链点
+   18. 支持 Interface Builder
 
 
 ##### CJLabel 已知 Bug
