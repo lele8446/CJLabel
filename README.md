@@ -14,7 +14,7 @@
    7. `textInsets` 设置文本内边距
    8. `verticalAlignment` 设置垂直方向的文本对齐方式。注意与显示图片时候的`imagelineAlignment`作区分，`self.verticalAlignment`对应的是整体文本在垂直方向的对齐方式，而`imagelineAlignment`只对图片所在行的垂直对齐方式有效
    9. `delegate` 点击链点代理
-   10. `attributedTruncationToken`自定义截断字符，只针对`self.lineBreakMode`的以下三种值有效，假如`attributedTruncationToken`=`*`，则： <br/>
+   10. `attributedTruncationToken`自定义截断字符，只针对`self.lineBreakMode`的以下三种值有效，假如`attributedTruncationToken`=`...`，则： <br/>
  `NSLineBreakByTruncatingHead,    // 头部截断: "...wxyz"`<br/>
  `NSLineBreakByTruncatingTail,    // 中间截断: "abcd..."`<br/>
  `NSLineBreakByTruncatingMiddle   // 尾部截断:  "ab...yz"`
