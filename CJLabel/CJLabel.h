@@ -109,11 +109,10 @@
  */
 @property (readwrite, nonatomic, assign) IBInspectable BOOL enableCopy;
 /**
- 设置`self.lineBreakMode`时候的自定义字符，默认值为"..."
- 只针对`self.lineBreakMode`的以下三种值有效
- NSLineBreakByTruncatingHead,    // Truncate at head of line: "...wxyz"
- NSLineBreakByTruncatingTail,    // Truncate at tail of line: "abcd..."
- NSLineBreakByTruncatingMiddle   // Truncate middle of line:  "ab...yz"
+ 自定义截断字符，只针对`self.lineBreakMode`的以下三种值有效，假如 attributedTruncationToken = "..."，则：
+ NSLineBreakByTruncatingHead,    // 头部截断: "...wxyz"
+ NSLineBreakByTruncatingTail,    // 中间截断: "abcd..."
+ NSLineBreakByTruncatingMiddle   // 尾部截断: "ab...yz"
  */
 @property (readwrite, nonatomic, strong) NSAttributedString *attributedTruncationToken;
 
