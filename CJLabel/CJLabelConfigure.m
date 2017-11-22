@@ -118,9 +118,11 @@ CGFloat RunDelegateGetWidthCallback(void * refCon) {
     imageCallbacks.getDescent = RunDelegateGetDescentCallback;
     CTRunDelegateRef runDelegate = CTRunDelegateCreate(&imageCallbacks, (__bridge void *)imgInfoDic);
     
+    unichar imgReplacementChar = 0xFFFC;
+    NSString *imgReplacementString = [NSString stringWithCharacters:&imgReplacementChar length:1];
     //插入图片 空白占位符
     NSMutableString *imgPlaceholderStr = [[NSMutableString alloc]initWithCapacity:3];
-    [imgPlaceholderStr appendString:kAddImagePlaceholderString];
+    [imgPlaceholderStr appendString:imgReplacementString];
     NSRange imgRange = NSMakeRange(0, imgPlaceholderStr.length);
     NSMutableAttributedString *imageAttributedString = [[NSMutableAttributedString alloc] initWithString:imgPlaceholderStr];
     [imageAttributedString addAttribute:(NSString *)kCTRunDelegateAttributeName value:(__bridge id)runDelegate range:imgRange];

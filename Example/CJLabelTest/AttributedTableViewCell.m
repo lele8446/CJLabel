@@ -16,7 +16,8 @@
     self.label.numberOfLines = 4;
     self.label.textInsets = UIEdgeInsetsMake(5, 5, 5, 0);
     self.label.enableCopy = YES;
-//    self.label.attributedTruncationToken = [[NSAttributedString alloc]initWithString:@""];
+    self.label.font = [UIFont systemFontOfSize:12];
+    self.label.attributedTruncationToken = [[NSAttributedString alloc]initWithString:@""];
 }
 
 - (void)setSelected:(BOOL)selected animated:(BOOL)animated {

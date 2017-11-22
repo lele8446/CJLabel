@@ -128,7 +128,7 @@
     cell.selectionStyle = UITableViewCellSelectionStyleNone;
     cell.label.delegate = self;
     NSAttributedString *content = [self.espressos objectAtIndex:(NSUInteger)indexPath.row];
-    cell.label.text = content;
+    cell.label.text = content.string;
     return cell;
 }
 
