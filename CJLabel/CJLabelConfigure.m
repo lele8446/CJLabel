@@ -27,9 +27,6 @@ NSString * const kCJClickLinkBlockAttributesName             = @"kCJClickLinkBlo
 NSString * const kCJLongPressBlockAttributesName             = @"kCJLongPressBlockAttributesName";
 NSString * const kCJLinkNeedRedrawnAttributesName            = @"kCJLinkNeedRedrawnAttributesName";
 
-//插入图片 占位符
-NSString * const kAddImagePlaceholderString                  = @" ";
-
 
 void RunDelegateDeallocCallback(void * refCon) {
     
