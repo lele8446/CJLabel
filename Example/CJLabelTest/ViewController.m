@@ -128,7 +128,7 @@
     cell.selectionStyle = UITableViewCellSelectionStyleNone;
     cell.label.delegate = self;
     NSAttributedString *content = [self.espressos objectAtIndex:(NSUInteger)indexPath.row];
-    cell.label.text = content.string;
+    cell.label.attributedText = content;
     return cell;
 }
 
@@ -148,6 +148,7 @@
             break;
         case 1:
         case 3:
+        case 5:
         {
             FirstDetailViewController *detailCtr = [[FirstDetailViewController alloc]initWithNibName:@"FirstDetailViewController" bundle:nil];
             detailCtr.index = indexPath.row;

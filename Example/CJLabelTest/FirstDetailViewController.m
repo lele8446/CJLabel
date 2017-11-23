@@ -111,10 +111,56 @@
             self.label.attributedText = attStr;
         }
             break;
+        case 5:
+        {
+            self.navigationItem.title = @"自定义截断字符";
+            self.label.numberOfLines = 3;
+            
+            //配置链点属性
+            configure.isLink = YES;
+            configure.clickLinkBlock = ^(CJLabelLinkModel *linkModel) {
+                //点击 `……全文`
+                [self clickTruncationToken:linkModel];
+            };
+            configure.attributes = @{NSForegroundColorAttributeName:[UIColor blueColor],NSFontAttributeName:[UIFont systemFontOfSize:13]};
+            
+            //自定义截断字符为："……全文"
+            NSAttributedString *truncationToken = [CJLabel initWithAttributedString:[[NSAttributedString alloc]initWithString:@"……全文"] strIdentifier:@"TruncationToken" configure:configure];
+            //设置行尾截断
+            self.label.lineBreakMode = NSLineBreakByTruncatingTail;
+            self.label.attributedTruncationToken = truncationToken;
+            //设置点击链点
+            attStr = [CJLabel configureAttrString:attStr withAttributedString:truncationToken strIdentifier:@"TruncationToken" sameStringEnable:NO configure:configure];
+            
+            self.label.attributedText = attStr;
+            //支持选择复制
+            self.label.enableCopy = YES;
+            CGFloat height = [CJLabel sizeWithAttributedString:attStr withConstraints:CGSizeMake(ScreenWidth-20, CGFLOAT_MAX) limitedToNumberOfLines:3].height;
+            self.label.frame = CGRectMake(10, 10, ScreenWidth - 20, height);
+        }
         default:
             break;
     }
-    
+}
+
+- (void)clickTruncationToken:(CJLabelLinkModel *)linkModel {
+    NSLog(@"点击了 `……全文`");
+    [self truncationTokenRightBarButtonItem:YES];
+    NSAttributedString *text = linkModel.label.attributedText;
+    linkModel.label.numberOfLines = 0;
+    CGFloat height = [CJLabel sizeWithAttributedString:text withConstraints:CGSizeMake(ScreenWidth-20, CGFLOAT_MAX) limitedToNumberOfLines:0].height;
+    linkModel.label.frame = CGRectMake(10, 10, ScreenWidth - 20, height);
+    [linkModel.label flushText];
+}
+
+- (void)truncationTokenRightBarButtonItem:(BOOL)show {
+    if (show) {
+        UIBarButtonItem *item = [[UIBarButtonItem alloc]initWithTitle:@"收起" style:UIBarButtonItemStylePlain target:self action:@selector(itemClick:)];
+        item.tag = 400;
+        self.navigationItem.rightBarButtonItem = item;
+    }else{
+        self.navigationItem.rightBarButtonItem = nil;
+    }
 }
 
 - (void)rightBarButtonItems {
@@ -135,6 +181,12 @@
         self.label.verticalAlignment = CJVerticalAlignmentCenter;
     }else if (item.tag == 300) {
         self.label.verticalAlignment = CJVerticalAlignmentBottom;
+    }else if (item.tag == 400) {
+        self.label.numberOfLines = 3;
+        CGFloat height = [CJLabel sizeWithAttributedString:self.label.attributedText withConstraints:CGSizeMake(ScreenWidth-20, CGFLOAT_MAX) limitedToNumberOfLines:3].height;
+        self.label.frame = CGRectMake(10, 10, ScreenWidth - 20, height);
+        [self.label flushText];
+        [self truncationTokenRightBarButtonItem:NO];
     }
     
 }

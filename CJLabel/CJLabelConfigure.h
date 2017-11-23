@@ -182,6 +182,10 @@ typedef struct CJCTLineVerticalLayout CJCTLineVerticalLayout;
  */
 @interface CJLabelLinkModel : NSObject
 /**
+ 当前CJLabel实例
+ */
+@property (readonly, nonatomic, strong) CJLabel *label;
+/**
  链点文本
  */
 @property (readonly, nonatomic, strong) NSAttributedString *attributedString;
@@ -206,7 +210,8 @@ typedef struct CJCTLineVerticalLayout CJCTLineVerticalLayout;
                                    image:(id)image
                                imageRect:(CGRect )imageRect
                                parameter:(id)parameter
-                               linkRange:(NSRange)linkRange;
+                               linkRange:(NSRange)linkRange
+                                   label:(CJLabel *)label;
 @end
 
 /**

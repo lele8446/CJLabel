@@ -425,6 +425,7 @@ CGFloat RunDelegateGetWidthCallback(void * refCon) {
                                imageRect:(CGRect )imageRect
                                parameter:(id)parameter
                                linkRange:(NSRange)linkRange
+                                   label:(CJLabel *)label
 {
     self = [super init];
     if (self) {
@@ -433,6 +434,7 @@ CGFloat RunDelegateGetWidthCallback(void * refCon) {
         _imageRect = imageRect;
         _parameter = parameter;
         _linkRange = linkRange;
+        _label = label;
     }
     return self;
 }

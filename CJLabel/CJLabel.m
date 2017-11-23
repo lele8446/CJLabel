@@ -52,8 +52,10 @@ NSString * const kCJLinkStringIdentifierAttributesName       = @"kCJLinkStringId
 
 @implementation CJLabel {
 @private
+    id _text;
+    NSAttributedString *_attributedText;
     BOOL _needsFramesetter;
-    NSInteger _numberOfLines;
+    NSInteger _textNumberOfLines;
     CTFramesetterRef _framesetter;
     CTFramesetterRef _highlightFramesetter;
     CGFloat _yOffset;
@@ -70,9 +72,10 @@ NSString * const kCJLinkStringIdentifierAttributesName       = @"kCJLinkStringId
     BOOL _afterLongPressEnd;//用于判断长按复制判断
 }
 
-
-@synthesize text = _text;
-@synthesize attributedText = _attributedText;
+@dynamic text;
+@dynamic attributedText;
+//@synthesize text = _text;
+//@synthesize attributedText = _attributedText;
 
 #pragma mark - Life cycle
 - (id)initWithCoder:(NSCoder *)coder {
@@ -95,7 +98,7 @@ NSString * const kCJLinkStringIdentifierAttributesName       = @"kCJLinkStringId
     self.userInteractionEnabled = YES;
     self.textInsets = UIEdgeInsetsZero;
     self.verticalAlignment = CJVerticalAlignmentCenter;
-    _numberOfLines = -1;
+    _textNumberOfLines = -1;
     self.caculateCopySize = NO;
     _needRedrawn = YES;
     _longPress = NO;
@@ -105,8 +108,7 @@ NSString * const kCJLinkStringIdentifierAttributesName       = @"kCJLinkStringId
     _allRunItemArray = [NSMutableArray arrayWithCapacity:3];
     _currentClickRunStrokeItem = nil;
     _CTLineVerticalLayoutArray = nil;
-    _longPressGestureRecognizer = [[UILongPressGestureRecognizer alloc] initWithTarget:self
-                                                                                action:@selector(longPressGestureDidFire:)];
+    _longPressGestureRecognizer = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(longPressGestureDidFire:)];
     _longPressGestureRecognizer.delegate = self;
     [self addGestureRecognizer:_longPressGestureRecognizer];
     
@@ -134,11 +136,7 @@ NSString * const kCJLinkStringIdentifierAttributesName       = @"kCJLinkStringId
 
 - (void)setVerticalAlignment:(CJLabelVerticalAlignment)verticalAlignment {
     _verticalAlignment = verticalAlignment;
-    [self setNeedsFramesetter];
-    [_allRunItemArray removeAllObjects];
-    [self setNeedsDisplay];
-    //立即刷新界面
-    [CATransaction flush];
+    [self flushText];
 }
 
 - (void)setEnableCopy:(BOOL)enableCopy {
@@ -168,17 +166,18 @@ NSString * const kCJLinkStringIdentifierAttributesName       = @"kCJLinkStringId
         
         NSMutableParagraphStyle *paragraphStyle = [[NSMutableParagraphStyle alloc] init];
         paragraphStyle.alignment = self.textAlignment;
-        if (self.numberOfLines == 1) {
-            paragraphStyle.lineBreakMode = self.lineBreakMode;
-        } else {
-            paragraphStyle.lineBreakMode = NSLineBreakByWordWrapping;
-        }
         [mutableAttributes setObject:paragraphStyle forKey:(NSString *)kCTParagraphStyleAttributeName];
         mutableAttributedString = [[NSMutableAttributedString alloc] initWithString:text attributes:mutableAttributes];
     }else{
         mutableAttributedString = text;
     }
+    
     self.attributedText = mutableAttributedString;
+    _text = mutableAttributedString.string;
+}
+
+- (id)text {
+    return _text;
 }
 
 - (void)setAttributedText:(NSAttributedString *)text {
@@ -273,6 +272,10 @@ NSString * const kCJLinkStringIdentifierAttributesName       = @"kCJLinkStringId
     }
 }
 
+- (NSAttributedString *)attributedText {
+    return _attributedText;
+}
+
 - (NSAttributedString *)renderedAttributedText {
     if (!_renderedAttributedText) {
         NSMutableAttributedString *fullString = [[NSMutableAttributedString alloc] initWithAttributedString:self.attributedText];
@@ -322,7 +325,7 @@ NSString * const kCJLinkStringIdentifierAttributesName       = @"kCJLinkStringId
     
     [_linkStrokeItemArray removeAllObjects];
     _CTLineVerticalLayoutArray = nil;
-    _numberOfLines = -1;
+    _textNumberOfLines = -1;
     _needRedrawn = YES;
     [[CJSelectBackView instance] hideView];
 }
@@ -535,14 +538,14 @@ NSString * const kCJLinkStringIdentifierAttributesName       = @"kCJLinkStringId
     CTFrameRef frame = CTFramesetterCreateFrame(framesetter, textRange, path, NULL);
     
     CFArrayRef lines = CTFrameGetLines(frame);
-    if (_numberOfLines == -1) {
-        _numberOfLines = self.numberOfLines > 0 ? MIN(self.numberOfLines, CFArrayGetCount(lines)) : CFArrayGetCount(lines);
+    if (_textNumberOfLines == -1) {
+        _textNumberOfLines = self.numberOfLines > 0 ? MIN(self.numberOfLines, CFArrayGetCount(lines)) : CFArrayGetCount(lines);
     }
     
     BOOL truncateLastLine = (self.lineBreakMode == NSLineBreakByTruncatingHead || self.lineBreakMode == NSLineBreakByTruncatingMiddle || self.lineBreakMode == NSLineBreakByTruncatingTail);
     
-    CGPoint lineOrigins[_numberOfLines];
-    CTFrameGetLineOrigins(frame, CFRangeMake(0, _numberOfLines), lineOrigins);
+    CGPoint lineOrigins[_textNumberOfLines];
+    CTFrameGetLineOrigins(frame, CFRangeMake(0, _textNumberOfLines), lineOrigins);
     
     if (_needRedrawn) {
         //记录 所有CTLine在垂直方向的对齐方式的数组
@@ -553,7 +556,7 @@ NSString * const kCJLinkStringIdentifierAttributesName       = @"kCJLinkStringId
     CGFloat flushFactor = CJFlushFactorForTextAlignment(self.textAlignment);
     
     CFIndex count =  CFArrayGetCount(lines);
-    for (CFIndex lineIndex = 0; lineIndex < MIN(_numberOfLines,count); lineIndex++) {
+    for (CFIndex lineIndex = 0; lineIndex < MIN(_textNumberOfLines,count); lineIndex++) {
         CGPoint lineOrigin = lineOrigins[lineIndex];
         CGContextSetTextPosition(c, lineOrigin.x, lineOrigin.y);
         CTLineRef line = CFArrayGetValueAtIndex(lines, lineIndex);
@@ -565,7 +568,7 @@ NSString * const kCJLinkStringIdentifierAttributesName       = @"kCJLinkStringId
         
         CJCTLineLayoutModel *lineLayoutModel = _CTLineVerticalLayoutArray[lineIndex];
         
-        if (lineIndex == _numberOfLines-1 && truncateLastLine) {
+        if (lineIndex == _textNumberOfLines-1 && truncateLastLine) {
             
             CTLineRef lastLine = [self handleLastCTLine:line textRange:textRange attributedString:attributedString rect:rect context:c];
             //当前最后一行的宽度
@@ -591,21 +594,13 @@ NSString * const kCJLinkStringIdentifierAttributesName       = @"kCJLinkStringId
     // 判断最后一行是否占满整行
     CFRange lastLineRange = CTLineGetStringRange(line);
     
-//    CGRect lineBounds = CTLineGetImageBounds(line, c);
-//    CGFloat textWidth = self.bounds.size.width - self.textInsets.left - self.textInsets.right;
-//    CGFloat lineWidth = lineBounds.size.width;
-//    if (!(lastLineRange.length == 0 && lastLineRange.location == 0) && lastLineRange.location + lastLineRange.length < textRange.location + textRange.length && (lineWidth >= textWidth - 15)) {
+    BOOL needTruncation = (!(lastLineRange.length == 0 && lastLineRange.location == 0) && lastLineRange.location + lastLineRange.length < textRange.location + textRange.length);
     
-    if (!(lastLineRange.length == 0 && lastLineRange.location == 0) && lastLineRange.location + lastLineRange.length < textRange.location + textRange.length) {
+    if (needTruncation) {
         
         CTLineTruncationType truncationType;
         CFIndex truncationAttributePosition = lastLineRange.location;
         NSLineBreakMode lineBreakMode = self.lineBreakMode;
-        
-        // 多行时lineBreakMode默认为NSLineBreakByTruncatingTail
-//        if (_numberOfLines != 1) {
-//            lineBreakMode = NSLineBreakByTruncatingTail;
-//        }
         
         switch (lineBreakMode) {
             case NSLineBreakByTruncatingHead:
@@ -622,61 +617,52 @@ NSString * const kCJLinkStringIdentifierAttributesName       = @"kCJLinkStringId
                 break;
         }
         
+        NSDictionary *truncationTokenStringAttributes = [attributedString attributesAtIndex:(NSUInteger)truncationAttributePosition effectiveRange:NULL];
+        
         NSMutableAttributedString *attributedTruncationString = [[NSMutableAttributedString alloc]init];
         if (!self.attributedTruncationToken) {
-            NSString *truncationTokenString = @"\u2026"; // \u2026 对应"..."的Unicode编码
-            
-            NSDictionary *truncationTokenStringAttributes = truncationTokenStringAttributes = [attributedString attributesAtIndex:(NSUInteger)truncationAttributePosition effectiveRange:NULL];
-            
+            NSString *truncationTokenString = @"\u2026"; // \u2026 对应"…"的Unicode编码
             attributedTruncationString = [[NSMutableAttributedString alloc] initWithString:truncationTokenString attributes:truncationTokenStringAttributes];
         }else{
+            NSDictionary *attributedTruncationTokenAttributes = [self.attributedTruncationToken attributesAtIndex:(NSUInteger)0 effectiveRange:NULL];
             [attributedTruncationString appendAttributedString:self.attributedTruncationToken];
+            if (attributedTruncationTokenAttributes.count == 0) {
+                [attributedTruncationString addAttributes:truncationTokenStringAttributes range:NSMakeRange(0, attributedTruncationString.length)];
+            }
         }
         
         CTLineRef truncationToken = CTLineCreateWithAttributedString((__bridge CFAttributedStringRef)attributedTruncationString);
         
+        NSUInteger lenght = lastLineRange.location;
+        if (lineBreakMode == NSLineBreakByTruncatingHead || lineBreakMode == NSLineBreakByTruncatingMiddle) {
+            lenght = attributedString.length - lastLineRange.location;
+        }
+        NSAttributedString *lastStr = [attributedString attributedSubstringFromRange:NSMakeRange((NSUInteger)lastLineRange.location,MIN(attributedString.length-lastLineRange.location, lenght))];
         // 获取最后一行的NSAttributedString
-        NSMutableAttributedString *truncationString = [[NSMutableAttributedString alloc] initWithAttributedString:
-                                                       [attributedString attributedSubstringFromRange:
-                                                        NSMakeRange((NSUInteger)lastLineRange.location,
-                                                                    (NSUInteger)lastLineRange.length)]];
+        NSMutableAttributedString *truncationString = [[NSMutableAttributedString alloc] initWithAttributedString:lastStr];
         if (lastLineRange.length > 0) {
-            // 判断最后一行的最后是不是完整单词，避免出现 "..." 前面是一个不完整单词的情况
-            unichar lastCharacter = [[truncationString string] characterAtIndex:(NSUInteger)(lastLineRange.length - 1)];
+            // 判断最后一行的最后是不是完整单词，避免出现 "…" 前面是一个不完整单词的情况
+            unichar lastCharacter = [[truncationString string] characterAtIndex:(NSUInteger)(MIN(lastLineRange.length - 1, truncationString.length -1))];
             if ([[NSCharacterSet newlineCharacterSet] characterIsMember:lastCharacter]) {
                 [truncationString deleteCharactersInRange:NSMakeRange((NSUInteger)(lastLineRange.length - 1), 1)];
             }
         }
         
-        NSMutableAttributedString *lastAttStr = [[NSMutableAttributedString alloc]initWithAttributedString:truncationString];
+        NSInteger lastLineLength = truncationString.length;
         switch (lineBreakMode) {
             case NSLineBreakByTruncatingHead:
-                lastAttStr = [[NSMutableAttributedString alloc]initWithAttributedString:attributedTruncationString];
-                [lastAttStr appendAttributedString:truncationString];
+                [truncationString insertAttributedString:attributedTruncationString atIndex:0];
                 break;
             case NSLineBreakByTruncatingMiddle:
-            {
-                NSInteger truncationTokenLength = attributedTruncationString.length;
-                NSInteger allLineLength = truncationString.length - truncationTokenLength + 1;
-                NSAttributedString *headStr = [truncationString attributedSubstringFromRange:NSMakeRange(0, truncationString.length - allLineLength/2 + 1)];
-                NSAttributedString *tailStr = [attributedString attributedSubstringFromRange:
-                                               NSMakeRange(attributedString.length - allLineLength/2,
-                                                           allLineLength/2)];
-                
-                
-                
-                lastAttStr = [[NSMutableAttributedString alloc]initWithAttributedString:headStr];
-                [lastAttStr appendAttributedString:attributedTruncationString];
-                [lastAttStr appendAttributedString:tailStr];
-            }
+                [truncationString insertAttributedString:attributedTruncationString atIndex:lastLineLength/2.0];
                 break;
             case NSLineBreakByTruncatingTail:
             default:
-                [lastAttStr appendAttributedString:attributedTruncationString];
+                [truncationString appendAttributedString:attributedTruncationString];
                 break;
         }
         
-        CTLineRef truncationLine = CTLineCreateWithAttributedString((__bridge CFAttributedStringRef)lastAttStr);
+        CTLineRef truncationLine = CTLineCreateWithAttributedString((__bridge CFAttributedStringRef)truncationString);
         
         // 截取CTLine，以防其过长
         CTLineRef truncatedLine = CTLineCreateTruncatedLine(truncationLine, rect.size.width, truncationType, truncationToken);
@@ -1027,13 +1013,13 @@ NSString * const kCJLinkStringIdentifierAttributesName       = @"kCJLinkStringId
 {
     NSMutableArray *verticalLayoutArray = [NSMutableArray arrayWithCapacity:3];
     // 遍历所有行
-    for (CFIndex lineIndex = 0; lineIndex < MIN(_numberOfLines, CFArrayGetCount(lines)); lineIndex ++ ) {
+    for (CFIndex lineIndex = 0; lineIndex < MIN(_textNumberOfLines, CFArrayGetCount(lines)); lineIndex ++ ) {
         CTLineRef line = CFArrayGetValueAtIndex(lines, lineIndex);
         
         CGFloat lineAscent = 0.0f, lineDescent = 0.0f, lineLeading = 0.0f;
         CTLineGetTypographicBounds(line, &lineAscent, &lineDescent, &lineLeading);
         
-        if (lineIndex == _numberOfLines - 1 && truncateLastLine) {
+        if (lineIndex == _textNumberOfLines - 1 && truncateLastLine) {
             
             CTLineRef lastLine = [self handleLastCTLine:line textRange:textRange attributedString:attributedString rect:rect context:c];
             CTLineGetTypographicBounds(lastLine, &lineAscent, &lineDescent, &lineLeading);
@@ -1476,12 +1462,14 @@ NSString * const kCJLinkStringIdentifierAttributesName       = @"kCJLinkStringId
         if (_currentClickRunStrokeItem) {
             
             NSAttributedString *attributedString = [self.attributedText attributedSubstringFromRange:_currentClickRunStrokeItem.range];
+            __weak typeof(self)wSelf = self;
             CJLabelLinkModel *linkModel =
             [[CJLabelLinkModel alloc]initWithAttributedString:attributedString
                                                         image:_currentClickRunStrokeItem.image
                                                     imageRect:_currentClickRunStrokeItem.locBounds
                                                     parameter:_currentClickRunStrokeItem.parameter
-                                                    linkRange:_currentClickRunStrokeItem.range];
+                                                    linkRange:_currentClickRunStrokeItem.range
+                                                        label:wSelf];
             
             if (_currentClickRunStrokeItem.linkBlock) {
                 _currentClickRunStrokeItem.linkBlock(linkModel);
@@ -1543,12 +1531,14 @@ NSString * const kCJLinkStringIdentifierAttributesName       = @"kCJLinkStringId
         _currentClickRunStrokeItem = item;
         
         NSAttributedString *attributedString = [self.attributedText attributedSubstringFromRange:_currentClickRunStrokeItem.range];
+        __weak typeof(self)wSelf = self;
         CJLabelLinkModel *linkModel =
         [[CJLabelLinkModel alloc]initWithAttributedString:attributedString
                                                     image:_currentClickRunStrokeItem.image
                                                 imageRect:_currentClickRunStrokeItem.locBounds
                                                 parameter:_currentClickRunStrokeItem.parameter
-                                                linkRange:_currentClickRunStrokeItem.range];
+                                                linkRange:_currentClickRunStrokeItem.range
+                                                    label:wSelf];
         
         if (_currentClickRunStrokeItem.linkBlock) {
             _currentClickRunStrokeItem.linkBlock(linkModel);
@@ -1605,12 +1595,14 @@ NSString * const kCJLinkStringIdentifierAttributesName       = @"kCJLinkStringId
                 if (_currentClickRunStrokeItem) {
                     
                     NSAttributedString *attributedString = [self.attributedText attributedSubstringFromRange:_currentClickRunStrokeItem.range];
+                    __weak typeof(self)wSelf = self;
                     CJLabelLinkModel *linkModel =
                     [[CJLabelLinkModel alloc]initWithAttributedString:attributedString
                                                                 image:_currentClickRunStrokeItem.image
                                                             imageRect:_currentClickRunStrokeItem.locBounds
                                                             parameter:_currentClickRunStrokeItem.parameter
-                                                            linkRange:_currentClickRunStrokeItem.range];
+                                                            linkRange:_currentClickRunStrokeItem.range
+                                                                label:wSelf];
                     
                     
                     if (_currentClickRunStrokeItem.longPressBlock) {
@@ -1756,8 +1748,12 @@ NSString * const kCJLinkStringIdentifierAttributesName       = @"kCJLinkStringId
     [CJLabel instance].textInsets = textInsets;
     [CJLabel instance].numberOfLines = numberOfLines;
     [CJLabel instance].attributedText = attributedString;
-    CGSize caculateSize = [[CJLabel instance] sizeThatFits:size];
+    CGSize labeSize = [[CJLabel instance] sizeThatFits:size];
+    //还原初始状态
+    [CJLabel instance].textInsets = UIEdgeInsetsZero;
+    [CJLabel instance].numberOfLines = 0;
     [CJLabel instance].attributedText = nil;
+    CGSize caculateSize = CGSizeMake(size.width, labeSize.height);
     return caculateSize;
 }
 
@@ -1800,14 +1796,17 @@ NSString * const kCJLinkStringIdentifierAttributesName       = @"kCJLinkStringId
 }
 
 + (NSMutableAttributedString *)initWithString:(NSString *)string configure:(CJLabelConfigure *)configure {
-    NSAttributedString *attrStr = [[NSAttributedString alloc] initWithString:string];
+    NSMutableAttributedString *attrStr = [[NSMutableAttributedString alloc] initWithString:string];
+    if (configure.attributes && configure.attributes.count > 0) {
+        [attrStr setAttributes:configure.attributes range:NSMakeRange(0, attrStr.length)];
+    }
     BOOL isLink = configure.isLink;
     NSMutableAttributedString *result = [CJLabelConfigure configureLinkAttributedString:attrStr atRange:NSMakeRange(0, attrStr.length) linkAttributes:configure.attributes activeLinkAttributes:configure.activeLinkAttributes parameter:configure.parameter clickLinkBlock:configure.clickLinkBlock longPressBlock:configure.longPressBlock islink:isLink];
     return result;
 }
 
 + (NSMutableAttributedString *)initWithNSString:(NSString *)string strIdentifier:(NSString *)strIdentifier configure:(CJLabelConfigure *)configure {
-    NSAttributedString *attrStr = [CJLabelConfigure linkAttStr:string attributes:nil identifier:strIdentifier];
+    NSMutableAttributedString *attrStr = [CJLabelConfigure linkAttStr:string attributes:configure.attributes identifier:strIdentifier];
     BOOL isLink = configure.isLink;
     NSMutableAttributedString *result = [CJLabelConfigure configureLinkAttributedString:attrStr atRange:NSMakeRange(0, attrStr.length) linkAttributes:configure.attributes activeLinkAttributes:configure.activeLinkAttributes parameter:configure.parameter clickLinkBlock:configure.clickLinkBlock longPressBlock:configure.longPressBlock islink:isLink];
     return result;
@@ -1819,31 +1818,21 @@ NSString * const kCJLinkStringIdentifierAttributesName       = @"kCJLinkStringId
     return result;
 }
 
-+ (NSMutableAttributedString *)initWithAttributedString:(NSAttributedString *)attributedString strIdentifier:(NSString *)strIdentifier attributes:(NSDictionary<NSString *, id> *)attributes {
-    NSMutableDictionary *dic = [NSMutableDictionary dictionaryWithCapacity:3];
-    NSRange strRange = NSMakeRange(0, attributedString.length);
-    NSDictionary *strDic = nil;
-    if (strRange.length > 0) {
-        strDic = [attributedString attributesAtIndex:0 effectiveRange:&strRange];
-    }
-    if (strDic && strDic.count > 0) {
-        [dic addEntriesFromDictionary:strDic];
-    }
-    if (attributes && attributes.count > 0) {
-        [dic addEntriesFromDictionary:attributes];
-    }
-    NSAttributedString *attrStr = [CJLabelConfigure linkAttStr:attributedString.string attributes:dic identifier:strIdentifier];
-    NSMutableAttributedString *result = [CJLabelConfigure configureLinkAttributedString:attrStr atRange:NSMakeRange(0, attrStr.length) linkAttributes:nil activeLinkAttributes:nil parameter:nil clickLinkBlock:nil longPressBlock:nil islink:NO];
-    return result;
-}
-
 + (NSMutableAttributedString *)initWithAttributedString:(NSAttributedString *)attributedString strIdentifier:(NSString *)strIdentifier configure:(CJLabelConfigure *)configure {
+    
+    NSMutableDictionary *linkStrDic = [NSMutableDictionary dictionaryWithCapacity:3];
     NSRange strRange = NSMakeRange(0, attributedString.length);
     NSDictionary *strDic = nil;
     if (strRange.length > 0) {
         strDic = [attributedString attributesAtIndex:0 effectiveRange:&strRange];
+        [linkStrDic addEntriesFromDictionary:strDic];
     }
-    NSAttributedString *attrStr = [CJLabelConfigure linkAttStr:attributedString.string attributes:strDic identifier:strIdentifier];
+    if (configure.attributes && configure.attributes.count > 0) {
+        [linkStrDic addEntriesFromDictionary:configure.attributes];
+    }
+    
+    NSMutableAttributedString *attrStr = [CJLabelConfigure linkAttStr:attributedString.string attributes:linkStrDic identifier:strIdentifier];
+    
     BOOL isLink = configure.isLink;
     NSMutableAttributedString *result = [CJLabelConfigure configureLinkAttributedString:attrStr atRange:NSMakeRange(0, attrStr.length) linkAttributes:configure.attributes activeLinkAttributes:configure.activeLinkAttributes parameter:configure.parameter clickLinkBlock:configure.clickLinkBlock longPressBlock:configure.longPressBlock islink:isLink];
     return result;
@@ -1955,6 +1944,14 @@ NSString * const kCJLinkStringIdentifierAttributesName       = @"kCJLinkStringId
     //立即刷新界面
     [CATransaction flush];
     return self.attributedText;
+}
+
+- (void)flushText {
+    [_allRunItemArray removeAllObjects];
+    [self setNeedsFramesetter];
+    [self setNeedsDisplay];
+    //立即刷新界面
+    [CATransaction flush];
 }
 
 @end
