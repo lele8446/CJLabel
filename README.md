@@ -133,6 +133,31 @@ self.label.attributedText = attStr;
 self.label.enableCopy = YES;
 ```
 
+* 自定义截断文本，并设置为可点击
+ <center>
+ <img src="http://oz3eqyeso.bkt.clouddn.com/example5.gif" width="50%"/>
+ </center>
+ 
+```objective-c
+//配置链点属性
+configure.isLink = YES;
+configure.clickLinkBlock = ^(CJLabelLinkModel *linkModel) {
+    //点击 `……全文`
+    [self clickTruncationToken:linkModel];
+};
+configure.attributes = @{NSForegroundColorAttributeName:[UIColor blueColor],NSFontAttributeName:[UIFont systemFontOfSize:13]};
+//自定义截断字符为："……全文"
+NSAttributedString *truncationToken = [CJLabel initWithAttributedString:[[NSAttributedString alloc]initWithString:@"……全文"] strIdentifier:@"TruncationToken" configure:configure];
+//设置行尾截断
+self.label.lineBreakMode = NSLineBreakByTruncatingTail;
+self.label.attributedTruncationToken = truncationToken;
+//设置点击链点
+attStr = [CJLabel configureAttrString:attStr withAttributedString:truncationToken strIdentifier:@"TruncationToken" sameStringEnable:NO configure:configure];            
+self.label.attributedText = attStr;
+//支持选择复制
+self.label.enableCopy = YES;
+```
+
 ## 版本说明
 * ***V4.4.0***<br/>
  优化NSAttributedString链点属性设置，增加`attributedTruncationToken`属性
