@@ -135,7 +135,7 @@ self.label.enableCopy = YES;
 
 * 自定义截断文本，并设置为可点击
  <center>
- <img src="http://oz3eqyeso.bkt.clouddn.com/example5.gif" width="50%"/>
+ <img src="http://oz3eqyeso.bkt.clouddn.com/example5.gif" width="35%"/>
  </center>
  
 ```objective-c
