@@ -201,8 +201,14 @@ NSString * const kCJLinkStringIdentifierAttributesName       = @"kCJLinkStringId
     _CTLineVerticalLayoutArray = nil;
     _currentClickRunStrokeItem = nil;
     
-    //获取点击链点的NSRange
-    NSMutableAttributedString *attText = [[NSMutableAttributedString alloc]initWithAttributedString:text];
+    NSMutableAttributedString *str = [[NSMutableAttributedString alloc]initWithAttributedString:text];
+    unichar spacingChar = 0xFFFC;
+    NSString *spacingCharString = [NSString stringWithCharacters:&spacingChar length:1];
+    //空白占位符
+    NSAttributedString *placeholderStr = [[NSAttributedString alloc]initWithString:spacingCharString];
+    [str appendAttributedString:placeholderStr];
+    
+    NSMutableAttributedString *attText = [[NSMutableAttributedString alloc]initWithAttributedString:str];
     
     __block BOOL needEnumerateAllCharacter = NO;
     if (!self.caculateSizeOnly) {
@@ -633,7 +639,7 @@ NSString * const kCJLinkStringIdentifierAttributesName       = @"kCJLinkStringId
         
         CTLineRef truncationToken = CTLineCreateWithAttributedString((__bridge CFAttributedStringRef)attributedTruncationString);
         
-        NSUInteger lenght = lastLineRange.location;
+        NSUInteger lenght = lastLineRange.length;
         if (lineBreakMode == NSLineBreakByTruncatingHead || lineBreakMode == NSLineBreakByTruncatingMiddle) {
             lenght = attributedString.length - lastLineRange.location;
         }

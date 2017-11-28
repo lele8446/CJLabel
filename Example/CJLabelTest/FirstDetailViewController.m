@@ -151,6 +151,21 @@
     CGFloat height = [CJLabel sizeWithAttributedString:text withConstraints:CGSizeMake(ScreenWidth-20, CGFLOAT_MAX) limitedToNumberOfLines:0].height;
     linkModel.label.frame = CGRectMake(10, 10, ScreenWidth - 20, height);
     [linkModel.label flushText];
+    
+    [self logsyms];
+}
+
+- (void)logsyms {
+    NSArray *syms = [NSThread callStackSymbols];
+    for (NSString *str in syms) {
+        NSLog(@"callStack = %@",str);
+    }
+    //    if (syms.count > 1) {
+    //        NSLog(@"<%@ %p> %@ - caller: %@",[self class],self,NSStringFromSelector(_cmd),[syms objectAtIndex:0]);
+    //    }
+    //    else {
+    //        NSLog(@"<%@ %p> %@",[self class],self,NSStringFromSelector(_cmd));
+    //    }
 }
 
 - (void)truncationTokenRightBarButtonItem:(BOOL)show {
