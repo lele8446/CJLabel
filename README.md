@@ -32,7 +32,9 @@
 ##### CJLabel 已知 Bug
  
    `numberOfLines`大于0且小于实际`label.numberOfLines`，同时`verticalAlignment`不等于`CJContentVerticalAlignmentTop`时，文本显示位置有偏差。如下图所示:<br/>
-   ![](http://oz3eqyeso.bkt.clouddn.com/CJLabelBug.jpg)
+   <center>
+ <img src="http://oz3eqyeso.bkt.clouddn.com/CJLabelBug.jpg" width="50%"/>
+ </center>
 
 ## CJLabel引用
 ##### 1. 直接导入
