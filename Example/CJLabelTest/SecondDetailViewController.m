@@ -59,11 +59,10 @@
             //设置 `字体边框线` 边框线
             configure.attributes = @{kCJBackgroundStrokeColorAttributeName:[UIColor orangeColor]};
             attStr = [CJLabel configureAttrString:attStr withString:@"字体边框线" sameStringEnable:NO configure:configure];
-            
+            //指定文本添加删除线
             configure.attributes = @{kCJStrikethroughStyleAttributeName:@(1),
                                      kCJStrikethroughColorAttributeName:[UIColor redColor]};
             attStr = [CJLabel configureAttrString:attStr withString:@"对指定文本添加删除线" sameStringEnable:NO configure:configure];
-            
             //指定位置插入图片
             NSRange imgRange = [attStr.string rangeOfString:@"插入图片"];
             [configure removeAttributesForKey:kCJBackgroundStrokeColorAttributeName];
