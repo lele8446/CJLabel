@@ -298,7 +298,6 @@ typedef struct CJCTLineVerticalLayout CJCTLineVerticalLayout;
  @param label CJLabel
  @param point 放大点
  @param runItem 放大点对应的CJGlyphRunStrokeItem
- @param hideViewBlock          放大镜隐藏后的block
  */
 - (void)showMagnifyInCJLabel:(CJLabel *)label
                 magnifyPoint:(CGPoint)point
