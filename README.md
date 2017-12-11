@@ -58,7 +58,7 @@ CGSize size = [CJLabel sizeWithAttributedString:str withConstraints:CGSizeMake(3
   
 * 设置富文本展示
 <center>
- <img src="http://oz3eqyeso.bkt.clouddn.com/example0.png" width="50%"/>
+ <img src="http://oz3eqyeso.bkt.clouddn.com/example0_1.png" width="55%"/>
  </center>
  
 ```objective-c
