@@ -161,6 +161,8 @@ self.label.enableCopy = YES;
 ```
 
 ## 版本说明
+* ***V4.6.0***<br/>
+ 增加`kCJStrikethroughStyleAttributeName``kCJStrikethroughColorAttributeName`属性，可对指定文本添加删除线
 * ***V4.4.0 V4.5.0***<br/>
  优化NSAttributedString链点属性设置，增加`attributedTruncationToken`属性
 * ***V4.0.0***<br/>
