@@ -18,6 +18,9 @@ NSString * const kCJBackgroundLineWidthAttributeName         = @"kCJBackgroundLi
 NSString * const kCJBackgroundLineCornerRadiusAttributeName  = @"kCJBackgroundLineCornerRadius";
 NSString * const kCJActiveBackgroundFillColorAttributeName   = @"kCJActiveBackgroundFillColor";
 NSString * const kCJActiveBackgroundStrokeColorAttributeName = @"kCJActiveBackgroundStrokeColor";
+NSString * const kCJStrikethroughStyleAttributeName          = @"kCJStrikethroughStyleAttributeName";
+NSString * const kCJStrikethroughColorAttributeName          = @"kCJStrikethroughColorAttributeName";
+
 NSString * const kCJLinkStringIdentifierAttributesName       = @"kCJLinkStringIdentifierAttributesName";
 
 @interface CJCTRunUrl: NSURL
@@ -717,7 +720,7 @@ NSString * const kCJLinkStringIdentifierAttributesName       = @"kCJLinkStringId
     if (self.enableCopy && self.caculateCopySize) {
         [_allRunItemArray addObjectsFromArray:lineRunItems];
     }
-    //进行点击，填充背景色CTRunItem数组的合并
+    //当前行对 需要点击，填充背景色，添加删除线的CTRunItem合并后的数组
     NSArray *lineStrokrArray = [self mergeLineSameStrokePathItems:lineRunItems ascentAndDescent:(lineAscent + fabs(lineDescent))];
     
     //获取点击链点对应的数组
@@ -769,9 +772,11 @@ NSString * const kCJLinkStringIdentifierAttributesName       = @"kCJLinkStringId
         selectCopyHeightDif = MAX(selectCopyHeightDif, heightDif);
     }
     
-    //填充描边
     if (!self.caculateSizeOnly) {
+        //填充描边
         [self drawBackgroundColor:c runStrokeItems:lineStrokrArray isStrokeColor:YES];
+        //添加删除线
+        [self drawStrikethroughContext:c runStrokeItems:lineStrokrArray];
     }
     
     lineLayoutModel.selectCopyBackY = selectCopyBackY;
@@ -870,16 +875,31 @@ NSString * const kCJLinkStringIdentifierAttributesName       = @"kCJLinkStringId
     return yy;
 }
 
+/**
+ 绘制删除线
+
+ @param c 上下文
+ @param runStrokeItems 需要绘制的CJGlyphRunStrokeItem数组
+ */
+- (void)drawStrikethroughContext:(CGContextRef)c runStrokeItems:(NSArray <CJGlyphRunStrokeItem *>*)runStrokeItems
+{
+    if (runStrokeItems.count > 0) {
+        for (CJGlyphRunStrokeItem *item in runStrokeItems) {
+            [self drawBackgroundColor:c runStrokeItem:item isStrokeColor:NO active:NO isStrikethrough:YES];
+        }
+    }
+}
+
 - (void)drawBackgroundColor:(CGContextRef)c
                     runItem:(CJGlyphRunStrokeItem *)runItem
               isStrokeColor:(BOOL)isStrokeColor
 {
     if (runItem) {
         if (_currentClickRunStrokeItem && NSEqualRanges(_currentClickRunStrokeItem.range,runItem.range)) {
-            [self drawBackgroundColor:c runStrokeItem:runItem isStrokeColor:isStrokeColor active:YES];
+            [self drawBackgroundColor:c runStrokeItem:runItem isStrokeColor:isStrokeColor active:YES isStrikethrough:NO];
         }
         else{
-            [self drawBackgroundColor:c runStrokeItem:runItem isStrokeColor:isStrokeColor active:NO];
+            [self drawBackgroundColor:c runStrokeItem:runItem isStrokeColor:isStrokeColor active:NO isStrikethrough:NO];
         }
     }
 }
@@ -899,6 +919,7 @@ NSString * const kCJLinkStringIdentifierAttributesName       = @"kCJLinkStringId
               runStrokeItem:(CJGlyphRunStrokeItem *)runStrokeItem
               isStrokeColor:(BOOL)isStrokeColor
                      active:(BOOL)active
+            isStrikethrough:(BOOL)isStrikethrough
 {
     CGContextSetLineJoin(c, kCGLineJoinRound);
     CGFloat x = runStrokeItem.runBounds.origin.x-self.textInsets.left;
@@ -912,6 +933,23 @@ NSString * const kCJLinkStringIdentifierAttributesName       = @"kCJLinkStringId
                                  y-lineWidth,
                                  width,
                                  runStrokeItem.runBounds.size.height + 2*lineWidth);
+    }
+    
+    //画删除线
+    if (isStrikethrough) {
+        if (runStrokeItem.strikethroughStyle != 0) {
+            CGFloat strikethroughY = roundedRect.origin.y + runStrokeItem.runBounds.size.height/2;
+            CGFloat strikethroughX = x + runStrokeItem.strikethroughStyle/2;
+            CGFloat strikethroughEndX = x + roundedRect.size.width - runStrokeItem.strikethroughStyle/2;
+            CGContextSetLineCap(c, kCGLineCapSquare);
+            CGContextSetLineWidth(c, runStrokeItem.strikethroughStyle);
+            CGContextSetStrokeColorWithColor(c, CGColorRefFromColor(runStrokeItem.strikethroughColor));
+            CGContextBeginPath(c);
+            CGContextMoveToPoint(c, strikethroughX, strikethroughY);
+            CGContextAddLineToPoint(c, strikethroughEndX, strikethroughY);
+            CGContextStrokePath(c);
+        }
+        return;
     }
     
     CGFloat cornerRadius = runStrokeItem.cornerRadius;
@@ -1102,6 +1140,29 @@ NSString * const kCJLinkStringIdentifierAttributesName       = @"kCJLinkStringId
         cornerRadius = cornerRadius == 0?5:cornerRadius;
     }
     
+    //删除线
+    CGFloat strikethroughStyle = [[attributes objectForKey:kCJStrikethroughStyleAttributeName] floatValue];
+    if (strikethroughStyle == 0) {
+        strikethroughStyle = [[attributes[kCJLinkAttributesName]objectForKey:kCJStrikethroughStyleAttributeName] floatValue];
+    }
+    if (strikethroughStyle == 0) {
+        strikethroughStyle = [[attributes[kCJActiveLinkAttributesName]objectForKey:kCJStrikethroughStyleAttributeName] floatValue];
+    }
+    //删除线颜色
+    UIColor *strikethroughColor = nil;
+    if (strikethroughStyle != 0) {
+        strikethroughColor = colorWithAttributeName(attributes, kCJStrikethroughColorAttributeName);
+        if (!CJLabelIsNull(attributes[kCJLinkAttributesName]) && !isNotClearColor(strikethroughColor)) {
+            strikethroughColor = colorWithAttributeName(attributes[kCJLinkAttributesName], kCJStrikethroughColorAttributeName);
+        }
+        if (!CJLabelIsNull(attributes[kCJActiveLinkAttributesName]) && !isNotClearColor(strikethroughColor)) {
+            strikethroughColor = colorWithAttributeName(attributes[kCJActiveLinkAttributesName], kCJStrikethroughColorAttributeName);
+        }
+        if (!isNotClearColor(strikethroughColor)) {
+            strikethroughColor = [UIColor blackColor];
+        }
+    }
+    
     BOOL isLink = [attributes[kCJIsLinkAttributesName] boolValue];
     
     //点击链点的range（当isLink == YES才存在）
@@ -1167,6 +1228,8 @@ NSString * const kCJLinkStringIdentifierAttributesName       = @"kCJLinkStringId
         runStrokeItem.range = NSRangeFromString(linkRangeStr);
         runStrokeItem.isLink = YES;
         runStrokeItem.needRedrawn = needRedrawn;
+        runStrokeItem.strikethroughStyle = strikethroughStyle;
+        runStrokeItem.strikethroughColor = strikethroughColor;
         
         if (imgInfoDic[kCJImage]) {
             runStrokeItem.image = imgInfoDic[kCJImage];
@@ -1184,13 +1247,15 @@ NSString * const kCJLinkStringIdentifierAttributesName       = @"kCJLinkStringId
     }
     else{
         //不是可点击链点。但存在自定义边框线或背景色
-        if (isNotClearColor(strokeColor) || isNotClearColor(fillColor) || isNotClearColor(activeStrokeColor) || isNotClearColor(activeFillColor)) {
+        if (isNotClearColor(strokeColor) || isNotClearColor(fillColor) || isNotClearColor(activeStrokeColor) || isNotClearColor(activeFillColor) || strikethroughStyle != 0) {
             runStrokeItem.strokeColor = strokeColor;
             runStrokeItem.fillColor = fillColor;
             runStrokeItem.strokeLineWidth = strokeLineWidth;
             runStrokeItem.cornerRadius = cornerRadius;
             runStrokeItem.activeStrokeColor = activeStrokeColor;
             runStrokeItem.activeFillColor = activeFillColor;
+            runStrokeItem.strikethroughStyle = strikethroughStyle;
+            runStrokeItem.strikethroughColor = strikethroughColor;
         }
         runStrokeItem.isLink = NO;
         if (imgInfoDic[kCJImage]) {
@@ -1255,6 +1320,9 @@ NSString * const kCJLinkStringIdentifierAttributesName       = @"kCJLinkStringId
                 UIColor *activeFillColor = item.activeFillColor;
                 CGFloat lineWidth = item.strokeLineWidth;
                 CGFloat cornerRadius = item.cornerRadius;
+                //删除线
+                CGFloat strikethroughStyle = item.strikethroughStyle;
+                UIColor *strikethroughColor = item.strikethroughColor;
                 
                 CGRect lastRunBounds = _lastGlyphRunStrokeItem.runBounds;
                 CGRect lastLocBounds = _lastGlyphRunStrokeItem.locBounds;
@@ -1264,13 +1332,16 @@ NSString * const kCJLinkStringIdentifierAttributesName       = @"kCJLinkStringId
                 UIColor *lastActiveFillColor = _lastGlyphRunStrokeItem.activeFillColor;
                 CGFloat lastLineWidth = _lastGlyphRunStrokeItem.strokeLineWidth;
                 CGFloat lastCornerRadius = _lastGlyphRunStrokeItem.cornerRadius;
+                //删除线
+                CGFloat lastStrikethroughStyle = _lastGlyphRunStrokeItem.strikethroughStyle;
+                UIColor *lastStrikethroughColor = _lastGlyphRunStrokeItem.strikethroughColor;
                 
                 BOOL sameColor = ({
                     BOOL same = NO;
-                    if (isSameColor(strokeColor,lastStrokeColor) &&
-                        isSameColor(fillColor,lastFillColor) &&
-                        isSameColor(activeStrokeColor,lastActiveStrokeColor) &&
-                        isSameColor(activeFillColor,lastActiveFillColor))
+                    if (strokeColor && isSameColor(strokeColor,lastStrokeColor) &&
+                        fillColor && isSameColor(fillColor,lastFillColor) &&
+                        activeStrokeColor && isSameColor(activeStrokeColor,lastActiveStrokeColor) &&
+                        activeFillColor && isSameColor(activeFillColor,lastActiveFillColor))
                     {
                         same = YES;
                     }
@@ -1318,6 +1389,7 @@ NSString * const kCJLinkStringIdentifierAttributesName       = @"kCJLinkStringId
                     }
                 }
                 
+                
                 //没有发生合并
                 if (!needMerge) {
                     
@@ -1334,6 +1406,18 @@ NSString * const kCJLinkStringIdentifierAttributesName       = @"kCJLinkStringId
                 }
                 //有合并
                 else{
+                    _lastGlyphRunStrokeItem.strikethroughStyle = MAX(strikethroughStyle, lastStrikethroughStyle);
+                    if (_lastGlyphRunStrokeItem.strikethroughStyle != 0) {
+                        if (lastStrikethroughColor) {
+                            _lastGlyphRunStrokeItem.strikethroughColor = lastStrikethroughColor;
+                        }
+                        if (strikethroughColor) {
+                            _lastGlyphRunStrokeItem.strikethroughColor = strikethroughColor;
+                        }
+                        if (!_lastGlyphRunStrokeItem.strikethroughColor) {
+                            _lastGlyphRunStrokeItem.strikethroughColor = [UIColor blackColor];
+                        }
+                    }
                     //已经是最后一个run
                     if (i == lineStrokePathItems.count - 1) {
                         _lastGlyphRunStrokeItem = [self adjustItemHeight:_lastGlyphRunStrokeItem height:ascentAndDescent];
@@ -1394,7 +1478,11 @@ NSString * const kCJLinkStringIdentifierAttributesName       = @"kCJLinkStringId
 
 - (UIView *)hitTest:(CGPoint)point withEvent:(UIEvent *)event {
     if (![self linkAtPoint:point extendsLinkTouchArea:NO] || !self.userInteractionEnabled || self.hidden || self.alpha < 0.01) {
-        return [super hitTest:point withEvent:event];
+        if (self.enableCopy) {
+            return [super hitTest:point withEvent:event];
+        }else{
+            return nil;
+        }
     }
     return self;
 }

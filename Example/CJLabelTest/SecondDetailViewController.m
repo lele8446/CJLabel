@@ -59,9 +59,16 @@
             //设置 `字体边框线` 边框线
             configure.attributes = @{kCJBackgroundStrokeColorAttributeName:[UIColor orangeColor]};
             attStr = [CJLabel configureAttrString:attStr withString:@"字体边框线" sameStringEnable:NO configure:configure];
+            
+            configure.attributes = @{kCJStrikethroughStyleAttributeName:@(1),
+                                     kCJStrikethroughColorAttributeName:[UIColor redColor]};
+            attStr = [CJLabel configureAttrString:attStr withString:@"对指定文本添加删除线" sameStringEnable:NO configure:configure];
+            
             //指定位置插入图片
             NSRange imgRange = [attStr.string rangeOfString:@"插入图片"];
             [configure removeAttributesForKey:kCJBackgroundStrokeColorAttributeName];
+            [configure removeAttributesForKey:kCJStrikethroughStyleAttributeName];
+            [configure removeAttributesForKey:kCJStrikethroughColorAttributeName];
             attStr = [CJLabel insertImageAtAttrString:attStr image:@"CJLabel.png" imageSize:CGSizeMake(55, 45) atIndex:(imgRange.location+imgRange.length) imagelineAlignment:CJVerticalAlignmentBottom configure:configure];
             //设置内边距
             self.label.textInsets = UIEdgeInsetsMake(10, 10, 10, 0);

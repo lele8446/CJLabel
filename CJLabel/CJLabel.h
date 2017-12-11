@@ -338,6 +338,16 @@ extern NSString * const kCJActiveBackgroundFillColorAttributeName;
 extern NSString * const kCJActiveBackgroundStrokeColorAttributeName;
 
 /**
+ 删除线宽度。值为NSNumber。默认 `0.0f`，表示无删除线
+ */
+extern NSString * const kCJStrikethroughStyleAttributeName;
+
+/**
+ 删除线颜色。值为UIColor。默认 `[UIColor blackColor]`。
+ */
+extern NSString * const kCJStrikethroughColorAttributeName;
+
+/**
  对NSAttributedString文本设置链点属性时候的唯一标识
  */
 extern NSString * const kCJLinkStringIdentifierAttributesName;

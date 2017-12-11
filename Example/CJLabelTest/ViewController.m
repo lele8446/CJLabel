@@ -89,9 +89,11 @@
         attStr = [CJLabel configureAttrString:attStr atRange:NSMakeRange(0, 3) configure:configure];
         
         configure.attributes = @{NSForegroundColorAttributeName:[UIColor blueColor],
-                                 NSFontAttributeName:[UIFont boldSystemFontOfSize:13]};
+                                 NSFontAttributeName:[UIFont boldSystemFontOfSize:13]
+                                 };
         configure.activeLinkAttributes = @{NSForegroundColorAttributeName:[UIColor redColor]};
         configure.isLink = YES;
+        configure.parameter = @"CJLabel";
         attStr = [CJLabel configureAttrString:attStr withString:@"CJLabel" sameStringEnable:YES configure:configure];
         
         [attStr addAttribute:NSParagraphStyleAttributeName value:paragraph range:NSMakeRange(0, attStr.length)];

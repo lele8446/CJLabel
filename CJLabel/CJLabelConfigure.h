@@ -246,6 +246,9 @@ typedef struct CJCTLineVerticalLayout CJCTLineVerticalLayout;
 @property (nonatomic, assign) NSInteger characterIndex;//字符在整段文本中的index值
 @property (nonatomic, assign) NSRange characterRange;//字符在整段文本中的range值
 
+@property (nonatomic, assign) CGFloat strikethroughStyle;//删除线
+@property (nonatomic, strong) UIColor *strikethroughColor;//删除线颜色
+
 @end
 
 @interface CJCTLineLayoutModel : NSObject
