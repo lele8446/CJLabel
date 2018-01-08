@@ -195,3 +195,4 @@ CJLabel 使用 MIT 许可证，详情见 LICENSE 文件。
 ## 更多
 [CJLabel图文混排二 —— UILabel插入图片以及精确链点点击](http://www.jianshu.com/p/9a70533d217e)<br/>
 [CJLabel图文混排一 ——UILabel富文本显示以及任意字符的点击响应](http://www.jianshu.com/p/b15455d7d30d)
+[CJLabel富文本三 —— UILabel支持选择复制以及实现原理](https://www.jianshu.com/p/7de3e6d19e31)
