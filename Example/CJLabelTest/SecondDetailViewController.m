@@ -20,6 +20,10 @@
 
 @implementation SecondDetailViewController
 
+- (void)dealloc {
+    NSLog(@"%@ dealloc",NSStringFromClass([self class]));
+}
+
 - (void)viewDidLoad {
     [super viewDidLoad];
     self.edgesForExtendedLayout = UIRectEdgeNone;
@@ -112,6 +116,8 @@
 }
 
 - (NSMutableAttributedString *)configureLabelContent:(NSMutableAttributedString *)attStr configure:(CJLabelConfigure *)configure {
+    
+    __weak typeof(self)wSelf = self;
     //设置点击链点属性
     configure.attributes = @{
                              NSForegroundColorAttributeName:[UIColor blueColor],
@@ -130,11 +136,11 @@
     configure.parameter = @"参数为字符串";
     //点击回调
     configure.clickLinkBlock = ^(CJLabelLinkModel *linkModel) {
-        [self clickLink:linkModel isImage:NO];
+        [wSelf clickLink:linkModel isImage:NO];
     };
     //长按回调
     configure.longPressBlock = ^(CJLabelLinkModel *linkModel) {
-        [self clicklongPressLink:linkModel isImage:NO];
+        [wSelf clicklongPressLink:linkModel isImage:NO];
     };
     //设置为可点击链点
     configure.isLink = YES;
@@ -147,6 +153,7 @@
 
 - (void)configureLabelContent:(NSMutableAttributedString *)attStr verticalAlignment:(CJLabelVerticalAlignment)verticalAlignment configure:(CJLabelConfigure *)configure {
     
+    __weak typeof(self)wSelf = self;
     attStr = [self configureLabelContent:attStr configure:configure];
     
     //设置图片点击链点属性
@@ -159,10 +166,10 @@
             activeLinkAttributes:@{kCJActiveBackgroundStrokeColorAttributeName:[UIColor lightGrayColor]}
                        parameter:@"图片参数"
                   clickLinkBlock:^(CJLabelLinkModel *linkModel){
-                      [self clickLink:linkModel isImage:YES];
+                      [wSelf clickLink:linkModel isImage:YES];
                   }
                   longPressBlock:^(CJLabelLinkModel *linkModel){
-                      [self clicklongPressLink:linkModel isImage:YES];
+                      [wSelf clicklongPressLink:linkModel isImage:YES];
                   }];
     attStr = [CJLabel insertImageAtAttrString:attStr image:@"CJLabel.png" imageSize:CGSizeMake(45, 35) atIndex:(imageRange.location+imageRange.length) imagelineAlignment:verticalAlignment configure:imgConfigure];
     

@@ -218,6 +218,7 @@ NSString * const kCJLinkStringIdentifierAttributesName       = @"kCJLinkStringId
         __block NSRange linkRange = NSMakeRange(0, 0);
         __block NSUInteger oldLinkIdentifier = 0;
         [attText enumerateAttributesInRange:NSMakeRange(0, attText.length) options:NSAttributedStringEnumerationLongestEffectiveRangeNotRequired usingBlock:^(NSDictionary<NSString *, id> *attrs, NSRange range, BOOL *stop){
+            
             BOOL isLink = [attrs[kCJIsLinkAttributesName] boolValue];
             if (isLink) {
                 NSInteger linkLength = [attrs[kCJLinkLengthAttributesName] integerValue];
@@ -242,6 +243,7 @@ NSString * const kCJLinkStringIdentifierAttributesName       = @"kCJLinkStringId
             if (!CJLabelIsNull(imgInfoDic)) {
                 needEnumerateAllCharacter = YES;
             }
+            
         }];
     }
     
@@ -255,7 +257,6 @@ NSString * const kCJLinkStringIdentifierAttributesName       = @"kCJLinkStringId
             
             [attText.string enumerateSubstringsInRange:NSMakeRange(0, [attText length]) options:NSStringEnumerationByComposedCharacterSequences usingBlock:
              ^(NSString *substring, NSRange substringRange, NSRange enclosingRange, BOOL *stop) {
-                 
                  CJCTRunUrl *runUrl = nil;
                  if (!runUrl) {
                      NSString *urlStr = [NSString stringWithFormat:@"https://www.CJLabel%@",@(index)];
@@ -1056,6 +1057,7 @@ NSString * const kCJLinkStringIdentifierAttributesName       = @"kCJLinkStringId
                                                 truncateLastLine:(BOOL)truncateLastLine
 {
     NSMutableArray *verticalLayoutArray = [NSMutableArray arrayWithCapacity:3];
+
     // 遍历所有行
     for (CFIndex lineIndex = 0; lineIndex < MIN(_textNumberOfLines, CFArrayGetCount(lines)); lineIndex ++ ) {
         CTLineRef line = CFArrayGetValueAtIndex(lines, lineIndex);
@@ -1606,19 +1608,20 @@ NSString * const kCJLinkStringIdentifierAttributesName       = @"kCJLinkStringId
     self.attributedText = self.attributedText;
 }
 
+
 #pragma mark - UIGestureRecognizerDelegate
 - (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldReceiveTouch:(UITouch *)touch {
     if (gestureRecognizer == self.longPressGestureRecognizer) {
-        objc_setAssociatedObject(self.longPressGestureRecognizer, "UITouch", touch, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+        objc_setAssociatedObject(self.longPressGestureRecognizer, &kAssociatedUITouchKey, touch, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
     }
     else if (gestureRecognizer == self.doubleTapGes) {
-        objc_setAssociatedObject(self.doubleTapGes, "UITouch", touch, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+        objc_setAssociatedObject(self.doubleTapGes, &kAssociatedUITouchKey, touch, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
     }
     return YES;
 }
 
 - (void)tapTwoAct:(UITapGestureRecognizer *)sender {
-    UITouch *touch = objc_getAssociatedObject(self.doubleTapGes, "UITouch");
+    UITouch *touch = objc_getAssociatedObject(self.doubleTapGes, &kAssociatedUITouchKey);
     CJGlyphRunStrokeItem *item = [self linkAtPoint:[touch locationInView:self]extendsLinkTouchArea:self.extendsLinkTouchArea];
     if (item) {
         _currentClickRunStrokeItem = nil;
@@ -1679,7 +1682,7 @@ NSString * const kCJLinkStringIdentifierAttributesName       = @"kCJLinkStringId
 #pragma mark - UILongPressGestureRecognizer
 - (void)longPressGestureDidFire:(UILongPressGestureRecognizer *)sender {
     
-    UITouch *touch = objc_getAssociatedObject(self.longPressGestureRecognizer, "UITouch");
+    UITouch *touch = objc_getAssociatedObject(self.longPressGestureRecognizer, &kAssociatedUITouchKey);
     CGPoint point = [touch locationInView:self];
     BOOL isLinkItem = [self containslinkAtPoint:[touch locationInView:self]];
     switch (sender.state) {

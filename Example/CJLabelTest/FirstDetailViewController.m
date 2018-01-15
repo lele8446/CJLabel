@@ -17,6 +17,10 @@
 
 @implementation FirstDetailViewController
 
+- (void)dealloc {
+    NSLog(@"%@ dealloc",NSStringFromClass([self class]));
+}
+
 - (void)viewDidLoad {
     [super viewDidLoad];
     self.edgesForExtendedLayout = UIRectEdgeNone;
@@ -45,6 +49,7 @@
     attStr = [CJLabel configureAttrString:attStr withString:@"CJLabel" sameStringEnable:YES configure:configure];
     self.attStr = attStr;
     
+    __weak typeof(self)wSelf = self;
     switch (self.index) {
         case 1:
             self.navigationItem.title = @"垂直对齐";
@@ -76,10 +81,10 @@
                                                };
             configure.isLink = YES;
             configure.clickLinkBlock = ^(CJLabelLinkModel *linkModel) {
-                [self clickLink:linkModel];
+                [wSelf clickLink:linkModel];
             };
             configure.longPressBlock = ^(CJLabelLinkModel *linkModel) {
-                [self clicklongPressLink:linkModel];
+                [wSelf clicklongPressLink:linkModel];
             };
             configure.parameter = @"第1个点击链点";
             attStr = [CJLabel configureAttrString:attStr atRange:linkRange configure:configure];
@@ -104,7 +109,7 @@
             configure.clickLinkBlock = nil;
             configure.parameter = @"第3个点击链点";
             configure.longPressBlock = ^(CJLabelLinkModel *linkModel) {
-                [self clicklongPressLink:linkModel];
+                [wSelf clicklongPressLink:linkModel];
             };
             attStr = [CJLabel configureAttrString:attStr atRange:linkRange configure:configure];
             
@@ -120,7 +125,7 @@
             configure.isLink = YES;
             configure.clickLinkBlock = ^(CJLabelLinkModel *linkModel) {
                 //点击 `……全文`
-                [self clickTruncationToken:linkModel];
+                [wSelf clickTruncationToken:linkModel];
             };
             configure.attributes = @{NSForegroundColorAttributeName:[UIColor blueColor],NSFontAttributeName:[UIFont systemFontOfSize:13]};
             
@@ -151,21 +156,6 @@
     CGFloat height = [CJLabel sizeWithAttributedString:text withConstraints:CGSizeMake(ScreenWidth-20, CGFLOAT_MAX) limitedToNumberOfLines:0].height;
     linkModel.label.frame = CGRectMake(10, 10, ScreenWidth - 20, height);
     [linkModel.label flushText];
-    
-    [self logsyms];
-}
-
-- (void)logsyms {
-    NSArray *syms = [NSThread callStackSymbols];
-    for (NSString *str in syms) {
-        NSLog(@"callStack = %@",str);
-    }
-    //    if (syms.count > 1) {
-    //        NSLog(@"<%@ %p> %@ - caller: %@",[self class],self,NSStringFromSelector(_cmd),[syms objectAtIndex:0]);
-    //    }
-    //    else {
-    //        NSLog(@"<%@ %p> %@",[self class],self,NSStringFromSelector(_cmd));
-    //    }
 }
 
 - (void)truncationTokenRightBarButtonItem:(BOOL)show {

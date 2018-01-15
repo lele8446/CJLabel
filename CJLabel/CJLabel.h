@@ -5,6 +5,13 @@
 //  Created by ChiJinLian on 17/3/31.
 //  Copyright © 2017年 ChiJinLian. All rights reserved.
 //
+/*
+  ____       _   _               _              _
+ / ___|     | | | |       __ _  | |__     ___  | |
+| |      _  | | | |      / _` | | '_ \   / _ \ | |
+| |___  | |_| | | |___  | (_| | | |_) | |  __/ | |
+ \____|  \___/  |_____|  \__,_| |_.__/   \___| |_|
+ */
 
 #import <UIKit/UIKit.h>
 #import <CoreText/CoreText.h>

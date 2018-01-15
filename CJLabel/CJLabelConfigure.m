@@ -497,7 +497,7 @@ CGFloat RunDelegateGetWidthCallback(void * refCon) {
  */
 @interface CJMagnifierView ()
 @property (nonatomic, assign) CGPoint pointToMagnify;//放大点
-@property (strong, nonatomic) CJContentLayer *contentLayer;
+@property (nonatomic, strong) CJContentLayer *contentLayer;//处理放大效果的layer层
 
 - (void)updateMagnifyPoint:(CGPoint)pointToMagnify showMagnifyViewIn:(CGPoint)showPoint;
 
@@ -854,10 +854,12 @@ typedef NS_ENUM(NSInteger, CJSelectViewAction) {
             length = self.attributedText.string.length-loc;
         }
         
-        NSRange rangeCopy = NSMakeRange(loc,length);
-        NSString *str = [self.attributedText.string substringWithRange:rangeCopy];
-        UIPasteboard *pasteboard = [UIPasteboard generalPasteboard];
-        pasteboard.string = str;
+        @autoreleasepool {
+            NSRange rangeCopy = NSMakeRange(loc,length);
+            NSString *str = [self.attributedText.string substringWithRange:rangeCopy];
+            UIPasteboard *pasteboard = [UIPasteboard generalPasteboard];
+            pasteboard.string = str;
+        }
     }
     [self hideView];
 }
@@ -1198,10 +1200,10 @@ typedef NS_ENUM(NSInteger, CJSelectViewAction) {
 #pragma mark - UIGestureRecognizerDelegate
 - (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldReceiveTouch:(UITouch *)touch {
     if (gestureRecognizer == self.doubleTapGes) {
-        objc_setAssociatedObject(self.doubleTapGes, "UITouch", touch, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+        objc_setAssociatedObject(self.doubleTapGes, &kAssociatedUITouchKey, touch, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
     }
     else if (gestureRecognizer == self.longPressGestureRecognizer) {
-        objc_setAssociatedObject(self.longPressGestureRecognizer, "UITouch", touch, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+        objc_setAssociatedObject(self.longPressGestureRecognizer, &kAssociatedUITouchKey, touch, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
     }
     return YES;
 }
@@ -1213,7 +1215,7 @@ typedef NS_ENUM(NSInteger, CJSelectViewAction) {
 }
 
 - (void)tapTwoAct:(UITapGestureRecognizer *)sender {
-    UITouch *touch = objc_getAssociatedObject(self.doubleTapGes, "UITouch");
+    UITouch *touch = objc_getAssociatedObject(self.doubleTapGes, &kAssociatedUITouchKey);
     CGPoint point = [touch locationInView:self];
     CJGlyphRunStrokeItem *currentItem = [CJSelectBackView currentItem:point allRunItemArray:_allRunItemArray inset:1];
     if (currentItem) {
@@ -1227,7 +1229,7 @@ typedef NS_ENUM(NSInteger, CJSelectViewAction) {
 #pragma mark - UILongPressGestureRecognizer
 - (void)longPressGestureDidFire:(UILongPressGestureRecognizer *)sender {
     
-    UITouch *touch = objc_getAssociatedObject(self.longPressGestureRecognizer, "UITouch");
+    UITouch *touch = objc_getAssociatedObject(self.longPressGestureRecognizer, &kAssociatedUITouchKey);
     CGPoint point = [touch locationInView:self];
     switch (sender.state) {
         case UIGestureRecognizerStateBegan: {

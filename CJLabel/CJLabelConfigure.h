@@ -12,6 +12,8 @@
 @class CJLabelLinkModel;
 @class CJLabel;
 
+static char kAssociatedUITouchKey;
+
 #define CJLabelIsNull(a) ((a)==nil || (a)==NULL || (NSNull *)(a)==[NSNull null])
 #define CJUIRGBColor(r,g,b,a) ([UIColor colorWithRed:r/255.0 green:g/255.0 blue:b/255.0 alpha:a])
 
