@@ -172,11 +172,11 @@ self.label.enableCopy = YES;
  >> * 优化富文本配置方法;
  >> * 新增CJLabelConfigure类，简化方法调用;
  >> * 增加对NSAttributedString点击链点的判断（比如对于两个重名用户：@lele 和 @lele，可以分别设置不同的点击响应事件）<br/>
-***注意***
-***`V3.0.0`*** 版本引入`CJLabelConfigure`类，优化了NSAttributedString的设置，旧的配置API不再支持。相关调用请参照以下相关方法<br/>
- * `+ initWithImage:imageSize:imagelineAlignment:configure:`<br/>
- * `+ initWithString:configure:`<br/>
- * `+ initWithAttributedString:strIdentifier:configure:`<br/>
+ >> ***注意***
+ >> ***`V3.0.0`*** 版本引入`CJLabelConfigure`类，优化了NSAttributedString的设置，旧的配置API不再支持。相关调用请参照以下相关方法<br/>
+ >>> * `+ initWithImage:imageSize:imagelineAlignment:configure:`<br/>
+ >>> * `+ initWithString:configure:`<br/>
+ >>> * `+ initWithAttributedString:strIdentifier:configure:`<br/>
 * ***V2.1.2***<br/>
  >> * 可修改图片所在行在垂直方向的对齐方式（只针对当前行），有居上、居中、居下选项，默认居下
 * ***V2.1.1***<br/>
