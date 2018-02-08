@@ -3,30 +3,30 @@
 `CJLabel`继承自`UILabel`，在支持`UILabel`所有属性的基础上，还提供富文本展示、图文混排、自定义点击链点设置、长按（双击）唤起`UIMenuController`选择复制文本等功能。
 
 ## 特性简介
->> * 禁止使用`-init`初始化！！
->> * `enableCopy` 长按或双击可唤起`UIMenuController`进行选择、全选、复制文本操作   
->> * `attributedText` 与 `text` 均可设置富文本
->> * 不支持`NSAttachmentAttributeName`，`NSTextAttachment`！！显示图片请调用以下方法初始化`NSAttributedString`后显示：
- >>> * `+ initWithImage:imageSize:imagelineAlignment:configure:`
- >>> * `+ insertImageAtAttrString:image:imageSize:atIndex:imagelineAlignment:configure:`
->> * `extendsLinkTouchArea`设置是否扩大链点点击识别范围 
->> * `shadowRadius`设置文本阴影模糊半径 
->> * `textInsets` 设置文本内边距
->> * `verticalAlignment` 设置垂直方向的文本对齐方式。注意与显示图片时候的`imagelineAlignment`作区分，`self.verticalAlignment`对应的是整体文本在垂直方向的对齐方式，而`imagelineAlignment`只对图片所在行的垂直对齐方式有效
->> * `delegate` 点击链点代理
->> * `attributedTruncationToken`自定义截断字符，默认"...",只针对`self.lineBreakMode`的以下三种值有效，假如`attributedTruncationToken`=`***`，则： <br/>
- >>> * `NSLineBreakByTruncatingHead,    // 头部截断: "***wxyz"`<br/>
- >>> * `NSLineBreakByTruncatingTail,    // 中间截断: "abcd***"`<br/>
- >>> * `NSLineBreakByTruncatingMiddle   // 尾部截断:  "ab***yz"`
->> * `kCJBackgroundFillColorAttributeName` 背景填充颜色，属性优先级低于`NSBackgroundColorAttributeName`，如果设置`NSBackgroundColorAttributeName`会忽略`kCJBackgroundFillColorAttributeName`的设置
->> * `kCJBackgroundStrokeColorAttributeName ` 背景边框线颜色
->> * `kCJBackgroundLineWidthAttributeName ` 背景边框线宽度
->> * `kCJBackgroundLineCornerRadiusAttributeName ` 背景边框线圆角弧度
->> * `kCJActiveBackgroundFillColorAttributeName ` 点击时候的背景填充颜色属性优先级同
+> * 禁止使用`-init`初始化！！
+> * `enableCopy` 长按或双击可唤起`UIMenuController`进行选择、全选、复制文本操作   
+> * `attributedText` 与 `text` 均可设置富文本
+> * 不支持`NSAttachmentAttributeName`，`NSTextAttachment`！！显示图片请调用以下方法初始化`NSAttributedString`后显示：
+ >> * `+ initWithImage:imageSize:imagelineAlignment:configure:`
+ >> * `+ insertImageAtAttrString:image:imageSize:atIndex:imagelineAlignment:configure:`
+> * `extendsLinkTouchArea`设置是否扩大链点点击识别范围 
+> * `shadowRadius`设置文本阴影模糊半径 
+> * `textInsets` 设置文本内边距
+> * `verticalAlignment` 设置垂直方向的文本对齐方式。注意与显示图片时候的`imagelineAlignment`作区分，`self.verticalAlignment`对应的是整体文本在垂直方向的对齐方式，而`imagelineAlignment`只对图片所在行的垂直对齐方式有效
+> * `delegate` 点击链点代理
+> * `attributedTruncationToken`自定义截断字符，默认"...",只针对`self.lineBreakMode`的以下三种值有效，假如`attributedTruncationToken`=`***`，则： <br/>
+ >> * `NSLineBreakByTruncatingHead,    // 头部截断: "***wxyz"`<br/>
+ >> * `NSLineBreakByTruncatingTail,    // 中间截断: "abcd***"`<br/>
+ >> * `NSLineBreakByTruncatingMiddle   // 尾部截断:  "ab***yz"`
+> * `kCJBackgroundFillColorAttributeName` 背景填充颜色，属性优先级低于`NSBackgroundColorAttributeName`，如果设置`NSBackgroundColorAttributeName`会忽略`kCJBackgroundFillColorAttributeName`的设置
+> * `kCJBackgroundStrokeColorAttributeName ` 背景边框线颜色
+> * `kCJBackgroundLineWidthAttributeName ` 背景边框线宽度
+> * `kCJBackgroundLineCornerRadiusAttributeName ` 背景边框线圆角弧度
+> * `kCJActiveBackgroundFillColorAttributeName ` 点击时候的背景填充颜色属性优先级同
 `kCJBackgroundFillColorAttributeName`
->> * `kCJActiveBackgroundStrokeColorAttributeName ` 点击时候的背景边框线颜色
->> * 支持添加自定义样式、可点击（长按）的文本点击链点
->> * 支持 Interface Builder
+> * `kCJActiveBackgroundStrokeColorAttributeName ` 点击时候的背景边框线颜色
+> * 支持添加自定义样式、可点击（长按）的文本点击链点
+> * 支持 Interface Builder
 
 ## CJLabel引用
 ##### 1. 直接导入
@@ -154,34 +154,34 @@ self.label.enableCopy = YES;
 
 ## 版本说明
 * ***V4.5.0 V4.5.1 V4.5.3***<br/>
- >> * 增加`attributedTruncationToken`属性，支持自定义截断字符；<br/>
- >> * 增加`kCJStrikethroughStyleAttributeName、kCJStrikethroughColorAttributeName`属性，可对指定文本添加删除线
+ > * 增加`attributedTruncationToken`属性，支持自定义截断字符；<br/>
+ > * 增加`kCJStrikethroughStyleAttributeName、kCJStrikethroughColorAttributeName`属性，可对指定文本添加删除线
 * ***V4.4.0***<br/>
- >> * 优化NSAttributedString链点属性设置
+ > * 优化NSAttributedString链点属性设置
 * ***V4.0.0***<br/>
- >> * 新增`enableCopy`属性，支持选择、全选、复制功能，类似`UITextView`的选择复制效果。
+ > * 新增`enableCopy`属性，支持选择、全选、复制功能，类似`UITextView`的选择复制效果。
 * ***V3.0.0***<br/>
- >> * 优化富文本配置方法;
- >> * 新增CJLabelConfigure类，简化方法调用;
- >> * 增加对NSAttributedString点击链点的判断（比如对于两个重名用户：@lele 和 @lele，可以分别设置不同的点击响应事件）<br/>
- >> ***注意***
- >> ***`V3.0.0`*** 版本引入`CJLabelConfigure`类，优化了NSAttributedString的设置，旧的配置API不再支持。相关调用请参照以下相关方法<br/>
- >>> * `+ initWithImage:imageSize:imagelineAlignment:configure:`<br/>
- >>> * `+ initWithString:configure:`<br/>
- >>> * `+ initWithAttributedString:strIdentifier:configure:`<br/>
+ > * 优化富文本配置方法;
+ > * 新增CJLabelConfigure类，简化方法调用;
+ > * 增加对NSAttributedString点击链点的判断（比如对于两个重名用户：@lele 和 @lele，可以分别设置不同的点击响应事件）<br/>
+ > ***注意***
+ > ***`V3.0.0`*** 版本引入`CJLabelConfigure`类，优化了NSAttributedString的设置，旧的配置API不再支持。相关调用请参照以下相关方法<br/>
+ >> * `+ initWithImage:imageSize:imagelineAlignment:configure:`<br/>
+ >> * `+ initWithString:configure:`<br/>
+ >> * `+ initWithAttributedString:strIdentifier:configure:`<br/>
 * ***V2.1.2***<br/>
- >> * 可修改图片所在行在垂直方向的对齐方式（只针对当前行），有居上、居中、居下选项，默认居下
+ > * 可修改图片所在行在垂直方向的对齐方式（只针对当前行），有居上、居中、居下选项，默认居下
 * ***V2.1.1***<br/>
- >> * 修复单行文字时候点击链点的判断，增加delegate
+ > * 修复单行文字时候点击链点的判断，增加delegate
 * ***V2.0.0***<br/>
- >> * 优化点击链点响应判断，增加插入图片、插入图片链点、点击链点背景色填充、点击链点边框线描边等功能
- >> * v2.0.0之后版本与v1.x.x版本差别较大，基本上重写了增加以及移除点击链点的API
+ > * 优化点击链点响应判断，增加插入图片、插入图片链点、点击链点背景色填充、点击链点边框线描边等功能
+ > * v2.0.0之后版本与v1.x.x版本差别较大，基本上重写了增加以及移除点击链点的API
 * ***V1.0.2***<br/>
- >> * 点击链点增加扩展属性parameter
+ > * 点击链点增加扩展属性parameter
 * ***V1.0.1***<br/>
- >> * 增加文本中内容相同的链点能够响应点击属性sameLinkEnable，必须在设置self.attributedText前赋值，默认值为NO，只取文本中首次出现的链点。
+ > * 增加文本中内容相同的链点能够响应点击属性sameLinkEnable，必须在设置self.attributedText前赋值，默认值为NO，只取文本中首次出现的链点。
 * ***V1.0.0***<br/>
- >> * 支持链点点击响应
+ > * 支持链点点击响应
 
 #### CJLabel 已知 Bug
  
