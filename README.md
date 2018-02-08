@@ -162,37 +162,40 @@ self.label.enableCopy = YES;
 
 ## 版本说明
 * ***V4.5.0 V4.5.1 V4.5.3***<br/>
- 增加`attributedTruncationToken`属性，支持自定义截断字符；增加`kCJStrikethroughStyleAttributeName、kCJStrikethroughColorAttributeName`属性，可对指定文本添加删除线
+ >>增加`attributedTruncationToken`属性，支持自定义截断字符；<br/>
+ >>增加`kCJStrikethroughStyleAttributeName、kCJStrikethroughColorAttributeName`属性，可对指定文本添加删除线
 * ***V4.4.0***<br/>
- 优化NSAttributedString链点属性设置
+ >>优化NSAttributedString链点属性设置
 * ***V4.0.0***<br/>
- 新增`enableCopy`属性，支持选择、全选、复制功能，类似`UITextView`的选择复制效果。
+ >>新增`enableCopy`属性，支持选择、全选、复制功能，类似`UITextView`的选择复制效果。
 * ***V3.0.0***<br/>
- 优化富文本配置方法，新增CJLabelConfigure类，简化方法调用，增加对NSAttributedString点击链点的判断（比如对于两个重名用户：@lele 和 @lele，可以分别设置不同的点击响应事件）<br/>
+ >>优化富文本配置方法;
+ >>新增CJLabelConfigure类，简化方法调用;
+ >>增加对NSAttributedString点击链点的判断（比如对于两个重名用户：@lele 和 @lele，可以分别设置不同的点击响应事件）<br/>
 ***注意***
 ***`V3.0.0`*** 版本引入`CJLabelConfigure`类，优化了NSAttributedString的设置，旧的配置API不再支持。相关调用请参照以下相关方法<br/>
 `+ initWithImage:imageSize:imagelineAlignment:configure:`<br/>
 `+ initWithString:configure:`<br/>
 `+ initWithAttributedString:strIdentifier:configure:`<br/>
 * ***V2.1.2***<br/>
- 可修改图片所在行在垂直方向的对齐方式（只针对当前行），有居上、居中、居下选项，默认居下
+ >>可修改图片所在行在垂直方向的对齐方式（只针对当前行），有居上、居中、居下选项，默认居下
 * ***V2.1.1***<br/>
- 修复单行文字时候点击链点的判断，增加delegate
+ >>修复单行文字时候点击链点的判断，增加delegate
 * ***V2.0.0***<br/>
- 优化点击链点响应判断，增加插入图片、插入图片链点、点击链点背景色填充、点击链点边框线描边等功能
- v2.0.0之后版本与v1.x.x版本差别较大，基本上重写了增加以及移除点击链点的API
+ >>优化点击链点响应判断，增加插入图片、插入图片链点、点击链点背景色填充、点击链点边框线描边等功能
+ >>v2.0.0之后版本与v1.x.x版本差别较大，基本上重写了增加以及移除点击链点的API
 * ***V1.0.2***<br/>
- 点击链点增加扩展属性parameter
+ >>点击链点增加扩展属性parameter
 * ***V1.0.1***<br/>
- 增加文本中内容相同的链点能够响应点击属性sameLinkEnable，必须在设置self.attributedText前赋值，默认值为NO，只取文本中首次出现的链点。
+ >>增加文本中内容相同的链点能够响应点击属性sameLinkEnable，必须在设置self.attributedText前赋值，默认值为NO，只取文本中首次出现的链点。
 * ***V1.0.0***<br/>
-支持链点点击响应
+ >>支持链点点击响应
   
   
 ## 许可证
 CJLabel 使用 MIT 许可证，详情见 LICENSE 文件。
 
 ## 更多
+[CJLabel富文本三 —— UILabel支持选择复制以及实现原理](https://www.jianshu.com/p/7de3e6d19e31)<br/>
 [CJLabel图文混排二 —— UILabel插入图片以及精确链点点击](http://www.jianshu.com/p/9a70533d217e)<br/>
 [CJLabel图文混排一 ——UILabel富文本显示以及任意字符的点击响应](http://www.jianshu.com/p/b15455d7d30d)<br/>
-[CJLabel富文本三 —— UILabel支持选择复制以及实现原理](https://www.jianshu.com/p/7de3e6d19e31)
