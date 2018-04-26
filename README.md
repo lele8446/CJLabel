@@ -164,6 +164,8 @@ self.label.enableCopy = YES;
 ```
 
 ## 版本说明
+* ***V4.6.0***<br/>
+ 支持显示任意view
 * ***V4.5.0 V4.5.1 V4.5.3***<br/>
  增加`attributedTruncationToken`属性，支持自定义截断字符；增加`kCJStrikethroughStyleAttributeName、kCJStrikethroughColorAttributeName`属性，可对指定文本添加删除线
 * ***V4.4.0***<br/>
