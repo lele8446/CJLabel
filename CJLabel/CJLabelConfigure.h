@@ -14,6 +14,9 @@
 
 static char kAssociatedUITouchKey;
 
+extern NSString * const kCJInsertViewTag;
+extern NSString * const kCJInsertBackViewTag;
+
 #define CJLabelIsNull(a) ((a)==nil || (a)==NULL || (NSNull *)(a)==[NSNull null])
 #define CJUIRGBColor(r,g,b,a) ([UIColor colorWithRed:r/255.0 green:g/255.0 blue:b/255.0 alpha:a])
 
@@ -200,17 +203,17 @@ typedef struct CJCTLineVerticalLayout CJCTLineVerticalLayout;
  */
 @property (readonly, nonatomic, assign) NSRange linkRange;
 /**
- 链点图片Rect（相对于CJLabel坐标的rect)
+ 链点view的Rect（相对于CJLabel坐标的rect)
  */
-@property (readonly, nonatomic, assign) CGRect imageRect;
+@property (readonly, nonatomic, assign) CGRect insertViewRect;
 /**
- 链点图片
+ 插入链点view
  */
-@property (readonly, nonatomic, strong) id image;
+@property (readonly, nonatomic, strong) id insertView;
 
 - (instancetype)initWithAttributedString:(NSAttributedString *)attributedString
-                                   image:(id)image
-                               imageRect:(CGRect )imageRect
+                              insertView:(id)insertView
+                          insertViewRect:(CGRect)insertViewRect
                                parameter:(id)parameter
                                linkRange:(NSRange)linkRange
                                    label:(CJLabel *)label;
@@ -234,8 +237,8 @@ typedef struct CJCTLineVerticalLayout CJCTLineVerticalLayout;
 @property (nonatomic, assign) CGFloat runDescent;//对应的CTRun的下行高
 @property (nonatomic, assign) CTRunRef runRef;//对应的CTRun
 
-@property (nonatomic, strong) id image;//插入图片
-@property (nonatomic, assign) BOOL isImage;//是否是图片
+@property (nonatomic, strong) id insertView;//插入view
+@property (nonatomic, assign) BOOL isInsertView;//是否是插入view
 @property (nonatomic, assign) NSRange range;//链点在文本中的range
 @property (nonatomic, strong) id parameter;//链点自定义参数
 @property (nonatomic, assign) CJCTLineVerticalLayout lineVerticalLayout;//所在CTLine的行高信息结构体

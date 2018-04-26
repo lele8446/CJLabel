@@ -16,6 +16,8 @@
 @property (nonatomic, strong) CJLabel *secondLabel;
 @property (nonatomic, strong) NSMutableAttributedString *attStr;
 @property (nonatomic, strong) CJLabelConfigure *configure;
+
+@property (nonatomic, weak) IBOutlet UILabel *label2;
 @end
 
 @implementation SecondDetailViewController
@@ -72,6 +74,7 @@
             [configure removeAttributesForKey:kCJBackgroundStrokeColorAttributeName];
             [configure removeAttributesForKey:kCJStrikethroughStyleAttributeName];
             [configure removeAttributesForKey:kCJStrikethroughColorAttributeName];
+            
             attStr = [CJLabel insertImageAtAttrString:attStr image:@"CJLabel.png" imageSize:CGSizeMake(55, 45) atIndex:(imgRange.location+imgRange.length) imagelineAlignment:CJVerticalAlignmentBottom configure:configure];
             //设置内边距
             self.label.textInsets = UIEdgeInsetsMake(10, 10, 10, 0);
@@ -171,7 +174,13 @@
                   longPressBlock:^(CJLabelLinkModel *linkModel){
                       [wSelf clicklongPressLink:linkModel isImage:YES];
                   }];
-    attStr = [CJLabel insertImageAtAttrString:attStr image:@"CJLabel.png" imageSize:CGSizeMake(45, 35) atIndex:(imageRange.location+imageRange.length) imagelineAlignment:verticalAlignment configure:imgConfigure];
+    
+    UIImageView *imgView = [[UIImageView alloc]initWithImage:[UIImage imageNamed:@"CJLabel.png"]];
+    imgView.contentMode = UIViewContentModeScaleToFill;
+    imgView.clipsToBounds = YES;
+    attStr = [CJLabel insertViewAtAttrString:attStr view:imgView viewSize:CGSizeMake(100, 40) atIndex:(imageRange.location+imageRange.length) lineAlignment:verticalAlignment configure:imgConfigure];
+    
+//    attStr = [CJLabel insertImageAtAttrString:attStr image:@"CJLabel.png" imageSize:CGSizeMake(45, 35) atIndex:(imageRange.location+imageRange.length) imagelineAlignment:verticalAlignment configure:imgConfigure];
     
     self.label.attributedText = attStr;
 }
@@ -203,7 +212,7 @@
 - (void)clickLink:(CJLabelLinkModel *)linkModel isImage:(BOOL)isImage {
     NSString *title = [NSString stringWithFormat:@"点击链点 %@",linkModel.attributedString.string];
     if (isImage) {
-         title = [NSString stringWithFormat:@"点击链点图片：%@",linkModel.image];
+         title = [NSString stringWithFormat:@"点击链点图片：%@",linkModel.insertView];
     }
     NSString *parameter = [NSString stringWithFormat:@"自定义参数：%@",linkModel.parameter];
     UIAlertController *alert = [UIAlertController alertControllerWithTitle:title message:parameter preferredStyle:UIAlertControllerStyleAlert];
@@ -215,7 +224,7 @@
 - (void)clicklongPressLink:(CJLabelLinkModel *)linkModel isImage:(BOOL)isImage {
     NSString *title = [NSString stringWithFormat:@"长按点击: %@",linkModel.attributedString.string];
     if (isImage) {
-        title = [NSString stringWithFormat:@"长按点击图片：%@",linkModel.image];
+        title = [NSString stringWithFormat:@"长按点击图片：%@",linkModel.insertView];
     }
 
     UIAlertController *alert = [UIAlertController alertControllerWithTitle:title message:nil preferredStyle:UIAlertControllerStyleActionSheet];

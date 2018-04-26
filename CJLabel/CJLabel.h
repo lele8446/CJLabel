@@ -49,9 +49,9 @@
      1. 禁止使用`-init`初始化！！
      2. `enableCopy` 长按或双击可唤起`UIMenuController`进行选择、全选、复制文本操作
      3. `attributedText` 与 `text` 均可设置富文本
-     4. 不支持`NSAttachmentAttributeName`,`NSTextAttachment`！！显示图片请调用:
-         `+ initWithImage:imageSize:imagelineAlignment:configure:`或者
-         `+ insertImageAtAttrString:image:imageSize:atIndex:imagelineAlignment:configure:`方法初始化`NSAttributedString`后显示
+     4. 不支持`NSAttachmentAttributeName`,`NSTextAttachment`！！显示自定义view请调用:
+         `+ initWithView:viewSize:lineAlignment:configure:`或者
+         `+ insertViewAtAttrString:view:viewSize:atIndex:lineAlignment:configure:`方法初始化`NSAttributedString`后显示
      5. `extendsLinkTouchArea`设置是否扩大链点点击识别范围
      6. `shadowRadius`设置文本阴影模糊半径
      7. `textInsets` 设置文本内边距
@@ -171,21 +171,30 @@
                            longPressBlock:(CJLabelLinkModelBlock)longPressBlock;
 
 /**
- 根据图片名初始化NSAttributedString
-
- @param image         图片名称，或者UIImage
- @param size          图片大小（这里是指显示图片等区域大小）
- @param lineAlignment 图片所在行，图片与文字在垂直方向的对齐方式（只针对当前行）
- @param configure     链点配置
- @return              NSAttributedString
+ 根据图片名或UIImage初始化NSAttributedString
+ （废弃原因：该方法显示图片只能是UIViewContentModeScaleToFill模式，而且不能更改）
  */
 + (NSMutableAttributedString *)initWithImage:(id)image
                                    imageSize:(CGSize)size
                           imagelineAlignment:(CJLabelVerticalAlignment)lineAlignment
-                                   configure:(CJLabelConfigure *)configure;
+                                   configure:(CJLabelConfigure *)configure __deprecated_msg("Use + initWithView:viewSize:lineAlignment:configure: instead");
 
 /**
- 在指定位置插入图片，并设置图片链点属性
+ 根据自定义View初始化NSAttributedString
+
+ @param view          需要插入的view（包括UIImage，NSString图片名称，UIView）
+ @param size          view的显示区域大小
+ @param lineAlignment 插入view所在行，与文字在垂直方向的对齐方式（只针对当前行）
+ @param configure     链点配置
+ @return              NSAttributedString
+ */
++ (NSMutableAttributedString *)initWithView:(id)view
+                                   viewSize:(CGSize)size
+                              lineAlignment:(CJLabelVerticalAlignment)lineAlignment
+                                  configure:(CJLabelConfigure *)configure;
+
+/**
+ 在指定位置插入图片，并设置图片链点属性（已废弃，废弃原因：该方法显示图片只能是UIViewContentModeScaleToFill模式，而且不能更改）
  注意！！！插入图片， 如果设置 NSParagraphStyleAttributeName 属性，
  请保证 paragraph.lineBreakMode = NSLineBreakByCharWrapping，不然当Label的宽度不够显示内容或图片时，不会自动换行, 部分图片将会看不见
  默认 paragraph.lineBreakMode = NSLineBreakByCharWrapping
@@ -195,7 +204,31 @@
                                              imageSize:(CGSize)size
                                                atIndex:(NSUInteger)loc
                                     imagelineAlignment:(CJLabelVerticalAlignment)lineAlignment
-                                             configure:(CJLabelConfigure *)configure;
+                                             configure:(CJLabelConfigure *)configure __deprecated_msg("Use + insertViewAtAttrString:view:viewSize:atIndex:imagelineAlignment:configure: instead");
+
+/**
+ 在指定位置插入任意UIView
+
+ 注意！！！
+ 1、插入任意View， 如果设置 NSParagraphStyleAttributeName 属性，
+    请保证 paragraph.lineBreakMode = NSLineBreakByCharWrapping，不然当Label的宽度不够显示内容或view时，不会自动换行, 部分view将会看不见
+    默认 paragraph.lineBreakMode = NSLineBreakByCharWrapping
+ 2、插入任意View，如果 configure.isLink = YES，那么将优先响应CJLabel的点击响应
+ 
+ @param attrStr       源字符串
+ @param view          需要插入的view（包括UIImage，NSString图片名称，UIView）
+ @param size          view的显示区域大小
+ @param loc           插入位置
+ @param lineAlignment 插入view所在行，与文字在垂直方向的对齐方式（只针对当前行）
+ @param configure     链点配置
+ @return              NSAttributedString
+ */
++ (NSMutableAttributedString *)insertViewAtAttrString:(NSAttributedString *)attrStr
+                                                 view:(id)view
+                                             viewSize:(CGSize)size
+                                              atIndex:(NSUInteger)loc
+                                        lineAlignment:(CJLabelVerticalAlignment)lineAlignment
+                                            configure:(CJLabelConfigure *)configure;
 
 /**
  设置指定NSRange属性

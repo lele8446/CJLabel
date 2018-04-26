@@ -10,6 +10,9 @@
 #import "CJLabel.h"
 #import <objc/runtime.h>
 
+NSString * const kCJInsertViewTag                            = @"kCJInsertViewTag";
+NSString * const kCJInsertBackViewTag                        = @"kCJInsertBackViewTag";
+
 NSString * const kCJImageAttributeName                       = @"kCJImageAttributeName";
 NSString * const kCJImage                                    = @"kCJImage";
 NSString * const kCJImageHeight                              = @"kCJImageHeight";
@@ -421,8 +424,8 @@ CGFloat RunDelegateGetWidthCallback(void * refCon) {
 
 @implementation CJLabelLinkModel
 - (instancetype)initWithAttributedString:(NSAttributedString *)attributedString
-                                   image:(id)image
-                               imageRect:(CGRect )imageRect
+                              insertView:(id)insertView
+                          insertViewRect:(CGRect)insertViewRect
                                parameter:(id)parameter
                                linkRange:(NSRange)linkRange
                                    label:(CJLabel *)label
@@ -430,8 +433,12 @@ CGFloat RunDelegateGetWidthCallback(void * refCon) {
     self = [super init];
     if (self) {
         _attributedString = attributedString;
-        _image = image;
-        _imageRect = imageRect;
+        if ([insertView isKindOfClass:[UIView class]]) {
+            _insertView = [(UIView *)insertView viewWithTag:[kCJInsertViewTag hash]];
+        }else{
+            _insertView = insertView;
+        }
+        _insertViewRect = insertViewRect;
         _parameter = parameter;
         _linkRange = linkRange;
         _label = label;
@@ -456,8 +463,8 @@ CGFloat RunDelegateGetWidthCallback(void * refCon) {
     item.runDescent = self.runDescent;
     item.runRef = self.runRef;
     
-    item.image = self.image;
-    item.isImage = self.isImage;
+    item.insertView = self.insertView;
+    item.isInsertView = self.isInsertView;
     item.range = self.range;
     item.parameter = self.parameter;
     item.lineVerticalLayout = self.lineVerticalLayout;

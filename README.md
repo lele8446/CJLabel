@@ -7,8 +7,8 @@
    2. `enableCopy` 长按或双击可唤起`UIMenuController`进行选择、全选、复制文本操作   
    3. `attributedText` 与 `text` 均可设置富文本
    4. 不支持`NSAttachmentAttributeName`，`NSTextAttachment`！！<br/>显示图片请调用:<br/>
-   `+ initWithImage:imageSize:imagelineAlignment:configure:`或者<br/>
-   `+ insertImageAtAttrString:image:imageSize:atIndex:imagelineAlignment:configure:`方法初始化`NSAttributedString`后显示
+   `+ initWithView:viewSize:lineAlignment:configure:`或者<br/>
+   `+ insertViewAtAttrString:view:viewSize:atIndex:lineAlignment:configure:`方法初始化`NSAttributedString`后显示
    5. `extendsLinkTouchArea`设置是否扩大链点点击识别范围 
    6. `shadowRadius`设置文本阴影模糊半径 
    7. `textInsets` 设置文本内边距
@@ -72,7 +72,10 @@ NSRange imgRange = [attStr.string rangeOfString:@"插入图片"];
 //移除指定属性
 [configure removeAttributesForKey:kCJBackgroundStrokeColorAttributeName];
 //指定位置插入图片
-attStr = [CJLabel insertImageAtAttrString:attStr image:@"CJLabel.png" imageSize:CGSizeMake(55, 45) atIndex:(imgRange.location+imgRange.length) imagelineAlignment:CJVerticalAlignmentBottom configure:configure];
+UIImageView *imgView = [[UIImageView alloc]initWithImage:[UIImage imageNamed:@"CJLabel.png"]];
+imgView.contentMode = UIViewContentModeScaleAspectFill;
+imgView.clipsToBounds = YES;
+attStr = [CJLabel insertViewAtAttrString:attStr view:imgView viewSize:CGSizeMake(55, 45) atIndex:(imgRange.location+imgRange.length) lineAlignment:CJVerticalAlignmentBottom configure:configure];
 //设置内边距
 self.label.textInsets = UIEdgeInsetsMake(10, 10, 10, 0);
 self.label.attributedText = attStr;
@@ -129,7 +132,7 @@ CJLabelConfigure *imgConfigure =
                longPressBlock:^(CJLabelLinkModel *linkModel){
                    [self clicklongPressLink:linkModel isImage:YES];
                }];
-attStr = [CJLabel insertImageAtAttrString:attStr image:@"CJLabel.png" imageSize:CGSizeMake(45, 35) atIndex:(imageRange.location+imageRange.length) imagelineAlignment:verticalAlignment configure:imgConfigure];
+attStr = [CJLabel insertViewAtAttrString:attStr view:@"CJLabel.png" viewSize:CGSizeMake(45, 35) atIndex:(imageRange.location+imageRange.length) lineAlignment:verticalAlignment configure:imgConfigure];
 self.label.attributedText = attStr;
 //支持选择复制
 self.label.enableCopy = YES;

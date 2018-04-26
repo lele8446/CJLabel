@@ -543,6 +543,11 @@ NSString * const kCJLinkStringIdentifierAttributesName       = @"kCJLinkStringId
                  inRect:(CGRect)rect
                 context:(CGContextRef)c
 {
+    UIView *insertBackView = [self viewWithTag:[kCJInsertBackViewTag hash]];
+    if (insertBackView) {
+        [insertBackView removeFromSuperview];
+    }
+    
     CGMutablePathRef path = CGPathCreateMutable();
     CGPathAddRect(path, NULL, rect);
     CTFrameRef frame = CTFramesetterCreateFrame(framesetter, textRange, path, NULL);
@@ -741,20 +746,29 @@ NSString * const kCJLinkStringIdentifierAttributesName       = @"kCJLinkStringId
         CGRect runBounds = runItem.runBounds;
         //y轴方向的偏移
         //此时在Y轴方向是以基线标准对齐的，所以忽略每个CTRun的下行高runDescent
-        if (!runItem.isImage) {
+        if (!runItem.isInsertView) {
             runBounds.origin.y = runItem.runBounds.origin.y + runItem.runDescent;
         }
         
-        //绘制图片
-        if (runItem.isImage) {
+        //绘制view
+        if (runItem.isInsertView) {
             UIImage *image = nil;
-            if ([runItem.image isKindOfClass:[UIImage class]]) {
-                image = runItem.image;
-            }else if ([runItem.image isKindOfClass:[NSString class]]) {
-                image = [UIImage imageNamed:runItem.image];
+            if ([runItem.insertView isKindOfClass:[UIImage class]]) {
+                image = runItem.insertView;
+            }else if ([runItem.insertView isKindOfClass:[NSString class]]) {
+                image = [UIImage imageNamed:runItem.insertView];
             }
+            else if ([runItem.insertView isKindOfClass:[UIView class]]) {
+                UIView *view = (UIView *)runItem.insertView;
+                view.backgroundColor = self.backgroundColor;
+                runBounds.origin.x = lineOrigin.x + CTLineGetOffsetForStringIndex(line, CTRunGetStringRange(runItem.runRef).location, NULL) + penOffsetX - runItem.strokeLineWidth/2;
+                view.frame = runItem.locBounds;
+                view.tag = [kCJInsertBackViewTag hash];
+                [self addSubview:view];
+                [self bringSubviewToFront:view];
+            }
+            
             if (image) {
-                
                 runBounds.origin.x = lineOrigin.x + CTLineGetOffsetForStringIndex(line, CTRunGetStringRange(runItem.runRef).location, NULL) + penOffsetX - runItem.strokeLineWidth/2;
                 CGContextDrawImage(c, runBounds, image.CGImage);
             }
@@ -929,7 +943,7 @@ NSString * const kCJLinkStringIdentifierAttributesName       = @"kCJLinkStringId
     CGRect roundedRect = CGRectMake(x,y,runStrokeItem.runBounds.size.width,runStrokeItem.runBounds.size.height);
     if (isStrokeColor) {
         CGFloat lineWidth = runStrokeItem.strokeLineWidth/2;
-        CGFloat width = runStrokeItem.runBounds.size.width + ((runStrokeItem.isImage)?3*lineWidth:2*lineWidth);
+        CGFloat width = runStrokeItem.runBounds.size.width + ((runStrokeItem.isInsertView)?3*lineWidth:2*lineWidth);
         roundedRect = CGRectMake(x-lineWidth,
                                  y-lineWidth,
                                  width,
@@ -977,7 +991,7 @@ NSString * const kCJLinkStringIdentifierAttributesName       = @"kCJLinkStringId
     }
     //背景色
     else {
-        if (runStrokeItem.isImage) {
+        if (runStrokeItem.isInsertView) {
             return;
         }
         UIColor *color = (active?runStrokeItem.activeFillColor:runStrokeItem.fillColor);
@@ -1234,8 +1248,8 @@ NSString * const kCJLinkStringIdentifierAttributesName       = @"kCJLinkStringId
         runStrokeItem.strikethroughColor = strikethroughColor;
         
         if (imgInfoDic[kCJImage]) {
-            runStrokeItem.image = imgInfoDic[kCJImage];
-            runStrokeItem.isImage = YES;
+            runStrokeItem.insertView = imgInfoDic[kCJImage];
+            runStrokeItem.isInsertView = YES;
         }
         if (!CJLabelIsNull(attributes[kCJLinkParameterAttributesName])) {
             runStrokeItem.parameter = attributes[kCJLinkParameterAttributesName];
@@ -1261,8 +1275,8 @@ NSString * const kCJLinkStringIdentifierAttributesName       = @"kCJLinkStringId
         }
         runStrokeItem.isLink = NO;
         if (imgInfoDic[kCJImage]) {
-            runStrokeItem.image = imgInfoDic[kCJImage];
-            runStrokeItem.isImage = YES;
+            runStrokeItem.insertView = imgInfoDic[kCJImage];
+            runStrokeItem.isInsertView = YES;
         }
     }
     return runStrokeItem;
@@ -1561,8 +1575,8 @@ NSString * const kCJLinkStringIdentifierAttributesName       = @"kCJLinkStringId
             __weak typeof(self)wSelf = self;
             CJLabelLinkModel *linkModel =
             [[CJLabelLinkModel alloc]initWithAttributedString:attributedString
-                                                        image:_currentClickRunStrokeItem.image
-                                                    imageRect:_currentClickRunStrokeItem.locBounds
+                                                   insertView:_currentClickRunStrokeItem.insertView
+                                               insertViewRect:_currentClickRunStrokeItem.locBounds
                                                     parameter:_currentClickRunStrokeItem.parameter
                                                     linkRange:_currentClickRunStrokeItem.range
                                                         label:wSelf];
@@ -1631,12 +1645,12 @@ NSString * const kCJLinkStringIdentifierAttributesName       = @"kCJLinkStringId
         __weak typeof(self)wSelf = self;
         CJLabelLinkModel *linkModel =
         [[CJLabelLinkModel alloc]initWithAttributedString:attributedString
-                                                    image:_currentClickRunStrokeItem.image
-                                                imageRect:_currentClickRunStrokeItem.locBounds
+                                               insertView:_currentClickRunStrokeItem.insertView
+                                           insertViewRect:_currentClickRunStrokeItem.locBounds
                                                 parameter:_currentClickRunStrokeItem.parameter
                                                 linkRange:_currentClickRunStrokeItem.range
                                                     label:wSelf];
-        
+
         if (_currentClickRunStrokeItem.linkBlock) {
             _currentClickRunStrokeItem.linkBlock(linkModel);
         }
@@ -1695,12 +1709,12 @@ NSString * const kCJLinkStringIdentifierAttributesName       = @"kCJLinkStringId
                     __weak typeof(self)wSelf = self;
                     CJLabelLinkModel *linkModel =
                     [[CJLabelLinkModel alloc]initWithAttributedString:attributedString
-                                                                image:_currentClickRunStrokeItem.image
-                                                            imageRect:_currentClickRunStrokeItem.locBounds
+                                                           insertView:_currentClickRunStrokeItem.insertView
+                                                       insertViewRect:_currentClickRunStrokeItem.locBounds
                                                             parameter:_currentClickRunStrokeItem.parameter
                                                             linkRange:_currentClickRunStrokeItem.range
                                                                 label:wSelf];
-                    
+
                     
                     if (_currentClickRunStrokeItem.longPressBlock) {
                         _currentClickRunStrokeItem.longPressBlock(linkModel);
@@ -1880,9 +1894,44 @@ NSString * const kCJLinkStringIdentifierAttributesName       = @"kCJLinkStringId
     return result;
 }
 
++ (NSMutableAttributedString *)initWithView:(id)view viewSize:(CGSize)size lineAlignment:(CJLabelVerticalAlignment)lineAlignment configure:(CJLabelConfigure *)configure {
+    NSAttributedString *attStr = [[NSAttributedString alloc]init];
+    BOOL isLink = configure.isLink;
+    id insertView = view;
+    if ([view isKindOfClass:[UIView class]]) {
+        UIView *backView = [[UIView alloc]initWithFrame:CGRectMake(0, 0, size.width, size.height)];
+        [(UIView *)view setFrame:CGRectMake(0, 0, size.width, size.height)];
+        [(UIView *)view setAutoresizingMask:UIViewAutoresizingNone];
+        backView.userInteractionEnabled = YES;
+        [(UIView *)view setUserInteractionEnabled:YES];
+        [(UIView *)view setTag:[kCJInsertViewTag hash]];
+        [backView addSubview:view];
+        insertView = backView;
+    }
+    NSMutableAttributedString *result = [CJLabelConfigure configureLinkAttributedString:attStr addImage:insertView imageSize:size atIndex:0 verticalAlignment:lineAlignment linkAttributes:configure.attributes activeLinkAttributes:configure.activeLinkAttributes parameter:configure.parameter clickLinkBlock:configure.clickLinkBlock longPressBlock:configure.longPressBlock islink:isLink];
+    return result;
+}
+
 + (NSMutableAttributedString *)insertImageAtAttrString:(NSAttributedString *)attrStr image:(id)image imageSize:(CGSize)size atIndex:(NSUInteger)loc imagelineAlignment:(CJLabelVerticalAlignment)lineAlignment configure:(CJLabelConfigure *)configure {
     BOOL isLink = configure.isLink;
     NSMutableAttributedString *result = [CJLabelConfigure configureLinkAttributedString:attrStr addImage:image imageSize:size atIndex:loc verticalAlignment:lineAlignment linkAttributes:configure.attributes activeLinkAttributes:configure.activeLinkAttributes parameter:configure.parameter clickLinkBlock:configure.clickLinkBlock longPressBlock:configure.longPressBlock islink:isLink];
+    return result;
+}
+
++ (NSMutableAttributedString *)insertViewAtAttrString:(NSAttributedString *)attrStr view:(id)view viewSize:(CGSize)size atIndex:(NSUInteger)loc lineAlignment:(CJLabelVerticalAlignment)lineAlignment configure:(CJLabelConfigure *)configure {
+    BOOL isLink = configure.isLink;
+    id insertView = view;
+    if ([view isKindOfClass:[UIView class]]) {
+        UIView *backView = [[UIView alloc]initWithFrame:CGRectMake(0, 0, size.width, size.height)];
+        [(UIView *)view setFrame:CGRectMake(0, 0, size.width, size.height)];
+        [(UIView *)view setAutoresizingMask:UIViewAutoresizingNone];
+        backView.userInteractionEnabled = YES;
+        [(UIView *)view setUserInteractionEnabled:YES];
+        [(UIView *)view setTag:[kCJInsertViewTag hash]];
+        [backView addSubview:view];
+        insertView = backView;
+    }
+    NSMutableAttributedString *result = [CJLabelConfigure configureLinkAttributedString:attrStr addImage:insertView imageSize:size atIndex:loc verticalAlignment:lineAlignment linkAttributes:configure.attributes activeLinkAttributes:configure.activeLinkAttributes parameter:configure.parameter clickLinkBlock:configure.clickLinkBlock longPressBlock:configure.longPressBlock islink:isLink];
     return result;
 }
 
