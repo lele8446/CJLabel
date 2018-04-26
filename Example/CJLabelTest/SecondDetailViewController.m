@@ -75,7 +75,7 @@
             [configure removeAttributesForKey:kCJStrikethroughStyleAttributeName];
             [configure removeAttributesForKey:kCJStrikethroughColorAttributeName];
             
-            attStr = [CJLabel insertImageAtAttrString:attStr image:@"CJLabel.png" imageSize:CGSizeMake(55, 45) atIndex:(imgRange.location+imgRange.length) imagelineAlignment:CJVerticalAlignmentBottom configure:configure];
+            attStr = [CJLabel insertViewAtAttrString:attStr view:@"CJLabel.png" viewSize:CGSizeMake(55, 45) atIndex:(imgRange.location+imgRange.length) lineAlignment:CJVerticalAlignmentBottom configure:configure];
             //设置内边距
             self.label.textInsets = UIEdgeInsetsMake(10, 10, 10, 0);
             self.label.attributedText = attStr;

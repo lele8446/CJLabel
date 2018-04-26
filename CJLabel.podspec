@@ -9,7 +9,7 @@
 Pod::Spec.new do |s|
 
   s.name         = "CJLabel"
-  s.version      = "4.5.3"
+  s.version      = "4.6.0"
   s.summary      = "A drop-in replacement for UILabel that supports NSAttributedString, rich text, links, select copy and more."
   s.homepage     = "https://github.com/lele8446/CJLabelTest"
   # s.license      = "MIT"
