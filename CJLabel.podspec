@@ -29,7 +29,7 @@ Pod::Spec.new do |s|
   }
   s.author       = { "ChiJinLian" => "lele8446@foxmail.com" }
   s.platform     = :ios, "7.0"
-  s.source       = { :git => "https://github.com/lele8446/CJLabelTest.git", :tag => "4.5.3" }
+  s.source       = { :git => "https://github.com/lele8446/CJLabelTest.git", :tag => "4.6.0" }
   s.source_files  = "CJLabel/*"
 
 end
