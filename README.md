@@ -1,6 +1,6 @@
 # CJLabel
 
-`CJLabel`继承自`UILabel`，在支持`UILabel`所有属性的基础上，还提供富文本展示、图文混排、自定义点击链点设置、长按（双击）唤起`UIMenuController`选择复制文本等功能。
+`CJLabel`继承自`UILabel`，在支持`UILabel`所有属性的基础上，还提供富文本、图文混排、任意view插入展示、自定义点击链点设置、长按（双击）唤起`UIMenuController`选择复制文本等功能。
 
 ## 特性简介
    1. 禁止使用`-init`初始化！！
