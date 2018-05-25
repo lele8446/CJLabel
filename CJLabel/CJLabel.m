@@ -99,10 +99,11 @@ NSString * const kCJLinkStringIdentifierAttributesName       = @"kCJLinkStringId
 
 - (void)commonInit {
     self.userInteractionEnabled = YES;
-    self.textInsets = UIEdgeInsetsZero;
-    self.verticalAlignment = CJVerticalAlignmentCenter;
+    _textInsets = UIEdgeInsetsZero;
+    
+    _verticalAlignment = CJVerticalAlignmentCenter;
     _textNumberOfLines = -1;
-    self.caculateCopySize = NO;
+    _caculateCopySize = NO;
     _needRedrawn = YES;
     _longPress = NO;
     _extendsLinkTouchArea = NO;
@@ -115,8 +116,8 @@ NSString * const kCJLinkStringIdentifierAttributesName       = @"kCJLinkStringId
     _longPressGestureRecognizer.delegate = self;
     [self addGestureRecognizer:_longPressGestureRecognizer];
     
-    self.enableCopy = NO;
-    self.caculateCTRunSizeBlock = nil;
+    _enableCopy = NO;
+    _caculateCTRunSizeBlock = nil;
 }
 
 - (void)dealloc {
@@ -892,7 +893,7 @@ NSString * const kCJLinkStringIdentifierAttributesName       = @"kCJLinkStringId
 
 /**
  绘制删除线
-
+ 
  @param c 上下文
  @param runStrokeItems 需要绘制的CJGlyphRunStrokeItem数组
  */
@@ -1071,7 +1072,7 @@ NSString * const kCJLinkStringIdentifierAttributesName       = @"kCJLinkStringId
                                                 truncateLastLine:(BOOL)truncateLastLine
 {
     NSMutableArray *verticalLayoutArray = [NSMutableArray arrayWithCapacity:3];
-
+    
     // 遍历所有行
     for (CFIndex lineIndex = 0; lineIndex < MIN(_textNumberOfLines, CFArrayGetCount(lines)); lineIndex ++ ) {
         CTLineRef line = CFArrayGetValueAtIndex(lines, lineIndex);
@@ -1650,7 +1651,7 @@ NSString * const kCJLinkStringIdentifierAttributesName       = @"kCJLinkStringId
                                                 parameter:_currentClickRunStrokeItem.parameter
                                                 linkRange:_currentClickRunStrokeItem.range
                                                     label:wSelf];
-
+        
         if (_currentClickRunStrokeItem.linkBlock) {
             _currentClickRunStrokeItem.linkBlock(linkModel);
         }
@@ -1714,7 +1715,7 @@ NSString * const kCJLinkStringIdentifierAttributesName       = @"kCJLinkStringId
                                                             parameter:_currentClickRunStrokeItem.parameter
                                                             linkRange:_currentClickRunStrokeItem.range
                                                                 label:wSelf];
-
+                    
                     
                     if (_currentClickRunStrokeItem.longPressBlock) {
                         _currentClickRunStrokeItem.longPressBlock(linkModel);
@@ -1818,8 +1819,8 @@ NSString * const kCJLinkStringIdentifierAttributesName       = @"kCJLinkStringId
     dispatch_once(&once, ^{
         manager = [[CJLabel alloc]initWithFrame:CGRectMake(0, 0, 1, 1)];
         manager.numberOfLines = 0;
-        [manager setValue:@(YES) forKey:@"caculateSizeOnly"];
     });
+    [manager setValue:@(YES) forKey:@"caculateSizeOnly"];
     return manager;
 }
 
@@ -2101,5 +2102,3 @@ NSString * const kCJLinkStringIdentifierAttributesName       = @"kCJLinkStringId
 }
 
 @end
-
-
