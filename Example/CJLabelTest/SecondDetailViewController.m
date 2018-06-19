@@ -50,7 +50,7 @@
         case 0:
         {
             self.navigationItem.title = @"富文本展示";
-            
+            self.label.enableCopy = YES;
             //初始化配置
             CJLabelConfigure *configure = [CJLabel configureAttributes:nil isLink:NO activeLinkAttributes:nil parameter:nil clickLinkBlock:nil longPressBlock:nil];
             //设置 'CJLabel' 字符不可点击
@@ -74,7 +74,7 @@
             [configure removeAttributesForKey:kCJBackgroundStrokeColorAttributeName];
             [configure removeAttributesForKey:kCJStrikethroughStyleAttributeName];
             [configure removeAttributesForKey:kCJStrikethroughColorAttributeName];
-            
+
             attStr = [CJLabel insertViewAtAttrString:attStr view:@"CJLabel.png" viewSize:CGSizeMake(55, 45) atIndex:(imgRange.location+imgRange.length) lineAlignment:CJVerticalAlignmentBottom configure:configure];
             //设置内边距
             self.label.textInsets = UIEdgeInsetsMake(10, 10, 10, 0);

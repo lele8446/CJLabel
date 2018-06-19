@@ -1353,18 +1353,6 @@ NSString * const kCJLinkStringIdentifierAttributesName       = @"kCJLinkStringId
                 CGFloat lastStrikethroughStyle = _lastGlyphRunStrokeItem.strikethroughStyle;
                 UIColor *lastStrikethroughColor = _lastGlyphRunStrokeItem.strikethroughColor;
                 
-                BOOL sameColor = ({
-                    BOOL same = NO;
-                    if (strokeColor && isSameColor(strokeColor,lastStrokeColor) &&
-                        fillColor && isSameColor(fillColor,lastFillColor) &&
-                        activeStrokeColor && isSameColor(activeStrokeColor,lastActiveStrokeColor) &&
-                        activeFillColor && isSameColor(activeFillColor,lastActiveFillColor))
-                    {
-                        same = YES;
-                    }
-                    same;
-                });
-                
                 BOOL needMerge = NO;
                 //可点击链点
                 if (item.isLink && _lastGlyphRunStrokeItem.isLink) {
@@ -1385,6 +1373,28 @@ NSString * const kCJLinkStringIdentifierAttributesName       = @"kCJLinkStringId
                                    compareMaxNum(lastLocBounds.size.height,locBounds.size.height,YES));
                     }
                 }else if (!item.isLink && !_lastGlyphRunStrokeItem.isLink){
+                    
+                    BOOL sameColor = ({
+                        BOOL same = NO;
+                        
+                        if (!strokeColor && !fillColor && !activeStrokeColor && !activeFillColor) {
+                            same = NO;
+                        }else{
+                            if (strokeColor) {
+                                same = isSameColor(strokeColor,lastStrokeColor);
+                            }
+                            if (same && fillColor) {
+                                same = isSameColor(fillColor,lastFillColor);
+                            }
+                            if (same && activeStrokeColor) {
+                                same = isSameColor(activeStrokeColor,lastActiveStrokeColor);
+                            }
+                            if (same && activeFillColor) {
+                                same = isSameColor(activeFillColor,activeFillColor);
+                            }
+                        }
+                        same;
+                    });
                     
                     //浮点数判断
                     BOOL nextItem = (fabs((lastRunBounds.origin.x + lastRunBounds.size.width) - runBounds.origin.x)<=1e-6)?YES:NO;
