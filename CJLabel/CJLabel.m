@@ -1390,7 +1390,7 @@ NSString * const kCJLinkStringIdentifierAttributesName       = @"kCJLinkStringId
                                 same = isSameColor(activeStrokeColor,lastActiveStrokeColor);
                             }
                             if (same && activeFillColor) {
-                                same = isSameColor(activeFillColor,activeFillColor);
+                                same = isSameColor(activeFillColor,lastActiveFillColor);
                             }
                         }
                         same;

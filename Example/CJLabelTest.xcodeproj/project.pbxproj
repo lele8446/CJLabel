@@ -272,7 +272,7 @@
 				TargetAttributes = {
 					438257801C1A6F5F00A3DA24 = {
 						CreatedOnToolsVersion = 7.0;
-						DevelopmentTeam = XNH4LYVJV3;
+						DevelopmentTeam = 2G9KQAD4K5;
 						ProvisioningStyle = Automatic;
 					};
 					438257991C1A6F5F00A3DA24 = {
@@ -508,17 +508,17 @@
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = XNH4LYVJV3;
+				DEVELOPMENT_TEAM = 2G9KQAD4K5;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)",
 					"$(PROJECT_DIR)/CJLabelTest",
 				);
 				INFOPLIST_FILE = CJLabelTest/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				OTHER_LDFLAGS = "";
-				PRODUCT_BUNDLE_IDENTIFIER = CJ.HDJY.test;
+				PRODUCT_BUNDLE_IDENTIFIER = Jin.Lian.Test;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 			};
@@ -531,17 +531,17 @@
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = XNH4LYVJV3;
+				DEVELOPMENT_TEAM = 2G9KQAD4K5;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)",
 					"$(PROJECT_DIR)/CJLabelTest",
 				);
 				INFOPLIST_FILE = CJLabelTest/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				OTHER_LDFLAGS = "";
-				PRODUCT_BUNDLE_IDENTIFIER = CJ.HDJY.test;
+				PRODUCT_BUNDLE_IDENTIFIER = Jin.Lian.Test;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 			};
