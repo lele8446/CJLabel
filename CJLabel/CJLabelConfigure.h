@@ -230,6 +230,8 @@ typedef struct CJCTLineVerticalLayout CJCTLineVerticalLayout;
 @property (nonatomic, strong) UIColor *activeStrokeColor;//点击选中时候的描边边框色
 @property (nonatomic, assign) CGFloat strokeLineWidth;//描边边框粗细
 @property (nonatomic, assign) CGFloat cornerRadius;//描边圆角
+@property (nonatomic, assign) CGFloat strikethroughStyle;//删除线
+@property (nonatomic, strong) UIColor *strikethroughColor;//删除线颜色
 @property (nonatomic, assign) CGRect runBounds;//描边区域在系统坐标下的rect（原点在左下角）
 @property (nonatomic, assign) CGRect locBounds;//描边区域在屏幕坐标下的rect（原点在左上角），相同的一组CTRun，发生了合并
 @property (nonatomic, assign) CGRect withOutMergeBounds;//每个字符对应的CTRun 在屏幕坐标下的rect（原点在左上角），没有发生合并
@@ -251,9 +253,6 @@ typedef struct CJCTLineVerticalLayout CJCTLineVerticalLayout;
 @property (nonatomic, assign) NSInteger characterIndex;//字符在整段文本中的index值
 @property (nonatomic, assign) NSRange characterRange;//字符在整段文本中的range值
 
-@property (nonatomic, assign) CGFloat strikethroughStyle;//删除线
-@property (nonatomic, strong) UIColor *strikethroughColor;//删除线颜色
-
 @end
 
 @interface CJCTLineLayoutModel : NSObject
@@ -274,7 +273,7 @@ typedef struct CJCTLineVerticalLayout CJCTLineVerticalLayout;
  CJSelectBackView 在 window 层，全局只有一个
  CJSelectTextRangeView（选中填充背景色的view）在 CJSelectBackView上，CJMagnifierView（放大镜）则在window上
  */
-@interface CJSelectBackView : UIView
+@interface CJSelectCopyManagerView : UIView
 @property (nonatomic, strong) CJMagnifierView *magnifierView;//放大镜
 + (instancetype)instance;
 

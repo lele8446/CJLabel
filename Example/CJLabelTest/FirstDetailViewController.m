@@ -211,6 +211,7 @@
     UIAlertAction *cancel = [UIAlertAction actionWithTitle:@"取消" style:UIAlertActionStyleCancel handler:nil];
     [alert addAction:cancel];
     [self presentViewController:alert animated:YES completion:nil];
+    
 }
 
 @end

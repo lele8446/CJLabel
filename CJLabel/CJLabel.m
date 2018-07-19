@@ -338,7 +338,7 @@ NSString * const kCJLinkStringIdentifierAttributesName       = @"kCJLinkStringId
     _CTLineVerticalLayoutArray = nil;
     _textNumberOfLines = -1;
     _needRedrawn = YES;
-    [[CJSelectBackView instance] hideView];
+    [[CJSelectCopyManagerView instance] hideView];
 }
 
 - (CTFramesetterRef)framesetter {
@@ -579,8 +579,6 @@ NSString * const kCJLinkStringIdentifierAttributesName       = @"kCJLinkStringId
         
         CGFloat lineAscent = 0.0f, lineDescent = 0.0f, lineLeading = 0.0f;
         CGFloat lineWidth = CTLineGetTypographicBounds(line, &lineAscent, &lineDescent, &lineLeading);
-        
-        
         
         CJCTLineLayoutModel *lineLayoutModel = _CTLineVerticalLayoutArray[lineIndex];
         
@@ -1679,7 +1677,7 @@ NSString * const kCJLinkStringIdentifierAttributesName       = @"kCJLinkStringId
         if (self.enableCopy) {
             CGPoint point = [touch locationInView:self];
             [self caculateCTRunCopySizeBlock:^(){
-                CJGlyphRunStrokeItem *currentItem = [CJSelectBackView currentItem:point allRunItemArray:_allRunItemArray inset:1];
+                CJGlyphRunStrokeItem *currentItem = [CJSelectCopyManagerView currentItem:point allRunItemArray:_allRunItemArray inset:1];
                 if (currentItem) {
                     
                     UIViewController *topVC = [self topViewController];
@@ -1692,7 +1690,7 @@ NSString * const kCJLinkStringIdentifierAttributesName       = @"kCJLinkStringId
                     }
                     
                     //唤起 选择复制视图
-                    [[CJSelectBackView instance]showSelectViewInCJLabel:self atPoint:point runItem:[currentItem copy] maxLineWidth:_lineVerticalMaxWidth allCTLineVerticalArray:_CTLineVerticalLayoutArray allRunItemArray:_allRunItemArray hideViewBlock:^(){
+                    [[CJSelectCopyManagerView instance]showSelectViewInCJLabel:self atPoint:point runItem:[currentItem copy] maxLineWidth:_lineVerticalMaxWidth allCTLineVerticalArray:_CTLineVerticalLayoutArray allRunItemArray:_allRunItemArray hideViewBlock:^(){
                         self.caculateCopySize = NO;
                         if (navCtr) {
                             navCtr.interactivePopGestureRecognizer.enabled = popGestureEnable;
@@ -1749,12 +1747,12 @@ NSString * const kCJLinkStringIdentifierAttributesName       = @"kCJLinkStringId
                     [self caculateCTRunCopySizeBlock:^(){
                         if (!_afterLongPressEnd) {
                             //发生长按，显示放大镜
-                            CJGlyphRunStrokeItem *currentItem = [CJSelectBackView currentItem:point allRunItemArray:_allRunItemArray inset:0.5];
+                            CJGlyphRunStrokeItem *currentItem = [CJSelectCopyManagerView currentItem:point allRunItemArray:_allRunItemArray inset:0.5];
                             if (currentItem) {
-                                [[CJSelectBackView instance] showMagnifyInCJLabel:self magnifyPoint:point runItem:currentItem];
+                                [[CJSelectCopyManagerView instance] showMagnifyInCJLabel:self magnifyPoint:point runItem:currentItem];
                             }else{
                                 if (CGRectContainsPoint(self.bounds, point)) {
-                                    [[CJSelectBackView instance] showMagnifyInCJLabel:self magnifyPoint:point runItem:nil];
+                                    [[CJSelectCopyManagerView instance] showMagnifyInCJLabel:self magnifyPoint:point runItem:nil];
                                 }
                             }
                         }
@@ -1766,7 +1764,7 @@ NSString * const kCJLinkStringIdentifierAttributesName       = @"kCJLinkStringId
         }
         case UIGestureRecognizerStateEnded:{
             _afterLongPressEnd = YES;
-            [[CJSelectBackView instance] hideView];
+            [[CJSelectCopyManagerView instance] hideView];
             if (isLinkItem) {
                 _longPress = NO;
                 if (_currentClickRunStrokeItem) {
@@ -1778,7 +1776,7 @@ NSString * const kCJLinkStringIdentifierAttributesName       = @"kCJLinkStringId
                 }
             }
             if (self.enableCopy) {
-                CJGlyphRunStrokeItem *currentItem = [CJSelectBackView currentItem:point allRunItemArray:_allRunItemArray inset:1];
+                CJGlyphRunStrokeItem *currentItem = [CJSelectCopyManagerView currentItem:point allRunItemArray:_allRunItemArray inset:1];
                 if (currentItem) {
                     
                     UIViewController *topVC = [self topViewController];
@@ -1791,14 +1789,14 @@ NSString * const kCJLinkStringIdentifierAttributesName       = @"kCJLinkStringId
                     }
                     
                     //唤起 选择复制视图
-                    [[CJSelectBackView instance]showSelectViewInCJLabel:self atPoint:point runItem:[currentItem copy] maxLineWidth:_lineVerticalMaxWidth allCTLineVerticalArray:_CTLineVerticalLayoutArray allRunItemArray:_allRunItemArray hideViewBlock:^(){
+                    [[CJSelectCopyManagerView instance]showSelectViewInCJLabel:self atPoint:point runItem:[currentItem copy] maxLineWidth:_lineVerticalMaxWidth allCTLineVerticalArray:_CTLineVerticalLayoutArray allRunItemArray:_allRunItemArray hideViewBlock:^(){
                         self.caculateCopySize = NO;
                         if (navCtr) {
                             navCtr.interactivePopGestureRecognizer.enabled = popGestureEnable;
                         }
                     }];
                 }else{
-                    [[CJSelectBackView instance] hideView];
+                    [[CJSelectCopyManagerView instance] hideView];
                 }
             }
             break;
@@ -1806,14 +1804,14 @@ NSString * const kCJLinkStringIdentifierAttributesName       = @"kCJLinkStringId
         case UIGestureRecognizerStateChanged:
         {
             //只移动放大镜
-            if (self.enableCopy && ![CJSelectBackView instance].magnifierView.hidden) {
+            if (self.enableCopy && ![CJSelectCopyManagerView instance].magnifierView.hidden) {
                 //发生长按，显示放大镜
-                CJGlyphRunStrokeItem *currentItem = [CJSelectBackView currentItem:point allRunItemArray:_allRunItemArray inset:1];
+                CJGlyphRunStrokeItem *currentItem = [CJSelectCopyManagerView currentItem:point allRunItemArray:_allRunItemArray inset:1];
                 if (currentItem) {
-                    [[CJSelectBackView instance] showMagnifyInCJLabel:self magnifyPoint:point runItem:currentItem];
+                    [[CJSelectCopyManagerView instance] showMagnifyInCJLabel:self magnifyPoint:point runItem:currentItem];
                 }else{
                     if (CGRectContainsPoint(self.bounds, point)) {
-                        [[CJSelectBackView instance] showMagnifyInCJLabel:self magnifyPoint:point runItem:nil];
+                        [[CJSelectCopyManagerView instance] showMagnifyInCJLabel:self magnifyPoint:point runItem:nil];
                     }
                 }
             }

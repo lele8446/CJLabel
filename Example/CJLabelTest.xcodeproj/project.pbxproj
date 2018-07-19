@@ -515,7 +515,7 @@
 					"$(PROJECT_DIR)/CJLabelTest",
 				);
 				INFOPLIST_FILE = CJLabelTest/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				OTHER_LDFLAGS = "";
 				PRODUCT_BUNDLE_IDENTIFIER = Jin.Lian.Test;
@@ -538,7 +538,7 @@
 					"$(PROJECT_DIR)/CJLabelTest",
 				);
 				INFOPLIST_FILE = CJLabelTest/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				OTHER_LDFLAGS = "";
 				PRODUCT_BUNDLE_IDENTIFIER = Jin.Lian.Test;

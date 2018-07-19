@@ -366,8 +366,8 @@ CGFloat RunDelegateGetWidthCallback(void * refCon) {
         }
         NSString *withKey = withStrDic[kCJLinkStringIdentifierAttributesName];
         
-        for (NSValue *rangeValue in strRanges) {
-            
+        [strRanges enumerateObjectsUsingBlock:^(id  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+            NSValue *rangeValue = (NSValue *)obj;
             NSRange range = rangeValue.rangeValue;
             NSAttributedString *str = [attString attributedSubstringFromRange:range];
             NSRange strRange = NSMakeRange(0, str.length);
@@ -386,7 +386,7 @@ CGFloat RunDelegateGetWidthCallback(void * refCon) {
                     [array addObject:rangeValue];
                 }
             }
-        }
+        }];
     }
     
     return array;
@@ -725,7 +725,7 @@ typedef NS_ENUM(NSInteger, CJSelectViewAction) {
 /**
  选择复制view
  */
-@interface CJSelectBackView()<UIGestureRecognizerDelegate>
+@interface CJSelectCopyManagerView()<UIGestureRecognizerDelegate>
 {
     CGFloat _lineVerticalMaxWidth;//每一行文字中的最大宽度
     NSArray *_CTLineVerticalLayoutArray;//记录 所有CTLine在垂直方向的对齐方式的数组
@@ -741,7 +741,7 @@ typedef NS_ENUM(NSInteger, CJSelectViewAction) {
 @property (nonatomic, strong) UITapGestureRecognizer *doubleTapGes;//双击手势
 @property (nonatomic, strong) UILongPressGestureRecognizer *longPressGestureRecognizer;//长按手势
 
-@property (nonatomic, strong) CJLabel *label;//选择复制对应的label
+@property (nonatomic, weak) CJLabel *label;//选择复制对应的label
 @property (nonatomic, strong) CJSelectTextRangeView *textRangeView;//选中复制填充背景色的view
 @property (nonatomic, assign) CJSelectViewAction selectViewAction;//用于判断选中移动的是左边还是右边的大头针
 @property (nonatomic, strong) CJWindowView *backWindView;//添加在window层的view，用来检测点击任意view时隐藏CJSelectBackView
@@ -752,12 +752,12 @@ typedef NS_ENUM(NSInteger, CJSelectViewAction) {
 @property (nonatomic, strong) UIFont *font;
 @property (nonatomic, strong) NSAttributedString *attributedText;
 @end
-@implementation CJSelectBackView
+@implementation CJSelectCopyManagerView
 + (instancetype)instance {
-    static CJSelectBackView *manager = nil;
+    static CJSelectCopyManagerView *manager = nil;
     static dispatch_once_t once;
     dispatch_once(&once, ^{
-        manager = [[CJSelectBackView alloc] initWithFrame:CGRectZero];
+        manager = [[CJSelectCopyManagerView alloc] initWithFrame:CGRectZero];
         manager.backgroundColor = [UIColor clearColor];
         
         manager.backWindView = [[CJWindowView alloc]initWithFrame:CGRectMake(0, 0, 1, 1)];
@@ -1224,7 +1224,7 @@ typedef NS_ENUM(NSInteger, CJSelectViewAction) {
 - (void)tapTwoAct:(UITapGestureRecognizer *)sender {
     UITouch *touch = objc_getAssociatedObject(self.doubleTapGes, &kAssociatedUITouchKey);
     CGPoint point = [touch locationInView:self];
-    CJGlyphRunStrokeItem *currentItem = [CJSelectBackView currentItem:point allRunItemArray:_allRunItemArray inset:1];
+    CJGlyphRunStrokeItem *currentItem = [CJSelectCopyManagerView currentItem:point allRunItemArray:_allRunItemArray inset:1];
     if (currentItem) {
         _startCopyRunItem = currentItem;
         _endCopyRunItem = currentItem;
@@ -1241,7 +1241,7 @@ typedef NS_ENUM(NSInteger, CJSelectViewAction) {
     switch (sender.state) {
         case UIGestureRecognizerStateBegan: {
             //发生长按，显示放大镜
-            CJGlyphRunStrokeItem *currentItem = [CJSelectBackView currentItem:point allRunItemArray:_allRunItemArray inset:0.5];
+            CJGlyphRunStrokeItem *currentItem = [CJSelectCopyManagerView currentItem:point allRunItemArray:_allRunItemArray inset:0.5];
             if (currentItem) {
                 //隐藏“选择、全选、复制”菜单
                 [[UIMenuController sharedMenuController] setMenuVisible:NO];
@@ -1251,7 +1251,7 @@ typedef NS_ENUM(NSInteger, CJSelectViewAction) {
         }
         case UIGestureRecognizerStateEnded:{
             self.magnifierView.hidden = YES;
-            CJGlyphRunStrokeItem *currentItem = [CJSelectBackView currentItem:point allRunItemArray:_allRunItemArray inset:1.5];
+            CJGlyphRunStrokeItem *currentItem = [CJSelectCopyManagerView currentItem:point allRunItemArray:_allRunItemArray inset:1.5];
             if (currentItem) {
                 _startCopyRunItem = currentItem;
                 _endCopyRunItem = currentItem;
@@ -1262,7 +1262,7 @@ typedef NS_ENUM(NSInteger, CJSelectViewAction) {
         }
         case UIGestureRecognizerStateChanged:{
             //长按位置改变，显示放大镜
-            CJGlyphRunStrokeItem *currentItem = [CJSelectBackView currentItem:point allRunItemArray:_allRunItemArray inset:0.5];
+            CJGlyphRunStrokeItem *currentItem = [CJSelectCopyManagerView currentItem:point allRunItemArray:_allRunItemArray inset:0.5];
             if (currentItem) {
                 //隐藏“选择、全选、复制”菜单
                 [[UIMenuController sharedMenuController] setMenuVisible:NO];
@@ -1317,7 +1317,7 @@ typedef NS_ENUM(NSInteger, CJSelectViewAction) {
     }
     
     if (!currentItem) {
-        currentItem = [CJSelectBackView currentItem:point allRunItemArray:_allRunItemArray inset:0.5];
+        currentItem = [CJSelectCopyManagerView currentItem:point allRunItemArray:_allRunItemArray inset:0.5];
     }
     
     if (currentItem && self.selectViewAction != ShowAllSelectView) {
@@ -1372,13 +1372,13 @@ typedef NS_ENUM(NSInteger, CJSelectViewAction) {
 }
 
 + (CJGlyphRunStrokeItem *)currentItem:(CGPoint)point allRunItemArray:(NSArray <CJGlyphRunStrokeItem *>*)allRunItemArray inset:(CGFloat)inset {
-    CJGlyphRunStrokeItem *currentItem = nil;
-    for (CJGlyphRunStrokeItem *item in allRunItemArray) {
-        if (CGRectContainsPoint(CGRectInset(item.withOutMergeBounds, -inset, -inset), point)) {
-            currentItem = [item copy];
-            break;
+    __block CJGlyphRunStrokeItem *currentItem = nil;
+    [allRunItemArray enumerateObjectsUsingBlock:^(CJGlyphRunStrokeItem * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        if (CGRectContainsPoint(CGRectInset(obj.withOutMergeBounds, -inset, -inset), point)) {
+            currentItem = [obj copy];
+            *stop = YES;
         }
-    }
+    }];
     return currentItem;
 }
 @end
