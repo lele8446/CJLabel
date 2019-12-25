@@ -15,7 +15,6 @@
 static char kAssociatedUITouchKey;
 
 extern NSString * const kCJInsertViewTag;
-extern NSString * const kCJInsertBackViewTag;
 
 #define CJLabelIsNull(a) ((a)==nil || (a)==NULL || (NSNull *)(a)==[NSNull null])
 #define CJUIRGBColor(r,g,b,a) ([UIColor colorWithRed:r/255.0 green:g/255.0 blue:b/255.0 alpha:a])
@@ -248,6 +247,8 @@ typedef struct CJCTLineVerticalLayout CJCTLineVerticalLayout;
 @property (nonatomic, assign) BOOL needRedrawn;//标记点击该链点是否需要重绘文本
 @property (nonatomic, copy) CJLabelLinkModelBlock linkBlock;//点击链点回调
 @property (nonatomic, copy) CJLabelLinkModelBlock longPressBlock;//长按点击链点回调
+/** 是否不允许换行的字符*/
+@property (nonatomic, assign) BOOL isNonLineWrap;
 
 //与选择复制相关的属性
 @property (nonatomic, assign) NSInteger characterIndex;//字符在整段文本中的index值
@@ -315,6 +316,10 @@ typedef struct CJCTLineVerticalLayout CJCTLineVerticalLayout;
 + (CJGlyphRunStrokeItem *)currentItem:(CGPoint)point allRunItemArray:(NSArray <CJGlyphRunStrokeItem *>*)allRunItemArray inset:(CGFloat)inset;
 @end
 
+/// 混排插入任意view时的背景view
+@interface CJInsertBackView : UIView
+@end
+
 extern NSString * const kCJImageAttributeName;
 extern NSString * const kCJImage;
 extern NSString * const kCJImageHeight;
@@ -332,6 +337,10 @@ extern NSString * const kCJLinkParameterAttributesName;
 extern NSString * const kCJClickLinkBlockAttributesName;
 extern NSString * const kCJLongPressBlockAttributesName;
 extern NSString * const kCJLinkNeedRedrawnAttributesName;
+/**
+ 不允许换行字符
+ */
+extern NSString * const kCJNonLineWrapAttributesName;
 
 static CGFloat const CJFLOAT_MAX = 100000;
 

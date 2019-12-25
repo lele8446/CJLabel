@@ -544,9 +544,10 @@ NSString * const kCJLinkStringIdentifierAttributesName       = @"kCJLinkStringId
                  inRect:(CGRect)rect
                 context:(CGContextRef)c
 {
-    UIView *insertBackView = [self viewWithTag:[kCJInsertBackViewTag hash]];
-    if (insertBackView) {
-        [insertBackView removeFromSuperview];
+    for (UIView *view in self.subviews) {
+        if ([view isKindOfClass:[CJInsertBackView class]]) {
+            [view removeFromSuperview];
+        }
     }
     
     CGMutablePathRef path = CGPathCreateMutable();
@@ -758,13 +759,28 @@ NSString * const kCJLinkStringIdentifierAttributesName       = @"kCJLinkStringId
                 image = [UIImage imageNamed:runItem.insertView];
             }
             else if ([runItem.insertView isKindOfClass:[UIView class]]) {
-                UIView *view = (UIView *)runItem.insertView;
-                view.backgroundColor = self.backgroundColor;
+                UIView *backView = (UIView *)runItem.insertView;
+                backView.backgroundColor = self.backgroundColor;
                 runBounds.origin.x = lineOrigin.x + CTLineGetOffsetForStringIndex(line, CTRunGetStringRange(runItem.runRef).location, NULL) + penOffsetX - runItem.strokeLineWidth/2;
-                view.frame = runItem.locBounds;
-                view.tag = [kCJInsertBackViewTag hash];
-                [self addSubview:view];
-                [self bringSubviewToFront:view];
+                backView.frame = runItem.locBounds;
+                [self addSubview:backView];
+                [self bringSubviewToFront:backView];
+                
+                UIView *view = [backView viewWithTag:[kCJInsertViewTag hash]];
+                if ([view isKindOfClass:[CJLabel class]] && runItem.isNonLineWrap) {
+                    backView.backgroundColor = [UIColor clearColor];
+                    NSDictionary *attributes = (__bridge NSDictionary *)CTRunGetAttributes(runItem.runRef);
+                    if (_currentClickRunStrokeItem && NSEqualRanges(_currentClickRunStrokeItem.range,runItem.range)) {
+                        NSMutableAttributedString *labelLinkAttStr = attributes[kCJActiveLinkAttributesName][kCJNonLineWrapAttributesName];
+                        [(CJLabel *)view setAttributedText:labelLinkAttStr];
+                        [(CJLabel *)view flushText];
+                    }else{
+                        NSMutableAttributedString *labelAttStr = attributes[kCJLinkAttributesName][kCJNonLineWrapAttributesName];
+                        [(CJLabel *)view setAttributedText:labelAttStr];
+                        [(CJLabel *)view flushText];
+                    }
+                    [self bringSubviewToFront:backView];
+                }
             }
             
             if (image) {
@@ -917,7 +933,7 @@ NSString * const kCJLinkStringIdentifierAttributesName       = @"kCJLinkStringId
         }
     }
 }
-
+//isStrokeColor 是否填充描边
 - (void)drawBackgroundColor:(CGContextRef)c
              runStrokeItems:(NSArray <CJGlyphRunStrokeItem *>*)runStrokeItems
               isStrokeColor:(BOOL)isStrokeColor
@@ -928,7 +944,7 @@ NSString * const kCJLinkStringIdentifierAttributesName       = @"kCJLinkStringId
         }
     }
 }
-
+//isStrokeColor 是否填充描边
 - (void)drawBackgroundColor:(CGContextRef)c
               runStrokeItem:(CJGlyphRunStrokeItem *)runStrokeItem
               isStrokeColor:(BOOL)isStrokeColor
@@ -952,9 +968,13 @@ NSString * const kCJLinkStringIdentifierAttributesName       = @"kCJLinkStringId
     //画删除线
     if (isStrikethrough) {
         if (runStrokeItem.strikethroughStyle != 0) {
-            CGFloat strikethroughY = roundedRect.origin.y + runStrokeItem.runBounds.size.height/2;
-            CGFloat strikethroughX = x + runStrokeItem.strikethroughStyle/2;
-            CGFloat strikethroughEndX = x + roundedRect.size.width - runStrokeItem.strikethroughStyle/2;
+            CGFloat strikethroughY = roundedRect.origin.y + runStrokeItem.runBounds.size.height/2 + runStrokeItem.strikethroughStyle/2;
+//            CGFloat strikethroughX = x + runStrokeItem.strikethroughStyle/2;
+//            CGFloat strikethroughEndX = x + roundedRect.size.width - runStrokeItem.strikethroughStyle/2;
+            
+            CGFloat strikethroughX = x;
+            CGFloat strikethroughEndX = x + roundedRect.size.width;
+            
             CGContextSetLineCap(c, kCGLineCapSquare);
             CGContextSetLineWidth(c, runStrokeItem.strikethroughStyle);
             CGContextSetStrokeColorWithColor(c, CGColorRefFromColor(runStrokeItem.strikethroughColor));
@@ -991,8 +1011,13 @@ NSString * const kCJLinkStringIdentifierAttributesName       = @"kCJLinkStringId
     //背景色
     else {
         if (runStrokeItem.isInsertView) {
-            return;
+            if (runStrokeItem.isNonLineWrap) {
+                return;
+            }
         }
+        roundedRect.size.width += 0.5;
+        glyphRunpath = [[UIBezierPath bezierPathWithRoundedRect:roundedRect cornerRadius:cornerRadius] CGPath];
+        CGContextAddPath(c, glyphRunpath);
         UIColor *color = (active?runStrokeItem.activeFillColor:runStrokeItem.fillColor);
         if (CJLabelIsNull(color)) {
             color = [UIColor clearColor];
@@ -1109,6 +1134,15 @@ NSString * const kCJLinkStringIdentifierAttributesName       = @"kCJLinkStringId
 {
     
     NSDictionary *attributes = (__bridge NSDictionary *)CTRunGetAttributes(glyphRun);
+    
+    NSMutableAttributedString *labelAttStr = attributes[kCJLinkAttributesName][kCJNonLineWrapAttributesName];
+    NSMutableAttributedString *labelLinkAttStr = attributes[kCJActiveLinkAttributesName][kCJNonLineWrapAttributesName];
+    
+    BOOL isNonLineWrap = NO;
+    if ((labelAttStr && labelAttStr.length > 0) || (labelLinkAttStr && labelLinkAttStr.length > 0)) {
+        isNonLineWrap = YES;
+    }
+    
     //背景色以及描边属性
     UIColor *strokeColor = colorWithAttributeName(attributes, kCJBackgroundStrokeColorAttributeName);
     if (!CJLabelIsNull(attributes[kCJLinkAttributesName]) && !isNotClearColor(strokeColor)) {
@@ -1231,6 +1265,7 @@ NSString * const kCJLinkStringIdentifierAttributesName       = @"kCJLinkStringId
     runStrokeItem.characterRange = substringRange;
     runStrokeItem.runDescent = fabs(runDescent);
     runStrokeItem.runRef = glyphRun;
+    runStrokeItem.isNonLineWrap = isNonLineWrap;
     
     // 当前glyphRun是一个可点击链点
     if (isLink) {
@@ -1381,7 +1416,7 @@ NSString * const kCJLinkStringIdentifierAttributesName       = @"kCJLinkStringId
                             if (strokeColor) {
                                 same = isSameColor(strokeColor,lastStrokeColor);
                             }
-                            if (same && fillColor) {
+                            if (fillColor) {
                                 same = isSameColor(fillColor,lastFillColor);
                             }
                             if (same && activeStrokeColor) {
@@ -1465,9 +1500,11 @@ NSString * const kCJLinkStringIdentifierAttributesName       = @"kCJLinkStringId
 }
 
 - (CJGlyphRunStrokeItem *)adjustItemHeight:(CJGlyphRunStrokeItem *)item height:(CGFloat)ascentAndDescent {
-    // runBounds小于 ascent + Descent 时，rect扩大 1
+    // runBounds小于 ascent + Descent 时，rect高度上下扩大 1
     if (item.runBounds.size.height < ascentAndDescent) {
-        item.runBounds = CGRectInset(item.runBounds,-1,-1);
+//        item.runBounds = CGRectInset(item.runBounds,-1,-1);
+        CGRect runBounds = item.runBounds;
+        item.runBounds = CGRectMake(runBounds.origin.x+1, runBounds.origin.y-1, runBounds.size.width-2, runBounds.size.height+2);
     }
     return item;
 }
@@ -1502,14 +1539,16 @@ NSString * const kCJLinkStringIdentifierAttributesName       = @"kCJLinkStringId
 }
 
 - (UIView *)hitTest:(CGPoint)point withEvent:(UIEvent *)event {
-    if (![self linkAtPoint:point extendsLinkTouchArea:NO] || !self.userInteractionEnabled || self.hidden || self.alpha < 0.01) {
-        if (self.enableCopy) {
-            return [super hitTest:point withEvent:event];
-        }else{
-            return nil;
-        }
+    if (!self.userInteractionEnabled || self.hidden || self.alpha < 0.01) {
+        return [super hitTest:point withEvent:event];
     }
-    return self;
+    
+    BOOL linkPoint = [self linkAtPoint:point extendsLinkTouchArea:NO];
+    if (!linkPoint) {
+        return [super hitTest:point withEvent:event];
+    }else{
+        return self;
+    }
 }
 
 #pragma mark - UIResponder
@@ -1677,7 +1716,7 @@ NSString * const kCJLinkStringIdentifierAttributesName       = @"kCJLinkStringId
         if (self.enableCopy) {
             CGPoint point = [touch locationInView:self];
             [self caculateCTRunCopySizeBlock:^(){
-                CJGlyphRunStrokeItem *currentItem = [CJSelectCopyManagerView currentItem:point allRunItemArray:_allRunItemArray inset:1];
+                CJGlyphRunStrokeItem *currentItem = [CJSelectCopyManagerView currentItem:point allRunItemArray:self->_allRunItemArray inset:1];
                 if (currentItem) {
                     
                     UIViewController *topVC = [self topViewController];
@@ -1690,7 +1729,7 @@ NSString * const kCJLinkStringIdentifierAttributesName       = @"kCJLinkStringId
                     }
                     
                     //唤起 选择复制视图
-                    [[CJSelectCopyManagerView instance]showSelectViewInCJLabel:self atPoint:point runItem:[currentItem copy] maxLineWidth:_lineVerticalMaxWidth allCTLineVerticalArray:_CTLineVerticalLayoutArray allRunItemArray:_allRunItemArray hideViewBlock:^(){
+                    [[CJSelectCopyManagerView instance]showSelectViewInCJLabel:self atPoint:point runItem:[currentItem copy] maxLineWidth:self->_lineVerticalMaxWidth allCTLineVerticalArray:self->_CTLineVerticalLayoutArray allRunItemArray:self->_allRunItemArray hideViewBlock:^(){
                         self.caculateCopySize = NO;
                         if (navCtr) {
                             navCtr.interactivePopGestureRecognizer.enabled = popGestureEnable;
@@ -1745,9 +1784,9 @@ NSString * const kCJLinkStringIdentifierAttributesName       = @"kCJLinkStringId
                 if (self.enableCopy) {
                     _afterLongPressEnd = NO;
                     [self caculateCTRunCopySizeBlock:^(){
-                        if (!_afterLongPressEnd) {
+                        if (!self->_afterLongPressEnd) {
                             //发生长按，显示放大镜
-                            CJGlyphRunStrokeItem *currentItem = [CJSelectCopyManagerView currentItem:point allRunItemArray:_allRunItemArray inset:0.5];
+                            CJGlyphRunStrokeItem *currentItem = [CJSelectCopyManagerView currentItem:point allRunItemArray:self->_allRunItemArray inset:0.5];
                             if (currentItem) {
                                 [[CJSelectCopyManagerView instance] showMagnifyInCJLabel:self magnifyPoint:point runItem:currentItem];
                             }else{
@@ -1873,7 +1912,7 @@ NSString * const kCJLinkStringIdentifierAttributesName       = @"kCJLinkStringId
     [CJLabel instance].textInsets = UIEdgeInsetsZero;
     [CJLabel instance].numberOfLines = 0;
     [CJLabel instance].attributedText = nil;
-    CGSize caculateSize = CGSizeMake(size.width, labeSize.height);
+    CGSize caculateSize = CGSizeMake(ceil(labeSize.width), ceil(labeSize.height));
     return caculateSize;
 }
 
@@ -1908,7 +1947,7 @@ NSString * const kCJLinkStringIdentifierAttributesName       = @"kCJLinkStringId
     BOOL isLink = configure.isLink;
     id insertView = view;
     if ([view isKindOfClass:[UIView class]]) {
-        UIView *backView = [[UIView alloc]initWithFrame:CGRectMake(0, 0, size.width, size.height)];
+        CJInsertBackView *backView = [[CJInsertBackView alloc]initWithFrame:CGRectMake(0, 0, size.width+1, size.height)];
         [(UIView *)view setFrame:CGRectMake(0, 0, size.width, size.height)];
         [(UIView *)view setAutoresizingMask:UIViewAutoresizingNone];
         backView.userInteractionEnabled = YES;
@@ -1917,7 +1956,7 @@ NSString * const kCJLinkStringIdentifierAttributesName       = @"kCJLinkStringId
         [backView addSubview:view];
         insertView = backView;
     }
-    NSMutableAttributedString *result = [CJLabelConfigure configureLinkAttributedString:attStr addImage:insertView imageSize:size atIndex:0 verticalAlignment:lineAlignment linkAttributes:configure.attributes activeLinkAttributes:configure.activeLinkAttributes parameter:configure.parameter clickLinkBlock:configure.clickLinkBlock longPressBlock:configure.longPressBlock islink:isLink];
+    NSMutableAttributedString *result = [CJLabelConfigure configureLinkAttributedString:attStr addImage:insertView imageSize:CGSizeMake(size.width+1, size.height) atIndex:0 verticalAlignment:lineAlignment linkAttributes:configure.attributes activeLinkAttributes:configure.activeLinkAttributes parameter:configure.parameter clickLinkBlock:configure.clickLinkBlock longPressBlock:configure.longPressBlock islink:isLink];
     return result;
 }
 
@@ -1931,7 +1970,7 @@ NSString * const kCJLinkStringIdentifierAttributesName       = @"kCJLinkStringId
     BOOL isLink = configure.isLink;
     id insertView = view;
     if ([view isKindOfClass:[UIView class]]) {
-        UIView *backView = [[UIView alloc]initWithFrame:CGRectMake(0, 0, size.width, size.height)];
+        CJInsertBackView *backView = [[CJInsertBackView alloc]initWithFrame:CGRectMake(0, 0, size.width+1, size.height)];
         [(UIView *)view setFrame:CGRectMake(0, 0, size.width, size.height)];
         [(UIView *)view setAutoresizingMask:UIViewAutoresizingNone];
         backView.userInteractionEnabled = YES;
@@ -1940,7 +1979,7 @@ NSString * const kCJLinkStringIdentifierAttributesName       = @"kCJLinkStringId
         [backView addSubview:view];
         insertView = backView;
     }
-    NSMutableAttributedString *result = [CJLabelConfigure configureLinkAttributedString:attrStr addImage:insertView imageSize:size atIndex:loc verticalAlignment:lineAlignment linkAttributes:configure.attributes activeLinkAttributes:configure.activeLinkAttributes parameter:configure.parameter clickLinkBlock:configure.clickLinkBlock longPressBlock:configure.longPressBlock islink:isLink];
+    NSMutableAttributedString *result = [CJLabelConfigure configureLinkAttributedString:attrStr addImage:insertView imageSize:CGSizeMake(size.width+1, size.height) atIndex:loc verticalAlignment:lineAlignment linkAttributes:configure.attributes activeLinkAttributes:configure.activeLinkAttributes parameter:configure.parameter clickLinkBlock:configure.clickLinkBlock longPressBlock:configure.longPressBlock islink:isLink];
     return result;
 }
 
@@ -2017,6 +2056,57 @@ NSString * const kCJLinkStringIdentifierAttributesName       = @"kCJLinkStringId
     }
 }
 
++ (NSMutableAttributedString *)initWithNonLineWrapAttributedString:(NSAttributedString *)attString textInsets:(UIEdgeInsets)textInsets configure:(CJLabelConfigure *)configure {
+    
+    NSRange strRange = NSMakeRange(0, attString.length);
+    NSDictionary *strDic = nil;
+    if (strRange.length > 0) {
+        strDic = [attString attributesAtIndex:0 effectiveRange:&strRange];
+    }
+    //基本属性
+    NSMutableDictionary *attributes = [NSMutableDictionary dictionaryWithDictionary:strDic];
+    [attributes addEntriesFromDictionary:configure.attributes];
+    NSMutableDictionary *linkAttributes = [NSMutableDictionary dictionaryWithDictionary:strDic];
+    [linkAttributes addEntriesFromDictionary:configure.activeLinkAttributes];
+    
+    //插入label自身绘制的文本属性
+    NSMutableDictionary *labelAttributes = [CJLabel handleNonLineWrapLabelAttributes:attributes];
+    NSMutableDictionary *labelLinkAttributes = [CJLabel handleNonLineWrapLabelAttributes:linkAttributes];
+    //插入label自身绘制的文本
+    NSMutableAttributedString *labelAttStr = [[NSMutableAttributedString alloc]initWithString:attString.string attributes:labelAttributes];
+    //插入label自身绘制的点击高亮文本
+    NSMutableAttributedString *labelLinkAttStr = [[NSMutableAttributedString alloc]initWithString:attString.string attributes:labelLinkAttributes];
+    
+    CGSize labelSize = [CJLabel sizeWithAttributedString:labelAttStr withConstraints:CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX) limitedToNumberOfLines:1 textInsets:textInsets];
+    //先计算得到对应字符的宽高
+    CGFloat labelHeight = labelSize.height;
+    CGFloat labelWidth = labelSize.width;
+    
+    CJLabel *label = [[CJLabel alloc]initWithFrame:CGRectMake(0, 0, labelWidth, labelHeight)];
+    label.userInteractionEnabled = NO;
+    label.textInsets = textInsets;
+    label.verticalAlignment = CJVerticalAlignmentBottom;
+    label.backgroundColor = [UIColor clearColor];
+    
+    //格式化后的图片属性
+    NSMutableDictionary *labelResultAttributes = [NSMutableDictionary dictionaryWithDictionary:attributes];
+    [labelResultAttributes setValue:labelAttStr forKey:kCJNonLineWrapAttributesName];
+    NSMutableDictionary *labelResultLinkAttributes = [NSMutableDictionary dictionaryWithDictionary:linkAttributes];
+    [labelResultLinkAttributes setValue:labelLinkAttStr forKey:kCJNonLineWrapAttributesName];
+    
+    //对应插入的label view 的AttributedString
+    NSMutableAttributedString *labelResult = [[NSMutableAttributedString alloc]initWithString:@""];
+    configure.attributes = labelResultAttributes;
+    configure.activeLinkAttributes = labelResultLinkAttributes;
+    labelResult = [CJLabel insertViewAtAttrString:labelResult view:label viewSize:CGSizeMake(labelWidth, labelHeight) atIndex:0 lineAlignment:CJVerticalAlignmentCenter configure:configure];
+    return labelResult;
+}
+
++ (NSMutableDictionary *)handleNonLineWrapLabelAttributes:(NSDictionary *)dic {
+    NSMutableDictionary *attDic = [NSMutableDictionary dictionaryWithDictionary:dic];
+    [attDic removeObjectsForKeys:@[kCJBackgroundFillColorAttributeName,kCJBackgroundStrokeColorAttributeName,kCJBackgroundLineWidthAttributeName,kCJBackgroundLineCornerRadiusAttributeName,kCJActiveBackgroundFillColorAttributeName,kCJActiveBackgroundStrokeColorAttributeName,kCJStrikethroughStyleAttributeName,kCJStrikethroughColorAttributeName,kCJNonLineWrapAttributesName]];
+    return attDic;
+}
 
 + (NSArray <NSValue *>*)sameLinkStringRangeArray:(NSString *)linkString inAttString:(NSAttributedString *)attString {
     return [CJLabelConfigure getLinkStringRangeArray:linkString inAttString:attString];

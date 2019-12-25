@@ -113,6 +113,43 @@
             break;
         }
             
+        case 6:
+            {
+                self.navigationItem.title = @"指定文字不换行";
+                
+                self.attStr = attStr;
+                self.configure = configure;
+                
+                NSMutableAttributedString *resultStr = [[NSMutableAttributedString alloc]init];
+
+                NSRange lastRange = NSMakeRange(0, 0);
+                NSArray *ary = [CJLabel sameLinkStringRangeArray:@"#CJLabel#" inAttString:attStr];
+                for (NSValue *value in ary) {
+                    NSRange range = [value rangeValue];
+                    
+                    if (resultStr.length != range.location) {
+                        NSInteger length = range.location - (lastRange.location+lastRange.length);
+                        NSAttributedString *str = [attStr attributedSubstringFromRange:NSMakeRange(lastRange.location+lastRange.length, length)];
+                        [resultStr appendAttributedString:str];
+                        
+                        configure.attributes = @{NSForegroundColorAttributeName:[UIColor blueColor],
+                            NSFontAttributeName:[UIFont boldSystemFontOfSize:13]};
+                        configure.activeLinkAttributes = @{NSForegroundColorAttributeName:[UIColor redColor],
+                        NSFontAttributeName:[UIFont boldSystemFontOfSize:13]};
+                        configure.isLink = YES;
+                        NSAttributedString *label = [[NSAttributedString alloc]initWithString:@"#CJLabel#"];
+                        NSMutableAttributedString *labelStr = [CJLabel initWithNonLineWrapAttributedString:label textInsets:UIEdgeInsetsZero configure:configure];
+                        [resultStr appendAttributedString:labelStr];
+                        lastRange = range;
+                        
+                    }
+                }
+                self.label.textInsets = UIEdgeInsetsMake(10, 10, 10, 10);
+                self.label.enableCopy = YES;
+                self.label.attributedText = resultStr;
+                break;
+            }
+            
         default:
             break;
     }

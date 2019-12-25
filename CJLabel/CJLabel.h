@@ -301,6 +301,15 @@
                                   sameStringEnable:(BOOL)sameStringEnable
                                          configure:(CJLabelConfigure *)configure;
 
+
+/// 根据NSAttributedString初始化不可换行的NSAttributedString
+/// @param attString 指定的NSAttributedString
+/// @param textInsets 不可换行字符的内边距
+/// @param configure 链点配置
++ (NSMutableAttributedString *)initWithNonLineWrapAttributedString:(NSAttributedString *)attString
+                                                        textInsets:(UIEdgeInsets)textInsets
+                                                         configure:(CJLabelConfigure *)configure;
+
 /**
  获取指定NSAttributedString中跟linkString相同的NSValue数组，NSValue值为对应的NSRange
  

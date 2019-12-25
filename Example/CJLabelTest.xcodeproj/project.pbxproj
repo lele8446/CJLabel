@@ -43,6 +43,19 @@
 		};
 /* End PBXContainerItemProxy section */
 
+/* Begin PBXCopyFilesBuildPhase section */
+		E7D4B2B723B2248E00F2E528 /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
 		438257811C1A6F5F00A3DA24 /* CJLabelTest.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CJLabelTest.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		438257851C1A6F5F00A3DA24 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
@@ -215,6 +228,7 @@
 				4382577D1C1A6F5F00A3DA24 /* Sources */,
 				4382577E1C1A6F5F00A3DA24 /* Frameworks */,
 				4382577F1C1A6F5F00A3DA24 /* Resources */,
+				E7D4B2B723B2248E00F2E528 /* Embed Frameworks */,
 			);
 			buildRules = (
 			);
@@ -272,7 +286,7 @@
 				TargetAttributes = {
 					438257801C1A6F5F00A3DA24 = {
 						CreatedOnToolsVersion = 7.0;
-						DevelopmentTeam = 2G9KQAD4K5;
+						DevelopmentTeam = 2F892287LA;
 						ProvisioningStyle = Automatic;
 					};
 					438257991C1A6F5F00A3DA24 = {
@@ -290,6 +304,7 @@
 			developmentRegion = English;
 			hasScannedForEncodings = 0;
 			knownRegions = (
+				English,
 				en,
 				Base,
 			);
@@ -508,7 +523,7 @@
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = 2G9KQAD4K5;
+				DEVELOPMENT_TEAM = 2F892287LA;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)",
@@ -531,7 +546,7 @@
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = 2G9KQAD4K5;
+				DEVELOPMENT_TEAM = 2F892287LA;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)",

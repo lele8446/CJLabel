@@ -92,9 +92,16 @@
                                  NSFontAttributeName:[UIFont boldSystemFontOfSize:13]
                                  };
         configure.activeLinkAttributes = @{NSForegroundColorAttributeName:[UIColor redColor]};
-        configure.isLink = YES;
-        configure.parameter = @"CJLabel";
-        attStr = [CJLabel configureAttrString:attStr withString:@"CJLabel" sameStringEnable:YES configure:configure];
+        
+        
+        if (i==6) {
+            configure.isLink = NO;
+            attStr = [CJLabel configureAttrString:attStr withString:@"#CJLabel#" sameStringEnable:YES configure:configure];
+        }else{
+            configure.isLink = YES;
+            configure.parameter = @"CJLabel";
+            attStr = [CJLabel configureAttrString:attStr withString:@"CJLabel" sameStringEnable:YES configure:configure];
+        }
         
         [attStr addAttribute:NSParagraphStyleAttributeName value:paragraph range:NSMakeRange(0, attStr.length)];
         [self.espressos addObject:attStr];
@@ -127,7 +134,7 @@
     if (cell == nil) {
         cell = [[[NSBundle mainBundle] loadNibNamed:@"AttributedTableViewCell" owner:self options:Nil] lastObject];
     }
-    cell.selectionStyle = UITableViewCellSelectionStyleNone;
+    cell.selectionStyle = UITableViewCellSelectionStyleGray;
     cell.label.delegate = self;
     NSAttributedString *content = [self.espressos objectAtIndex:(NSUInteger)indexPath.row];
     cell.label.attributedText = content;
@@ -136,11 +143,13 @@
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     //    NSLog(@"点击第 %@ 行cell",@(indexPath.row+1));
+    [tableView deselectRowAtIndexPath:indexPath animated:YES];
     
     switch (indexPath.row) {
         case 0:
         case 2:
         case 4:
+        case 6:
         {
             SecondDetailViewController *detailCtr = [[SecondDetailViewController alloc]initWithNibName:@"SecondDetailViewController" bundle:nil];
             detailCtr.index = indexPath.row;

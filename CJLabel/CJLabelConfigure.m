@@ -11,7 +11,6 @@
 #import <objc/runtime.h>
 
 NSString * const kCJInsertViewTag                            = @"kCJInsertViewTag";
-NSString * const kCJInsertBackViewTag                        = @"kCJInsertBackViewTag";
 
 NSString * const kCJImageAttributeName                       = @"kCJImageAttributeName";
 NSString * const kCJImage                                    = @"kCJImage";
@@ -29,6 +28,7 @@ NSString * const kCJLinkParameterAttributesName              = @"kCJLinkParamete
 NSString * const kCJClickLinkBlockAttributesName             = @"kCJClickLinkBlockAttributesName";
 NSString * const kCJLongPressBlockAttributesName             = @"kCJLongPressBlockAttributesName";
 NSString * const kCJLinkNeedRedrawnAttributesName            = @"kCJLinkNeedRedrawnAttributesName";
+NSString * const kCJNonLineWrapAttributesName                = @"kCJNonLineWrapAttributesName";
 
 
 void RunDelegateDeallocCallback(void * refCon) {
@@ -1381,6 +1381,10 @@ typedef NS_ENUM(NSInteger, CJSelectViewAction) {
     }];
     return currentItem;
 }
+@end
+
+@implementation CJInsertBackView
+
 @end
 
 

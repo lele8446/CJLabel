@@ -137,9 +137,18 @@
             //设置点击链点
             attStr = [CJLabel configureAttrString:attStr withAttributedString:truncationToken strIdentifier:@"TruncationToken" sameStringEnable:NO configure:configure];
             
+            UIImageView *imgView = [[UIImageView alloc]initWithFrame:CGRectMake(0, 0, 100, 80)];
+            NSData *data = [NSData dataWithContentsOfURL:[NSURL URLWithString:@"https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1576752448623&di=42bd4f5d4a9f8f35eb8eade57484fde0&imgtype=0&src=http%3A%2F%2Faliyunzixunbucket.oss-cn-beijing.aliyuncs.com%2Fjpg%2Fb651212dd7b9019275ccc0266f7919ad.jpg%3Fx-oss-process%3Dimage%2Fresize%2Cp_100%2Fauto-orient%2C1%2Fquality%2Cq_90%2Fformat%2Cjpg%2Fwatermark%2Cimage_eXVuY2VzaGk%3D%2Ct_100"]];
+            imgView.image = [UIImage imageWithData:data];
+            attStr = [CJLabel insertViewAtAttrString:attStr view:imgView viewSize:CGSizeMake(100, 80) atIndex:attStr.length-12 lineAlignment:CJVerticalAlignmentBottom configure:nil];
+            
+            UISwitch *mySwitch = [[UISwitch alloc]initWithFrame:CGRectMake(40, 10, 50, 31)];
+            mySwitch.on = YES;
+            attStr = [CJLabel insertViewAtAttrString:attStr view:mySwitch viewSize:CGSizeMake(50, 31) atIndex:attStr.length-6 lineAlignment:CJVerticalAlignmentBottom configure:nil];
+            
             self.label.attributedText = attStr;
             //支持选择复制
-            self.label.enableCopy = YES;
+//            self.label.enableCopy = YES;
             CGFloat height = [CJLabel sizeWithAttributedString:attStr withConstraints:CGSizeMake(ScreenWidth-20, CGFLOAT_MAX) limitedToNumberOfLines:3].height;
             self.label.frame = CGRectMake(10, 10, ScreenWidth - 20, height);
         }
