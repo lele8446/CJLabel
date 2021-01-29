@@ -892,15 +892,18 @@ NSString * const kCJLinkStringIdentifierAttributesName       = @"kCJLinkStringId
     //这是当前行最大高度的CTRun
     if (runHeight >= maxHeight) {
         if (isImage) {
-            yy = yy + self.font.descender/2 - lineLeading;
+            yy = yy + self.font.descender - lineLeading;
         }
         return yy;
     }
     
     if (verticalAlignment == CJVerticalAlignmentCenter) {
         yy = y + ascentY/2.0;
+        if (isImage) {
+            yy = y + self.font.descender/2.0 - lineLeading + ascentY/2.0;
+        }
     }else if (verticalAlignment == CJVerticalAlignmentTop) {
-        yy = y + ascentY;
+        yy = y + self.font.descender - lineLeading + ascentY;
     }
     return yy;
 }
