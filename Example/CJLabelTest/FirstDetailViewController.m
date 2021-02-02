@@ -9,6 +9,7 @@
 #import "FirstDetailViewController.h"
 #import "Common.h"
 #import "CJLabel.h"
+#import "CJLabel+UIMenu.h"
 
 @interface FirstDetailViewController ()
 @property (nonatomic, strong) CJLabel *label;
@@ -114,6 +115,9 @@
             attStr = [CJLabel configureAttrString:attStr atRange:linkRange configure:configure];
             
             self.label.attributedText = attStr;
+            [self.label showSelectAllTextWithMenus:@[@"拷贝",@"翻译",@"搜一搜"] selectTextBackColor:[UIColor lightGrayColor] colorAlpha:0.35 clickMenuCompletion:^(NSString *menuTitle, CJLabel *label) {
+                NSLog(@"点击 = %@",menuTitle);
+            }];
         }
             break;
         case 5:

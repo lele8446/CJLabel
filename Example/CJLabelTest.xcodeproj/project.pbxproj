@@ -16,6 +16,7 @@
 		438257941C1A6F5F00A3DA24 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 438257921C1A6F5F00A3DA24 /* LaunchScreen.storyboard */; };
 		4382579F1C1A6F5F00A3DA24 /* CJLabelTestTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4382579E1C1A6F5F00A3DA24 /* CJLabelTestTests.m */; };
 		438257AA1C1A6F5F00A3DA24 /* CJLabelTestUITests.m in Sources */ = {isa = PBXBuildFile; fileRef = 438257A91C1A6F5F00A3DA24 /* CJLabelTestUITests.m */; };
+		43C1652E25C92B1B00EAA38B /* CJLabel+UIMenu.m in Sources */ = {isa = PBXBuildFile; fileRef = 43C1652D25C92B1B00EAA38B /* CJLabel+UIMenu.m */; };
 		B40ACCA71EB30CF3006DB787 /* AttributedTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = B40ACCA41EB30CF3006DB787 /* AttributedTableViewCell.m */; };
 		B40ACCA81EB30CF3006DB787 /* AttributedTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = B40ACCA51EB30CF3006DB787 /* AttributedTableViewCell.xib */; };
 		B431D5321D0545E700228988 /* CJLabel.m in Sources */ = {isa = PBXBuildFile; fileRef = B431D52E1D0545E700228988 /* CJLabel.m */; };
@@ -76,6 +77,8 @@
 		438257A91C1A6F5F00A3DA24 /* CJLabelTestUITests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CJLabelTestUITests.m; sourceTree = "<group>"; };
 		438257AB1C1A6F5F00A3DA24 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		4396AC9E23E6C3B800836CE2 /* CJLabelTest.entitlements */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.entitlements; name = CJLabelTest.entitlements; path = ../../../../../../.Trash/CJLabelTest.entitlements; sourceTree = "<group>"; };
+		43C1652C25C92B1B00EAA38B /* CJLabel+UIMenu.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "CJLabel+UIMenu.h"; sourceTree = "<group>"; };
+		43C1652D25C92B1B00EAA38B /* CJLabel+UIMenu.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "CJLabel+UIMenu.m"; sourceTree = "<group>"; };
 		B40ACCA31EB30CF3006DB787 /* AttributedTableViewCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AttributedTableViewCell.h; sourceTree = "<group>"; };
 		B40ACCA41EB30CF3006DB787 /* AttributedTableViewCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AttributedTableViewCell.m; sourceTree = "<group>"; };
 		B40ACCA51EB30CF3006DB787 /* AttributedTableViewCell.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = AttributedTableViewCell.xib; sourceTree = "<group>"; };
@@ -225,6 +228,8 @@
 			children = (
 				B431D52D1D0545E700228988 /* CJLabel.h */,
 				B431D52E1D0545E700228988 /* CJLabel.m */,
+				43C1652C25C92B1B00EAA38B /* CJLabel+UIMenu.h */,
+				43C1652D25C92B1B00EAA38B /* CJLabel+UIMenu.m */,
 				B45AC7EB1F8A7181006B5336 /* CJLabelConfigure.h */,
 				B45AC7EC1F8A7181006B5336 /* CJLabelConfigure.m */,
 			);
@@ -370,6 +375,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				43C1652E25C92B1B00EAA38B /* CJLabel+UIMenu.m in Sources */,
 				B483EC891FBAC7AD000FCE06 /* FirstDetailViewController.m in Sources */,
 				4382578C1C1A6F5F00A3DA24 /* ViewController.m in Sources */,
 				B40ACCA71EB30CF3006DB787 /* AttributedTableViewCell.m in Sources */,

@@ -8,6 +8,7 @@
 
 #import "CJLabel.h"
 #import <objc/runtime.h>
+#import "CJLabel+UIMenu.h"
 
 @class CJGlyphRunStrokeItem;
 @class CJSelectView;
@@ -118,6 +119,7 @@ NSString * const kCJLinkStringIdentifierAttributesName       = @"kCJLinkStringId
     
     _enableCopy = NO;
     _caculateCTRunSizeBlock = nil;
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(menuControllerDidHide) name:UIMenuControllerDidHideMenuNotification object:nil];
 }
 
 - (void)dealloc {
@@ -136,6 +138,7 @@ NSString * const kCJLinkStringIdentifierAttributesName       = @"kCJLinkStringId
         [self removeGestureRecognizer:_doubleTapGes];
     }
     _delegate = nil;
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 
 - (void)setVerticalAlignment:(CJLabelVerticalAlignment)verticalAlignment {
@@ -406,6 +409,12 @@ NSString * const kCJLinkStringIdentifierAttributesName       = @"kCJLinkStringId
         [self setNeedsFramesetter];
         [self setNeedsDisplay];
     }
+}
+- (void)menuControllerDidHide {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wundeclared-selector"
+    [self performSelector:@selector(hideMenuItems)];
+#pragma clang diagnostic pop
 }
 #pragma mark - UILabel
 - (CGRect)textRectForBounds:(CGRect)bounds limitedToNumberOfLines:(NSInteger)numberOfLines {
@@ -1546,7 +1555,7 @@ NSString * const kCJLinkStringIdentifierAttributesName       = @"kCJLinkStringId
         return [super hitTest:point withEvent:event];
     }
     
-    BOOL linkPoint = [self linkAtPoint:point extendsLinkTouchArea:NO];
+    CJGlyphRunStrokeItem *linkPoint = [self linkAtPoint:point extendsLinkTouchArea:NO];
     if (!linkPoint) {
         return [super hitTest:point withEvent:event];
     }else{
@@ -1783,7 +1792,8 @@ NSString * const kCJLinkStringIdentifierAttributesName       = @"kCJLinkStringId
                     [self setNeedsDisplay];
                     [CATransaction flush];
                 }
-            }else{
+            }
+            else{
                 if (self.enableCopy) {
                     _afterLongPressEnd = NO;
                     [self caculateCTRunCopySizeBlock:^(){
@@ -1800,13 +1810,50 @@ NSString * const kCJLinkStringIdentifierAttributesName       = @"kCJLinkStringId
                         }
                     }];
                 }
+                //长按全选文本后弹出的UIMenu菜单（类似微信朋友圈全选复制功能）
+                if (self.menuItems) {
+                    
+                    CJCTLineLayoutModel *firstLine = nil;
+                    CJCTLineLayoutModel *lastLine = nil;
+                    CGFloat minX = 0;
+                    CGFloat maxLineWidth = 0;
+                    for (CJCTLineLayoutModel *lineModel in self->_CTLineVerticalLayoutArray) {
+                        minX = MIN(minX, lineModel.lineVerticalLayout.lineRect.origin.x);
+                        maxLineWidth = MAX(maxLineWidth, lineModel.lineVerticalLayout.lineRect.size.width);
+                        if (lineModel.lineIndex == 0) {
+                            firstLine = lineModel;
+                        }
+                        if (lineModel.lineIndex == self->_CTLineVerticalLayoutArray.count-1) {
+                            lastLine = lineModel;
+                        }
+                    }
+                    minX = minX + self.textInsets.left;
+                    maxLineWidth = maxLineWidth - self.textInsets.left - self.textInsets.right;
+                    
+                    CGFloat firstLineY = firstLine.lineVerticalLayout.lineRect.origin.y;
+                    CGFloat allTextRectHeight = lastLine.lineVerticalLayout.lineRect.origin.y + lastLine.lineVerticalLayout.lineRect.size.height - firstLineY;
+                    CGRect menuRect = CGRectMake(0, firstLineY, CGRectGetWidth(self.frame), CGRectGetHeight(self.frame));
+                    CGRect allTextRect = CGRectMake(minX-1, firstLineY-2, maxLineWidth+4, allTextRectHeight+4);
+                    
+                    UIView *allTextSelectBackView = [[UIView alloc]initWithFrame:allTextRect];
+                    allTextSelectBackView.tag = [@"allTextSelectBackView" hash];
+                    allTextSelectBackView.backgroundColor = self.selectTextBackColor;
+                    [self addSubview:allTextSelectBackView];
+                    
+                    [self becomeFirstResponder];
+                    [UIMenuController sharedMenuController].menuItems = self.menuItems;
+                    [[UIMenuController sharedMenuController] setTargetRect:menuRect inView:self];
+                    [[UIMenuController sharedMenuController] setMenuVisible:YES animated:YES];
+                }
             }
             
             break;
         }
         case UIGestureRecognizerStateEnded:{
             _afterLongPressEnd = YES;
-            [[CJSelectCopyManagerView instance] hideView];
+            if (!self.menuItems || self.menuItems.count == 0) {
+                [[CJSelectCopyManagerView instance] hideView];
+            }
             if (isLinkItem) {
                 _longPress = NO;
                 if (_currentClickRunStrokeItem) {
@@ -1817,6 +1864,7 @@ NSString * const kCJLinkStringIdentifierAttributesName       = @"kCJLinkStringId
                     [CATransaction flush];
                 }
             }
+            //发生选择复制
             if (self.enableCopy) {
                 CJGlyphRunStrokeItem *currentItem = [CJSelectCopyManagerView currentItem:point allRunItemArray:_allRunItemArray inset:1];
                 if (currentItem) {
