@@ -1963,7 +1963,7 @@ NSString * const kCJLinkStringIdentifierAttributesName       = @"kCJLinkStringId
     [CJLabel instance].textInsets = UIEdgeInsetsZero;
     [CJLabel instance].numberOfLines = 0;
     [CJLabel instance].attributedText = nil;
-    CGSize caculateSize = CGSizeMake(ceil(labeSize.width), ceil(labeSize.height));
+    CGSize caculateSize = CGSizeMake(ceil(labeSize.width)+0.1, ceil(labeSize.height)+0.1);
     return caculateSize;
 }
 

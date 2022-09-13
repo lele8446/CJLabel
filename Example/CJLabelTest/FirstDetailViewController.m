@@ -118,6 +118,8 @@
             [self.label showSelectAllTextWithMenus:@[@"拷贝",@"翻译",@"搜一搜"] selectTextBackColor:[UIColor lightGrayColor] colorAlpha:0.35 clickMenuCompletion:^(NSString *menuTitle, CJLabel *label) {
                 NSLog(@"点击 = %@",menuTitle);
             }];
+            [CJLabel respondsToSelector:@selector(initWithView:viewSize:lineAlignment:configure:)];
+            [CJLabel respondsToSelector:@selector(insertViewAtAttrString:view:viewSize:atIndex:lineAlignment:configure:)];
         }
             break;
         case 5:

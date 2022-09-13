@@ -305,7 +305,7 @@
 				TargetAttributes = {
 					438257801C1A6F5F00A3DA24 = {
 						CreatedOnToolsVersion = 7.0;
-						DevelopmentTeam = 2F892287LA;
+						DevelopmentTeam = 2G9KQAD4K5;
 						ProvisioningStyle = Automatic;
 					};
 					438257991C1A6F5F00A3DA24 = {
@@ -544,7 +544,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = 2F892287LA;
+				DEVELOPMENT_TEAM = 2G9KQAD4K5;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)",
@@ -554,7 +554,7 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				OTHER_LDFLAGS = "";
-				PRODUCT_BUNDLE_IDENTIFIER = cjl.SmartLableTest;
+				PRODUCT_BUNDLE_IDENTIFIER = Jin.Lian.Test;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 			};
@@ -568,7 +568,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = 2F892287LA;
+				DEVELOPMENT_TEAM = 2G9KQAD4K5;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)",
@@ -578,7 +578,7 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				OTHER_LDFLAGS = "";
-				PRODUCT_BUNDLE_IDENTIFIER = cjl.SmartLableTest;
+				PRODUCT_BUNDLE_IDENTIFIER = Jin.Lian.Test;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 			};
